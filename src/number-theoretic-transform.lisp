@@ -6,19 +6,6 @@
 
 (in-package #:hypergeometrica)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Utilities ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defun power-of-two-p (n)
-  "Is N a power-of-two?"
-  (zerop (logand n (1- n))))
-
-(defun next-power-of-two (n)
-  "Find the minimum K such that N <= 2^K."
-  (if (power-of-two-p n)
-      (1- (integer-length n))
-      (integer-length n)))
-
-
 ;;;;;;;;;;;;;;;;;;;;;;; Fixed-Width Arithmetic ;;;;;;;;;;;;;;;;;;;;;;;
 
 (declaim (inline split-byte))
@@ -138,6 +125,7 @@ Assumes 0 <= A < M."
       0
       (- m a)))
 
+;;; TODO: Figure out http://cacr.uwaterloo.ca/techreports/1999/corr99-39.pdf
 (defun m* (a b m)
   "Compute A*B (mod M).
 

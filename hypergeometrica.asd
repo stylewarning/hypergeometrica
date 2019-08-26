@@ -6,7 +6,8 @@
   :description "Calculate lots of digits of things."
   :author "Robert Smith <robert@stylewarning.com>"
   :license "BSD 3-clause (See LICENSE.txt)"
-  :depends-on (#:alexandria)
+  :depends-on (#:alexandria
+               #:global-vars)
   :in-order-to ((asdf:test-op (asdf:test-op #:hypergeometrica/tests)))
   :around-compile (lambda (compile)
                     (let (#+sbcl (sb-ext:*derive-function-types* t))
@@ -14,6 +15,9 @@
   :pathname "src/"
   :serial t
   :components ((:file "package")
+               (:file "config")
+               (:file "math-utilities")
+               (:file "mpz")
                (:file "strandh-elster-reversal")
                (:file "number-theoretic-transform")
                (:file "binary-splitting")))

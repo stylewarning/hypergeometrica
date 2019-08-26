@@ -67,8 +67,8 @@
   "How many digits does the MPZ have?
 
 If MPZ is equal to 0, then this is 0."
-  (- (length (storage mpz))
-     (count 0 (storage mpz) :from-end t)))
+  (1+ (or (position-if-not #'zerop (storage mpz) :from-end t)
+          0)))
 
 (defun mpz-zerop (mpz)
   (every #'zerop (storage mpz)))
@@ -176,6 +176,7 @@ If MPZ is equal to 0, then this is 0."
                   (size-b (mpz-size b))
                   (r (make-storage size-a))
                   (carry 0))
+             (assert (>= size-a size-b))
              (loop :for i :below size-b
                    :for ai := (aref (storage a) i)
                    :for bi := (aref (storage b) i)
@@ -214,7 +215,7 @@ If MPZ is equal to 0, then this is 0."
     ((= 1 (sign a) (sign b))
      (%mpz-+ a b))
     ((= -1 (sign a) (sign b))
-     (mpz-negate (%mpz-plus (mpz-abs a) (mpz-abs b))))
+     (mpz-negate (%mpz-+ (mpz-abs a) (mpz-abs b))))
     ;; a > 0, b < 0
     ((= -1 (sign b))
      (%mpz-- a (mpz-abs b)))
@@ -224,3 +225,15 @@ If MPZ is equal to 0, then this is 0."
 
 (defun mpz-- (a b)
   (mpz-+ a (mpz-negate b)))
+
+(defun test-+ (n len)
+  (flet ((r ()
+           (- (expt 10 len) (random (* 2 (expt 10 len))))))
+    (loop :repeat n
+          :for a := (r)
+          :for za := (integer-mpz a)
+          :for b := (r)
+          :for zb := (integer-mpz b)
+          :when (/= (+ a b)
+                    (mpz-integer (mpz-+ za zb)))
+            :do (format t "(+ ~D ~D) = ~D, got ~D~%" a b (+ a b) (mpz-integer (mpz-+ za zb))))))

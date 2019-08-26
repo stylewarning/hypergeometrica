@@ -14,20 +14,20 @@
     ((null xs)       (integer-mpz 1))
     ((null (cdr xs)) (car xs))
     ;; We are guaranteed at least two elements here.
-    (t
+    ((null (cddr xs))
      (let* ((num-factors (length xs))
-            (result-size (+ (1- num-factors)
-                            (reduce #'+ xs :key #'mpz-size)))
+            (result-size (1+ (reduce #'+ xs :key #'mpz-size)))
             (result-storage (make-storage result-size))
             (length (least-power-of-two->= result-size))
             (result-ntt (make-ntt-storage length))
             (temp-ntt (make-ntt-storage length))
             ;; XXX: Can we avoid having to do BASE^N?
-            (m (first (find-suitable-moduli (max length (expt $base num-factors)))))
+            (m (first (find-suitable-moduli (max length (expt $base 2)))))
             (w (ordered-root-from-primitive-root
                 (find-primitive-root m)
                 length
                 m)))
+       (assert (= 2 num-factors))
        ;; Copy one of the factors and transform it
        (replace result-ntt (storage (car xs)))
        (setf result-ntt (ntt-forward result-ntt :modulus m :primitive-root w))
@@ -59,7 +59,8 @@
              :do (setf (aref result-storage i) ci)
              :finally (assert (zerop carry))
                       (return (make-instance 'mpz :sign (reduce #'* xs :key #'sign)
-                                                  :storage result-storage)))))))
+                                                  :storage result-storage)))))
+    (t (reduce #'mpz-* xs))))
 
 (defun test-* (&rest xs)
   (let* ((p (apply #'mpz-* (mapcar #'integer-mpz xs)))

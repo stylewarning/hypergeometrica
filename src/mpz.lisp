@@ -41,21 +41,28 @@
 
 (defun integer-mpz (n)
   (check-type n integer)
-  (if (zerop n)
-      (load-time-value
-       (make-instance 'mpz :sign 1 :storage (make-storage 1)))
-      (let ((sign (if (minusp n) -1 1)))
-        (setf n (abs n))
-        (loop :until (zerop n)
-              :collect (multiple-value-bind (quo rem) (floor n $base)
-                         (setf n quo)
-                         rem)
-                :into digits
-              :finally (return (let ((storage (make-storage (length digits))))
-                                 (map-into storage #'identity digits)
-                                 (make-instance 'mpz
-                                                :sign sign
-                                                :storage storage)))))))
+  (cond
+    ((zerop n)
+     (load-time-value
+       (make-instance 'mpz :sign 1 :storage (make-storage 1))))
+    ((= 1 n)
+     (load-time-value
+      (make-instance 'mpz :sign 1 :storage (let ((s (make-storage 1)))
+                                             (setf (aref s 0) 1)
+                                             s))))
+    (t
+     (let ((sign (if (minusp n) -1 1)))
+       (setf n (abs n))
+       (loop :until (zerop n)
+             :collect (multiple-value-bind (quo rem) (floor n $base)
+                        (setf n quo)
+                        rem)
+               :into digits
+             :finally (return (let ((storage (make-storage (length digits))))
+                                (map-into storage #'identity digits)
+                                (make-instance 'mpz
+                                               :sign sign
+                                               :storage storage))))))))
 (defun mpz-size (mpz)
   "How many digits does the MPZ have?
 

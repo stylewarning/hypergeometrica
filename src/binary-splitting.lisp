@@ -11,7 +11,7 @@
 (defun one (n)
   (declare (type integer n)
            (ignore n))
-  1)
+  (integer-mpz 1))
 
 (defstruct (series (:predicate series?))
   "A representation of the series
@@ -33,6 +33,7 @@ Each of the function a, b, p, and q are integer-valued.
 (defmethod print-object ((obj series) stream)
   (print-unreadable-object (obj stream :type t :identity t)))
 
+#+igno
 (defun product (f lower upper)
   "Compute the product
  
@@ -45,6 +46,7 @@ Each of the function a, b, p, and q are integer-valued.
                       (* accum (funcall f current))))))
     (rec lower 1)))
 
+#+ignore
 (defun sum-series-direct (series lower upper)
   (declare (type series series)
            (type fixnum lower upper))
@@ -64,10 +66,10 @@ Each of the function a, b, p, and q are integer-valued.
   "A partial sum of a series for LOWER <= k < UPPER."
   (lower nil :type fixnum :read-only t)
   (upper nil :type fixnum :read-only t)
-  (p nil :type integer :read-only t)
-  (q nil :type integer :read-only t)
-  (b nil :type integer :read-only t)
-  (r nil :type integer :read-only t))
+  (p nil :type mpz :read-only t)
+  (q nil :type mpz :read-only t)
+  (b nil :type mpz :read-only t)
+  (r nil :type mpz :read-only t))
 
 (defmethod print-object ((obj partial) stream)
   (print-unreadable-object (obj stream :type t :identity nil)
@@ -81,8 +83,9 @@ Each of the function a, b, p, and q are integer-valued.
 
 (defun partial-denominator (x)
   (declare (type partial x))
-  (* (partial-b x) (partial-q x)))
+  (mpz-* (partial-b x) (partial-q x)))
 
+#+ign
 (defun partial-as-rational (x)
   (declare (type partial x))
   (/ (partial-numerator x)
@@ -90,8 +93,8 @@ Each of the function a, b, p, and q are integer-valued.
 
 (defun partial-digits (x digits)
   (declare (type partial x))
-  (values (round (* (expt 10 digits) (partial-numerator x))
-                 (partial-denominator x))))
+  (values (round (* (expt 10 digits) (mpz-integer (partial-numerator x)))
+                 (mpz-integer (partial-denominator x)))))
 
 
 ;;; Binary splitting
@@ -106,18 +109,18 @@ Each of the function a, b, p, and q are integer-valued.
                   :p p
                   :q (funcall (series-q series) lower)
                   :b (funcall (series-b series) lower)
-                  :r (* p (funcall (series-a series) lower)))))
+                  :r (mpz-* p (funcall (series-a series) lower)))))
 
 (defun combine (left right)
   (declare (type partial left right))
   (assert (= (partial-upper left) (partial-lower right)))
   (make-partial :lower (partial-lower left)
                 :upper (partial-upper right)
-                :p (* (partial-p left) (partial-p right))
-                :q (* (partial-q left) (partial-q right))
-                :b (* (partial-b left) (partial-b right))
-                :r (+ (* (partial-b right) (partial-q right) (partial-r left))
-                      (* (partial-b left)  (partial-p left)  (partial-r right)))))
+                :p (mpz-* (partial-p left) (partial-p right))
+                :q (mpz-* (partial-q left) (partial-q right))
+                :b (mpz-* (partial-b left) (partial-b right))
+                :r (mpz-+ (mpz-* (partial-b right) (partial-q right) (partial-r left))
+                          (mpz-* (partial-b left)  (partial-p left)  (partial-r right)))))
 
 (defun binary-split (series lower upper)
   (declare (type series series)
@@ -142,14 +145,14 @@ Each of the function a, b, p, and q are integer-valued.
         (den (denominator x)))
     (make-series :a #'one
                  :b #'one
-                 :p (lambda (n) (if (zerop n) 1 num))
-                 :q (lambda (n) (if (zerop n) 1 (* n den))))))
+                 :p (lambda (n) (integer-mpz (if (zerop n) 1 num)))
+                 :q (lambda (n) (integer-mpz (if (zerop n) 1 (* n den)))))))
 
 (defun make-e-series ()
   (make-series :a #'one
                :b #'one
                :p #'one
-               :q (lambda (n) (if (zerop n) 1 n))))
+               :q (lambda (n) (integer-mpz (if (zerop n) 1 n)))))
 
 ;;; Ramanujan's Series for pi
 
@@ -177,6 +180,7 @@ Each of the function a, b, p, and q are integer-valued.
                  :p #'p
                  :q #'q)))
 
+#+ig
 (defun compute-pi/ramanujan (prec)
   (let* ((num-terms (floor (+ 2 (/ prec +rama-decimals-per-term+))))
          (sqrt2 (isqrt (* 2 (expt 100 prec))))
@@ -212,6 +216,7 @@ Each of the function a, b, p, and q are integer-valued.
                  :p #'p
                  :q #'q)))
 
+#+ig
 (defun compute-pi/chudnovsky (prec)
   (let* ((num-terms (floor (+ 2 (/ prec +chud-decimals-per-term+))))
          ;; √640320 = 8√10005

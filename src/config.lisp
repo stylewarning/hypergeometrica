@@ -4,5 +4,5 @@
 
 (in-package #:hypergeometrica)
 
-(defconstant $base 1000
+(defconstant $base 10000
   "The base of the digits being stored. This should be a constant.")

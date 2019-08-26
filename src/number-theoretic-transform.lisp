@@ -568,8 +568,7 @@ This is just the conjugate-transpose of the NTT matrix, scaled by N."
 The array must have a power-of-two length.
 
 The resulting array (a mutation of the input) will be in bit-reversed order."
-  (format t "m=#x~X (~D)    w=~D~%" m m w)
-
+  ;;(format t "m=#x~X (~D)    w=~D~%" m m w)
   (let* ((N  (length a))
          (ln (1- (integer-length N))))
     (loop :for lsubn :from ln :downto 2 :do
@@ -604,7 +603,7 @@ The resulting array (a mutation of the input) will be in bit-reversed order."
 The array must have a power-of-two length.
 
 The input must be in bit-reversed order."
-  (format t "m=#x~X (~D)    w=~D~%" m m w)
+  ;;(format t "m=#x~X (~D)    w=~D~%" m m w)
   (setf w (inv-mod w m))
   (let* ((N   (length a))
          (ldn (1- (integer-length N))))
@@ -899,10 +898,11 @@ The vector must have a power-of-two length."
   "Multiply the integers A and B using NTT's."
   (let* ((a-count (digit-count a))
          (b-count (digit-count b))
-         (length (* 2 (least-power-of-two->= (max a-count b-count))))
+         ;;(length (least-power-of-two->= (* 2 (max a-count b-count))))
+         (length (least-power-of-two->= (+ 1 a-count b-count)))
          (a-digits (digits a :size length))
          (b-digits (digits b :size length))
-         (m (first (find-suitable-moduli (* length (expt 10 2)))))
+         (m (first (find-suitable-moduli (max length (expt 10 2)))))
          (w (ordered-root-from-primitive-root
              (find-primitive-root m)
              length
@@ -942,7 +942,7 @@ The vector must have a power-of-two length."
   "Multiply two non-negative integers A and B using FFTs."
   (let* ((a-count (digit-count a))
          (b-count (digit-count b))
-         (length (* 2 (least-power-of-two->= (max a-count b-count))))
+         (length (least-power-of-two->= (+ 1 a-count b-count)))
          (a-digits (digits a :size length))
          (b-digits (digits b :size length)))
     (format t "Multiplying ~D * ~D = ~D~%" a b (* a b))

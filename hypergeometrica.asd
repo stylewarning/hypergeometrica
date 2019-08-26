@@ -20,6 +20,7 @@
                (:file "mpz")
                (:file "strandh-elster-reversal")
                (:file "number-theoretic-transform")
+               (:file "ntt-multiply")
                (:file "binary-splitting")))
 
 (asdf:defsystem #:hypergeometrica/tests

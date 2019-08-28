@@ -4,33 +4,29 @@
 
 (in-package #:hypergeometrica)
 
-(defun make-ntt-storage (n)
-  (make-array n :element-type '(unsigned-byte 64)
-                :initial-element 0))
-
 (defun mpz-*/one-modulus (x y)
   (let* ((result-size (+ 1 (mpz-size x) (mpz-size y)))
          (result-storage (make-storage result-size))
          (length (least-power-of-two->= result-size))
-         (result-ntt (make-ntt-storage length))
-         (temp-ntt (make-ntt-storage length))
+         (result-ntt (make-ntt-array length))
+         (temp-ntt (make-ntt-array length))
          (m (first (find-suitable-moduli (max length (expt $base 2)))))
          (w (find-primitive-root length m)))
     ;; Copy one of the factors and transform it
     (replace result-ntt (storage x))
-    (setf result-ntt (ntt-forward result-ntt :modulus m :primitive-root w))
+    (setf result-ntt (ntt-forward result-ntt m w))
 
     ;; Copy
     (replace temp-ntt (storage y))
     ;; Transform
-    (setf temp-ntt (ntt-forward temp-ntt :modulus m :primitive-root w))
+    (setf temp-ntt (ntt-forward temp-ntt m w))
     ;; Pointwise multiply
     (dotimes (i length)
       (setf (aref result-ntt i)
             (m* (aref result-ntt i) (aref temp-ntt i) m)))
 
     ;; Inverse transform
-    (setf result-ntt (ntt-reverse result-ntt :modulus m :primitive-root w))
+    (setf result-ntt (ntt-reverse result-ntt m w))
 
     ;; Unpack the result.
     (loop :with carry := 0
@@ -42,13 +38,10 @@
             :do (setf carry 0)
           :do (setf (aref result-storage i) ci)
           :finally (assert (zerop carry))
-                   (return (make-instance 'mpz :sign (* (sign x) (sign y))
-                                               :storage result-storage)))))
+                   (return (make-mpz (* (sign x) (sign y))
+                                     result-storage)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; other ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(deftype ntt-coefficient ()
-  'digit)
 
 (defun count-trailing-zeroes (n)
   (assert (plusp n))
@@ -139,7 +132,7 @@
     (loop :for m :in moduli
           :for w :in roots
           :for a :in ntts
-          :do (ntt-forward a :modulus m :primitive-root w)
+          :do (ntt-forward a m w)
               (when *verbose*
                 (write-char #\.)))
     (funcall report-time)
@@ -162,7 +155,7 @@
     (loop :for m :in moduli
           :for w :in roots
           :for a :in ntts
-          :do (ntt-reverse a :modulus m :primitive-root w)
+          :do (ntt-reverse a m w)
               (when *verbose*
                 (write-char #\.)))
     (funcall report-time)
@@ -180,7 +173,7 @@
               :sum (* f (aref a i)) :into result-digit
               :finally (add-big-digit (mod result-digit composite) result i)))
       (funcall report-time))
-    (make-instance 'mpz :storage result :sign 1)))
+    (make-mpz 1 (ntt-array-to-storage result))))
 
 (defun mpz-* (x y)
   (let* ((size (+ (mpz-size x) (mpz-size y)))
@@ -216,10 +209,10 @@
           :for w :in roots
           :for ax :in ntts-x
           :for ay :in ntts-y
-          :do (ntt-forward ax :modulus m :primitive-root w)
+          :do (ntt-forward ax m w)
               (when *verbose*
                 (write-char #\.))
-              (ntt-forward ay :modulus m :primitive-root w)
+              (ntt-forward ay m w)
               (when *verbose*
                 (write-char #\.)))
     (funcall report-time)
@@ -246,7 +239,7 @@
     (loop :for m :in moduli
           :for w :in roots
           :for ax :in ntts-x
-          :do (ntt-reverse ax :modulus m :primitive-root w)
+          :do (ntt-reverse ax m w)
               (when *verbose*
                 (write-char #\.)))
     (funcall report-time)
@@ -264,4 +257,4 @@
               :sum (* f (aref a i)) :into result-digit
               :finally (add-big-digit (mod result-digit composite) result i)))
       (funcall report-time))
-    (make-instance 'mpz :storage result :sign (* (sign x) (sign y)))))
+    (make-mpz (* (sign x) (sign y)) (ntt-array-to-storage result))))

@@ -106,7 +106,7 @@
                        moduli))))
 
 (deftest test-primitive-root ()
-  (let* ((N (expt 2 ))
+  (let* ((N (expt 2 5))
          (moduli (h::find-suitable-moduli N :count 100))
          (generators  (mapcar #'h::find-finite-field-generator moduli))
          (roots (mapcar (lambda (g m) (h::primitive-root-from-generator g N m))
@@ -249,11 +249,7 @@ This is just the conjugate-transpose of the NTT matrix, scaled by N."
 (defun test-inversion/ntt (v m w)
   "Tests inversion property of the fast NTTs."
   (is (equalp v
-              (h::ntt-reverse (h::ntt-forward (copy-seq v)
-                                              :modulus m
-                                              :primitive-root w)
-                              :modulus m
-                              :primitive-root w))))
+              (h::ntt-reverse (h::ntt-forward (copy-seq v) m w) m w))))
 
 
 (deftest test-inversion-properties ()
@@ -276,14 +272,14 @@ This is just the conjugate-transpose of the NTT matrix, scaled by N."
         (map-into v (lambda () (random m)))
         (let ((a (matvecmul (ntt-forward-matrix N m w) v m))
               (b (ntt-forward-direct v m w))
-              (c (h::ntt-forward (copy-seq v) :modulus m :primitive-root w)))
+              (c (h::ntt-forward (copy-seq v) m w)))
           (h::bit-reversed-permute! c)
           (is (equalp a b)))
         (let ((a (matvecmul (ntt-reverse-matrix N m w) v m))
               (b (ntt-reverse-direct v m w))
               (c (let ((v (copy-seq v)))
                    (h::bit-reversed-permute! v)
-                   (h::ntt-reverse v :modulus m :primitive-root w))))
+                   (h::ntt-reverse v m w))))
           (is (equalp a b))
           (is (equalp b c)))))))
 
@@ -341,8 +337,8 @@ This is just the conjugate-transpose of the NTT matrix, scaled by N."
       (format t "A's digits: ~A~%" a-digits)
       (format t "B's digits: ~A~%" b-digits))
 
-    (setf a-digits (h::ntt-forward a-digits :modulus m :primitive-root w))
-    (setf b-digits (h::ntt-forward b-digits :modulus m :primitive-root w))
+    (setf a-digits (h::ntt-forward a-digits m w))
+    (setf b-digits (h::ntt-forward b-digits m w))
 
     (when h::*verbose*
       (format t "NTT(A): ~A~%" a-digits)
@@ -353,7 +349,7 @@ This is just the conjugate-transpose of the NTT matrix, scaled by N."
     (when h::*verbose*
       (format t "C = NTT(A)*NTT(B) mod ~D = ~A~%" m a-digits))
 
-    (setf a-digits (h::ntt-reverse a-digits :modulus m :primitive-root w))
+    (setf a-digits (h::ntt-reverse a-digits m w))
 
     (when h::*verbose*
       (format t "NTT^-1(C): ~A~%" a-digits))

@@ -79,15 +79,37 @@ Return two values P0 and P1 such that
 
 ;;;;;;;;;;;;;;;;;;;;; Number-Theoretic Transform ;;;;;;;;;;;;;;;;;;;;;
 
+;;; We use a separate data type for NTTs because they can in princple
+;;; use a different (perhaps smaller!) coefficient domain.
+
+(deftype ntt-coefficient ()
+  'digit)
+
+(deftype ntt-array ()
+  '(simple-array ntt-coefficient (*)))
+
+(defun make-ntt-array (n)
+  (make-array n :element-type 'ntt-coefficient
+                :initial-element 0))
+
+(declaim (ftype (function (ntt-array) storage) ntt-array-to-storage))
+(defun ntt-array-to-storage (x)
+  ;; This MUST match up with MAKE-STORAGE.
+  (make-array (length x) :element-type 'digit
+                         :adjustable t
+                         :displaced-to x))
+
+
 ;;; Decimation-in-frequency algorithm.
-(defun ntt-forward (a &key ((:modulus m) (first (find-suitable-moduli (length a))))
-                           ((:primitive-root w) (find-primitive-root (length a) m)))
-  "Compute the forward number-theoretic transform of the array of integers A, with modulus MODULUS and primitive root PRIMITIVE-ROOT. If they are not provided, a suitable one will be computed.
+(defun ntt-forward (a m w)
+  "Compute the forward number-theoretic transform of the array of integers A, with modulus M and primitive root W. If they are not provided, a suitable one will be computed.
 
 The array must have a power-of-two length.
 
 The resulting array (a mutation of the input) will be in bit-reversed order."
-  ;;(format t "m=#x~X (~D)    w=~D~%" m m w)
+  (declare (type ntt-array a)
+           (type modulus m)
+           (type ntt-coefficient w))
   (let* ((N  (length a))
          (ln (1- (integer-length N))))
     (loop :for lsubn :from ln :downto 2 :do
@@ -112,24 +134,26 @@ The resulting array (a mutation of the input) will be in bit-reversed order."
   a)
 
 ;;; Decimation-in-time algorithm.
-(defun ntt-reverse (a &key ((:modulus m) (first (find-suitable-moduli (length a))))
-                           ((:primitive-root w) (find-primitive-root (length a) m)))
-  "Compute the inverse number-theoretic transform of the array of integers A, with modulus MODULUS and primitive root PRIMITIVE-ROOT. If they are not provided, a suitable one will be computed.
+(defun ntt-reverse (a m w)
+  "Compute the inverse number-theoretic transform of the array of integers A, with modulus M and primitive root W. If they are not provided, a suitable one will be computed.
 
 The array must have a power-of-two length.
 
 The input must be in bit-reversed order."
-  ;;(format t "m=#x~X (~D)    w=~D~%" m m w)
-  (setf w (inv-mod w m))
-  (let* ((N   (length a))
+  (declare (type ntt-array a)
+           (type modulus m)
+           (type ntt-coefficient w))
+  (let* ((1/w (inv-mod w m))
+         (N   (length a))
+         (1/N (inv-mod N m))
          (ldn (1- (integer-length N))))
     (loop :for r :below N :by 2 :do
-      (psetf (aref a r)      (m/ (m+ (aref a r) (aref a (1+ r)) m) N m)
-             (aref a (1+ r)) (m/ (m- (aref a r) (aref a (1+ r)) m) N m)))
+      (psetf (aref a r)      (m* 1/N (m+ (aref a r) (aref a (1+ r)) m) m)
+             (aref a (1+ r)) (m* 1/N (m- (aref a r) (aref a (1+ r)) m) m)))
     (loop :for ldm :from 2 :to ldn :do
       (let* ((subn (ash 1 ldm))
              (subn/2 (floor subn 2))
-             (dw (expt-mod w (ash 1 (- ldn ldm)) m))
+             (dw (expt-mod 1/w (ash 1 (- ldn ldm)) m))
              (w^j 1))
         (loop :for j :below subn/2 :do
           (loop :for r :from 0 :to (- n subn) :by subn :do

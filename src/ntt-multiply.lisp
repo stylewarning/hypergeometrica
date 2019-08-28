@@ -48,15 +48,6 @@
                    (return (make-instance 'mpz :sign (* (sign x) (sign y))
                                                :storage result-storage)))))
 
-(defun test-* (&rest xs)
-  (let* ((p (apply #'mpz-* (mapcar #'integer-mpz xs)))
-         (q (apply #'* xs)))
-    (format t "actual: ~D~%" q)
-    (format t "ntt   : ~D~%" (mpz-integer p))
-    (format t "same: ~A~%" (= (mpz-integer p) q))
-    p))
-
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; other ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (deftype ntt-coefficient ()
@@ -136,47 +127,55 @@
          (result (make-array length :element-type 'ntt-coefficient :initial-element 0))
          (report-time (let ((start-time (get-internal-real-time)))
                         (lambda ()
-                          (format t " ~D ms~%" (round (* 1000 (- (get-internal-real-time) start-time)) internal-time-units-per-second))
-                          (setf start-time (get-internal-real-time))
-                          (finish-output)))))
-    (format t "~&~%Size: ~D (approx ~D decimal~:P, ~D MiB)~%"
-            size
-            (round (* size $digit-bits)
-                   (log 10.0d0 2.00))
-            (round (/ (* size $digit-bits) 8 1024 1024)))
-    (format t "Transform length: ~D~%" length)
-    (format t "Convolution bits: ~D~%" bound-bits)
-    (format t "Moduli: ~{#x~16X~^, ~}~%" moduli)
+                          (when *verbose*
+                            (format t " ~D ms~%" (round (* 1000 (- (get-internal-real-time) start-time)) internal-time-units-per-second))
+                            (setf start-time (get-internal-real-time))
+                            (finish-output))))))
+    (when *verbose*
+      (format t "~&~%Size: ~D (approx ~D decimal~:P, ~D MiB)~%"
+              size
+              (round (* size $digit-bits)
+                     (log 10.0d0 2.00))
+              (round (/ (* size $digit-bits) 8 1024 1024)))
+      (format t "Transform length: ~D~%" length)
+      (format t "Convolution bits: ~D~%" bound-bits)
+      (format t "Moduli: ~{#x~16X~^, ~}~%" moduli)
 
-    (format t "Forward")
+      (format t "Forward"))
     (loop :for m :in moduli
           :for w :in roots
           :for a :in ntts
           :do (ntt-forward a :modulus m :primitive-root w)
-              (write-char #\.))
+              (when *verbose*
+                (write-char #\.)))
     (funcall report-time)
 
     ;; Pointwise multiply
-    (format t "Pointwise multiply")
+    (when *verbose*
+      (format t "Pointwise multiply"))
     (loop :for m :in moduli
           :for a :in ntts
           :do (dotimes (i length)
                 (let ((ai (aref a i)))
                   (setf (aref a i) (m* ai ai m))))
-              (write-char #\.))
+              (when *verbose*
+                (write-char #\.)))
     (funcall report-time)
 
     ;; Inverse transform
-    (format t "Reverse")
+    (when *verbose*
+      (format t "Reverse"))
     (loop :for m :in moduli
           :for w :in roots
           :for a :in ntts
           :do (ntt-reverse a :modulus m :primitive-root w)
-              (write-char #\.))
+              (when *verbose*
+                (write-char #\.)))
     (funcall report-time)
 
     ;; Unpack the result.
-    (format t "CRT...")
+    (when *verbose*
+      (format t "CRT..."))
     (let* ((composite   (reduce #'* moduli))
            (complements (mapcar (lambda (m) (/ composite m)) moduli))
            (inverses    (mapcar #'inv-mod complements moduli))
@@ -205,19 +204,21 @@
          (result (make-array length :element-type 'ntt-coefficient :initial-element 0))
          (report-time (let ((start-time (get-internal-real-time)))
                         (lambda ()
-                          (format t " ~D ms~%" (round (* 1000 (- (get-internal-real-time) start-time)) internal-time-units-per-second))
-                          (setf start-time (get-internal-real-time))
-                          (finish-output)))))
-    (format t "~&~%Size: ~D (approx ~D decimal~:P, ~D MiB)~%"
-            size
-            (round (* size $digit-bits)
-                   (log 10.0d0 2.00))
-            (round (/ (* size $digit-bits) 8 1024 1024)))
-    (format t "Transform length: ~D~%" length)
-    (format t "Convolution bits: ~D~%" bound-bits)
-    (format t "Moduli: ~{#x~16X~^, ~}~%" moduli)
+                          (when *verbose*
+                            (format t " ~D ms~%" (round (* 1000 (- (get-internal-real-time) start-time)) internal-time-units-per-second))
+                            (setf start-time (get-internal-real-time))
+                            (finish-output))))))
+    (when *verbose*
+      (format t "~&~%Size: ~D (approx ~D decimal~:P, ~D MiB)~%"
+              size
+              (round (* size $digit-bits)
+                     (log 10.0d0 2.00))
+              (round (/ (* size $digit-bits) 8 1024 1024)))
+      (format t "Transform length: ~D~%" length)
+      (format t "Convolution bits: ~D~%" bound-bits)
+      (format t "Moduli: ~{#x~16X~^, ~}~%" moduli)
 
-    (format t "Forward")
+      (format t "Forward"))
     (loop :for m :in moduli
           :for w :in roots
           :for ax :in ntts-x
@@ -229,7 +230,8 @@
     (funcall report-time)
 
     ;; Pointwise multiply. The NTT work for X is mutated.
-    (format t "Pointwise multiply")
+    (when *verbose*
+      (format t "Pointwise multiply"))
     (loop :for m :in moduli
           :for ax :in ntts-x
           :for ay :in ntts-y
@@ -239,7 +241,8 @@
     (funcall report-time)
 
     ;; Inverse transform
-    (format t "Reverse")
+    (when *verbose*
+      (format t "Reverse"))
     (loop :for m :in moduli
           :for w :in roots
           :for ax :in ntts-x
@@ -248,7 +251,8 @@
     (funcall report-time)
 
     ;; Unpack the result.
-    (format t "CRT...")
+    (when *verbose*
+      (format t "CRT..."))
     (let* ((composite   (reduce #'* moduli))
            (complements (mapcar (lambda (m) (/ composite m)) moduli))
            (inverses    (mapcar #'inv-mod complements moduli))

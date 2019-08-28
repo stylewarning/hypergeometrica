@@ -125,8 +125,8 @@
 
 (deftest test-mpz-plus-minus-times ()
   (flet ((r ()
-           (- (expt 10 100) (random (* 2 (expt 10 100))))))
-    (loop :repeat 1000
+           (- (floor (expt 10 10000) 2) (random (* 2 (expt 10 10000))))))
+    (loop :repeat 10
           :for a := (r)
           :for za := (h::integer-mpz a)
           :for b := (r)
@@ -134,5 +134,4 @@
           :do (is (= (+ a b) (h::mpz-integer (h::mpz-+ za zb))))
               (is (= (- a b) (h::mpz-integer (h::mpz-- za zb))))
               (is (= (* a a) (h::mpz-integer (h::mpz-square za))))
-              (is (= (* b b) (h::mpz-integer (h::mpz-square zb))))
               (is (= (* a b) (h::mpz-integer (h::mpz-* za zb)))))))

@@ -71,18 +71,21 @@
         :finally (return z)))
 
 (defparameter *moduli*
-  (sort (remove-if-not (lambda (m)
-                         (<= 60 (integer-length m) 63))
-                       (find-suitable-moduli (expt 2 55) :count 10))
-        #'>))
+  (sort (remove-duplicates
+         (remove-if-not (lambda (m)
+                          (<= 58 (integer-length m) (1- $digit-bits)))
+                        (loop :for len :from 54 :to 60
+                              :append (find-suitable-moduli (expt 2 len) :count 100))))
+        #'>)
+  "A set of moduli used to do transforms. They are sorted in decreasing order.")
 
+;;; TODO: check that the transform lengths are compatible with this
 (defparameter *max-transform-length-bits*
-  (mapcar (alexandria:compose #'count-trailing-zeroes #'1-) *moduli*))
-
+  (alexandria:extremum (mapcar (alexandria:compose #'count-trailing-zeroes #'1-) *moduli*) #'<)
+  "The maximum lg(size) of a transform.")
 
 
 (defun moduli-for-bits (bits)
-  (assert (plusp bits))
   (labels ((get-em (moduli-collected moduli-left bits-remaining)
              (cond
                ((plusp bits-remaining)
@@ -134,8 +137,11 @@
                           (format t " ~D ms~%" (round (* 1000 (- (get-internal-real-time) start-time)) internal-time-units-per-second))
                           (setf start-time (get-internal-real-time))
                           (finish-output)))))
-    (format t "~&~%Size: ~D (approx ~D decimal~:P)~%" size (round (* size 64)
-                                                                  (log 10.0d0 2.00)))
+    (format t "~&~%Size: ~D (approx ~D decimal~:P, ~D MiB)~%"
+            size
+            (round (* size $digit-bits)
+                   (log 10.0d0 2.00))
+            (round (/ (* size $digit-bits) 8 1024 1024)))
     (format t "Transform length: ~D~%" length)
     (format t "Convolution bits: ~D~%" bound-bits)
     (format t "Moduli: ~{#x~16X~^, ~}~%" moduli)

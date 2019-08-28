@@ -19,6 +19,7 @@
                (:file "math-utilities")
                (:file "digit")
                (:file "mpz")
+               (:file "moduli")
                (:file "strandh-elster-reversal")
                (:file "number-theoretic-transform")
                (:file "ntt-multiply")

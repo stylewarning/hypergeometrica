@@ -133,4 +133,6 @@
           :for zb := (h::integer-mpz b)
           :do (is (= (+ a b) (h::mpz-integer (h::mpz-+ za zb))))
               (is (= (- a b) (h::mpz-integer (h::mpz-- za zb))))
-              (is (= (- a b) (h::mpz-integer (h::mpz-* za zb)))))))
+              (is (= (* a a) (h::mpz-integer (h::mpz-square za))))
+              (is (= (* b b) (h::mpz-integer (h::mpz-square zb))))
+              (is (= (* a b) (h::mpz-integer (h::mpz-* za zb)))))))

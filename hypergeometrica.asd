@@ -7,7 +7,8 @@
   :author "Robert Smith <robert@stylewarning.com>"
   :license "BSD 3-clause (See LICENSE.txt)"
   :depends-on (#:alexandria
-               #:global-vars)
+               #:global-vars
+               #:lparallel)
   :in-order-to ((asdf:test-op (asdf:test-op #:hypergeometrica/tests)))
   :around-compile (lambda (compile)
                     (let (#+sbcl (sb-ext:*derive-function-types* t))

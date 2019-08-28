@@ -61,6 +61,7 @@ Assumes 0 <= A < M."
       (- m a)))
 
 ;;; TODO: Figure out http://cacr.uwaterloo.ca/techreports/1999/corr99-39.pdf
+(declaim (inline m*-ub63))
 (defun m*-ub63 (a b m)
   "Compute A*B (mod M).
 
@@ -68,16 +69,14 @@ Assumes 0 <= A, B < M."
   ;; We limit this to 63 bits because we need one extra bit for
   ;; doubling.
   (declare (type (unsigned-byte 63) a b m)
-           ;(optimize (speed 0) safety debug)
-           ;(optimize speed (safety 0) (debug 0) (space 0) (compilation-speed 0))
-           )
+           (optimize speed (safety 0) (debug 0) (space 0) (compilation-speed 0)))
   ;; invariants:  0 <= a, b < m <= 2^63 - 1
   (loop :with p :of-type (unsigned-byte 64) := 0
         :for i :from 63 :downto 0 :do
           ;; invariant: 0 <= p < m
           ;;
           ;; p := 2*p  (mod m)
-          (setf p (ash p 1))
+          (setf p (the (unsigned-byte 63) (ash p 1)))
           ;; Normalize.
           (when (>= p m)
             (decf p m))
@@ -88,10 +87,10 @@ Assumes 0 <= A, B < M."
             (when (>= p m)
               (decf p m)))
 
-        :finally (return p)))
+        :finally (return (the (unsigned-byte 63) p))))
 
 (defun m* (a b m)
-  (typecase m
+  (etypecase m
     ((unsigned-byte 63) (m*-ub63 a b m))
     (unsigned-byte      (mod (* a b) m))))
 
@@ -106,13 +105,17 @@ Assumes 0 <= A, B < M."
                    (egcd r x u (- a (* u q)))))))
     (egcd x m 0 1)))
 
-(defun inv-mod-unsafe (x m)
+(defun inv-mod/unsafe (x m)
   "Compute X^-1 (mod M). Assumes X is invertible."
+  (declare (type digit x)
+           (type modulus m)
+           (optimize speed (safety 0) (debug 0) (space 0)))
   (labels ((egcd (x b a u)
+             (declare (type digit b a u x))
              (if (zerop x)
                  (mod a m)
                  (multiple-value-bind (q r) (floor b x)
-                   (egcd r x u (- a (* u q)))))))
+                   (egcd r x u (the digit (- a (the digit (* u q)))))))))
     (egcd x m 0 1)))
 
 (defun m/ (a b m)

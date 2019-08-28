@@ -20,10 +20,19 @@
         #'>)
   "A set of moduli used to do transforms. They are sorted in decreasing order.")
 
-;;; TODO: check that the transform lengths are compatible with this
 (defparameter *max-transform-length-bits*
   (alexandria:extremum (mapcar (alexandria:compose #'count-trailing-zeroes #'1-) *moduli*) #'<)
   "The maximum lg(size) of a transform.")
+
+(defparameter *primitive-roots*
+  (let ((roots-table (make-array (1+ *max-transform-length-bits*) :initial-element nil)))
+    (dotimes (power (1+ *max-transform-length-bits*) roots-table)
+      (setf (aref roots-table power) (loop :for m :in *moduli*
+                                           :collect (find-primitive-root (expt 2 power) m)))))
+  "A map from a transform size of 2^N to the primitive Nth roots of the corresponding moduli.")
+
+;;; TODO: check that the transform lengths are compatible with this
+
 
 
 (defun moduli-for-bits (bits)
@@ -58,6 +67,13 @@
       x
       (iterate f (funcall f x) (1- n))))
 
+(defun force-each (seq)
+  (map nil #'lparallel:force seq))
+
+(defmacro with-rebind ((&rest vars) &body body)
+  `(let ,(loop :for var :in vars :collect (list var var))
+     ,@body))
+
 (defun make-ntt-work (mpz length moduli)
   (loop :for m :in moduli
         :for a := (make-storage length)
@@ -70,8 +86,7 @@
          (length (least-power-of-two->= (* 2 size)))
          (bound-bits (integer-length (* length (expt (1- $base) 2))))
          (moduli (moduli-for-bits bound-bits))
-         (roots (loop :for m :in moduli
-                      :collect (find-primitive-root length m)))
+         (roots (aref *primitive-roots* (next-power-of-two length)))
          (ntts (make-ntt-work x length moduli))
          (raw-ntts (mapcar #'raw-storage-of-storage ntts))
          ;; TODO don't allocate
@@ -145,8 +160,7 @@
          (length (least-power-of-two->= size))
          (bound-bits (integer-length (* length (expt (1- $base) 2))))
          (moduli (moduli-for-bits bound-bits))
-         (roots (loop :for m :in moduli
-                      :collect (find-primitive-root length m)))
+         (roots (aref *primitive-roots* (next-power-of-two length)))
          (ntts-x (make-ntt-work x length moduli))
          (raw-ntts-x (mapcar #'raw-storage-of-storage ntts-x))
          (ntts-y (make-ntt-work y length moduli))
@@ -171,29 +185,31 @@
       (format t "Convolution bits: ~D~%" bound-bits)
       (format t "Moduli: ~{#x~16X~^, ~}~%" moduli)
 
-      (format t "Forward"))
-    (loop :for m :in moduli
-          :for w :in roots
-          :for ax :in raw-ntts-x
-          :for ay :in raw-ntts-y
-          :do (ntt-forward ax m w)
-              (when *verbose*
-                (write-char #\.))
-              (ntt-forward ay m w)
-              (when *verbose*
-                (write-char #\.)))
+      (format t "Forward..."))
+    (force-each
+     (loop :for m :in moduli
+           :for w :in roots
+           :for ax :in raw-ntts-x
+           :for ay :in raw-ntts-y
+           :collect (with-rebind (m w ax)
+                      (lparallel:future
+                        (ntt-forward ax m w)))
+           :collect (with-rebind (m w ay)
+                      (lparallel:future
+                        (ntt-forward ay m w)))))
     (funcall report-time)
 
     ;; Pointwise multiply. The NTT work for X is mutated.
     (when *verbose*
       (format t "Pointwise multiply"))
-    (loop :for m :in moduli
-          :for ax :in raw-ntts-x
-          :for ay :in raw-ntts-y
-          :do (dotimes (i length)
-                (setf (aref ax i) (m* (aref ax i) (aref ay i) m)))
-              (when *verbose*
-                (write-char #\.)))
+    (force-each
+     (loop :for m :in moduli
+           :for ax :in raw-ntts-x
+           :for ay :in raw-ntts-y
+           :collect (with-rebind (m ax ay)
+                      (lparallel:future
+                        (dotimes (i length)
+                          (setf (aref ax i) (m* (aref ax i) (aref ay i) m)))))))
     (funcall report-time)
 
     ;; Tell the garbage collector we don't need no vectors anymore.
@@ -203,12 +219,13 @@
     ;; Inverse transform
     (when *verbose*
       (format t "Reverse"))
-    (loop :for m :in moduli
-          :for w :in roots
-          :for ax :in raw-ntts-x
-          :do (ntt-reverse ax m w)
-              (when *verbose*
-                (write-char #\.)))
+    (force-each
+     (loop :for m :in moduli
+           :for w :in roots
+           :for ax :in raw-ntts-x
+           :collect (with-rebind (m w ax)
+                      (lparallel:future
+                        (ntt-reverse ax m w)))))
     (funcall report-time)
 
     ;; Unpack the result.
@@ -219,8 +236,8 @@
            (inverses    (mapcar #'inv-mod complements moduli))
            (factors     (mapcar #'* complements inverses))
            (raw-result  (raw-storage-of-storage result)))
-      (dotimes (i length)
-        (loop :for a :in ntts-x
+      (lparallel:pdotimes (i length)
+        (loop :for a :in raw-ntts-x
               :for f :in factors
               :sum (* f (aref a i)) :into result-digit
               :finally (add-big-digit (mod result-digit composite) raw-result i)))

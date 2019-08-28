@@ -15,7 +15,8 @@ The array must have a power-of-two length.
 The resulting array (a mutation of the input) will be in bit-reversed order."
   (declare (type raw-storage a)
            (type modulus m)
-           (type digit w))
+           (type digit w)
+           (inline m+ m- m*))
   (let* ((N  (length a))
          (ln (1- (integer-length N))))
     (loop :for lsubn :from ln :downto 2 :do
@@ -48,7 +49,8 @@ The array must have a power-of-two length.
 The input must be in bit-reversed order."
   (declare (type raw-storage a)
            (type modulus m)
-           (type digit w))
+           (type digit w)
+           (inline m+ m- m*))
   (let* ((1/w (inv-mod w m))
          (N   (length a))
          (1/N (inv-mod N m))

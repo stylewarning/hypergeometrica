@@ -33,7 +33,7 @@ Each of the function a, b, p, and q are integer-valued.
 (defmethod print-object ((obj series) stream)
   (print-unreadable-object (obj stream :type t :identity t)))
 
-#+igno
+#+ignore
 (defun product (f lower upper)
   "Compute the product
  
@@ -84,12 +84,6 @@ Each of the function a, b, p, and q are integer-valued.
 (defun partial-denominator (x)
   (declare (type partial x))
   (mpz-* (partial-b x) (partial-q x)))
-
-#+ign
-(defun partial-as-rational (x)
-  (declare (type partial x))
-  (/ (partial-numerator x)
-     (partial-denominator x)))
 
 (defun partial-digits (x digits)
   (declare (type partial x))
@@ -211,10 +205,10 @@ Each of the function a, b, p, and q are integer-valued.
                1
                (* (expt n 3)
                   #.(/ (expt +chud-c+ 3) 24)))))
-    (make-series :a #'a
+    (make-series :a (alexandria:compose #'integer-mpz #'a)
                  :b #'one
-                 :p #'p
-                 :q #'q)))
+                 :p (alexandria:compose #'integer-mpz #'p)
+                 :q (alexandria:compose #'integer-mpz #'q))))
 
 #+ig
 (defun compute-pi/chudnovsky (prec)

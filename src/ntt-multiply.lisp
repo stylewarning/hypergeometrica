@@ -15,10 +15,7 @@
          (result-ntt (make-ntt-storage length))
          (temp-ntt (make-ntt-storage length))
          (m (first (find-suitable-moduli (max length (expt $base 2)))))
-         (w (ordered-root-from-primitive-root
-             (find-primitive-root m)
-             length
-             m)))
+         (w (find-primitive-root length m)))
     ;; Copy one of the factors and transform it
     (replace result-ntt (storage x))
     (setf result-ntt (ntt-forward result-ntt :modulus m :primitive-root w))
@@ -118,10 +115,7 @@
          (bound-bits (integer-length (* length (expt (1- $base) 2))))
          (moduli (moduli-for-bits bound-bits))
          (roots (loop :for m :in moduli
-                      :collect (ordered-root-from-primitive-root
-                                (find-primitive-root m)
-                                length
-                                m)))
+                      :collect (find-primitive-root length m)))
          (ntts (make-ntt-work x length moduli))
          ;; TODO don't allocate
          (result (make-array length :element-type 'ntt-coefficient :initial-element 0))
@@ -194,10 +188,7 @@
          (bound-bits (integer-length (* length (expt (1- $base) 2))))
          (moduli (moduli-for-bits bound-bits))
          (roots (loop :for m :in moduli
-                      :collect (ordered-root-from-primitive-root
-                                (find-primitive-root m)
-                                length
-                                m)))
+                      :collect (find-primitive-root length m)))
          (ntts-x (make-ntt-work x length moduli))
          (ntts-y (make-ntt-work y length moduli))
          ;; By the time we write to RESULT, NTTS-Y will be done.
@@ -226,9 +217,11 @@
           :for ax :in ntts-x
           :for ay :in ntts-y
           :do (ntt-forward ax :modulus m :primitive-root w)
-              (write-char #\.)
+              (when *verbose*
+                (write-char #\.))
               (ntt-forward ay :modulus m :primitive-root w)
-              (write-char #\.))
+              (when *verbose*
+                (write-char #\.)))
     (funcall report-time)
 
     ;; Pointwise multiply. The NTT work for X is mutated.
@@ -239,7 +232,8 @@
           :for ay :in ntts-y
           :do (dotimes (i length)
                 (setf (aref ax i) (m* (aref ax i) (aref ay i) m)))
-              (write-char #\.))
+              (when *verbose*
+                (write-char #\.)))
     (funcall report-time)
 
     ;; Tell the garbage collector we don't need no vectors anymore.
@@ -253,7 +247,8 @@
           :for w :in roots
           :for ax :in ntts-x
           :do (ntt-reverse ax :modulus m :primitive-root w)
-              (write-char #\.))
+              (when *verbose*
+                (write-char #\.)))
     (funcall report-time)
 
     ;; Unpack the result.

@@ -106,9 +106,16 @@
                        moduli))))
 
 (deftest test-primitive-root ()
-  (let* ((moduli (h::find-suitable-moduli (expt 2 9) :count 100))
-         (roots  (mapcar #'h::find-primitive-root moduli)))
-    (is (every #'h::naive-primitive-root-p roots moduli))))
+  (let* ((N (expt 2 ))
+         (moduli (h::find-suitable-moduli N :count 100))
+         (generators  (mapcar #'h::find-finite-field-generator moduli))
+         (roots (mapcar (lambda (g m) (h::primitive-root-from-generator g N m))
+                        generators
+                        moduli)))
+    (is (every #'h::naive-generator-p generators moduli))
+    (flet ((primitive-nth-root-p (w m)
+             (h::naive-primitive-root-p w N m)))
+      (is (every #'primitive-nth-root-p roots moduli)))))
 
 
 (deftest test-mpz-integer-idempotence ()
@@ -136,3 +143,146 @@
               (is (= (- a b) (h::mpz-integer (h::mpz-- za zb))))
               (is (= (* a a) (h::mpz-integer (h::mpz-square za))))
               (is (= (* a b) (h::mpz-integer (h::mpz-* za zb)))))))
+
+;;;;;;; These are various NTT implementations used for testing ;;;;;;;
+
+(defun ntt-forward-matrix (N m w)
+  "Compute the NTT matrix of size N x N over Z/mZ using the primitive Mth root of unity W of order N."
+  (let ((matrix (make-array (list N N) :initial-element 1)))
+    (loop :for row :from 0 :below N :do
+      (loop :for col :from 0 :below N
+            :for exponent := (* col row)
+            :do (setf (aref matrix row col)
+                      (h::expt-mod/safe w exponent m)))
+          :finally (return matrix))))
+
+(defun ntt-reverse-matrix (N m w)
+  "Compute the inverse NTT matrix of size N x N over Z/mZ using the primitive Mth root of unity W of order N.
+
+This is just the conjugate-transpose of the NTT matrix, scaled by N."
+  (labels ((conjugate-transpose (in)
+             (let ((out (make-array (array-dimensions in))))
+               (loop :for row :below (array-dimension out 0) :do
+                 (loop :for col :below (array-dimension out 1) :do
+                   (setf (aref out col row)
+                         (h::m/ (h::inv-mod (aref in row col) m) N m))))
+               out)))
+    (conjugate-transpose (ntt-forward-matrix N m w))))
+
+(defun matmul (A B modulus)
+  "Multiply the matrices A and B over Z/mZ for modulus MODULUS."
+  (let* ((m (array-dimension A 0))
+         (n (array-dimension A 1))
+         (l (array-dimension B 1))
+         (C (make-array `(,m ,l) :initial-element 0)))
+    (loop :for i :below m :do
+      (loop :for k :below l :do
+        (setf (aref C i k)
+              (mod (loop :for j :below n
+                         :sum (* (aref A i j)
+                                 (aref B j k)))
+                   modulus))))
+    C))
+
+(defun matvecmul (matrix v m)
+  "Multiply the matrix MATRIX by the column vector V over Z/mZ."
+  (let* ((N (length v))
+         (result (copy-seq v)))
+    (loop :for row :below N
+          :do (setf (aref result row)
+                    (loop :for col :below N
+                          :for x := (aref matrix row col)
+                          :for y := (aref v col)
+                          :for x*y := (h::m* x y m)
+                          :for s := x*y :then (h::m+ s x*y m)
+                          :finally (return s)))
+          :finally (return result))))
+
+(defun ntt-forward-direct (in m w)
+  "Compute the NTT of the vector IN over Z/mZ using the primitive Mth root of unity W of order (LENGTH IN)."
+  (let* ((N (length in))
+         (out (make-array N :initial-element 0)))
+    (loop :for k :below N
+          :for w^k := (h::expt-mod/safe w k m)
+          :do (setf (aref out k)
+                    (loop :for j :below N
+                          :for w^jk := (h::expt-mod/safe w^k j m)
+                          :sum (h::m* w^jk (aref in j) m) :into s
+                          :finally (return (mod s m))))
+          :finally (return out))))
+
+(defun ntt-reverse-direct (in m w)
+  "Compute the inverse NTT of the vector IN over Z/mZ using the primitive Mth root of unity W of order (LENGTH IN)."
+  (setf w (h::inv-mod w m))
+  (let* ((N (length in))
+         (out (make-array N :initial-element 0)))
+    (loop :for k :below N
+          :for w^k := (h::expt-mod w k m)
+          :do (setf (aref out k)
+                    (loop :for j :below N
+                          :for w^jk := (h::expt-mod/safe w^k j m)
+                          :sum (* w^jk (aref in j)) :into s
+                          :finally (return (h::m/ (mod s m) N m))))
+          :finally (return out))))
+
+
+(defun test-inversion/matrix (v m w)
+  "Tests inversion property of matrix method."
+  (let* ((N (length v))
+         (eye (matmul
+               (ntt-reverse-matrix N m w)
+               (ntt-forward-matrix N m w)
+               m)))
+    (is (loop :for i :below N
+              :always (loop :for j :below N
+                            :always (= (aref eye i j)
+                                       (if (= i j)
+                                           1
+                                           0)))))))
+
+(defun test-inversion/direct (v m w)
+  "Tests inversion property of the direct NTTs."
+  (is (equalp v
+              (ntt-reverse-direct (ntt-forward-direct v m w)
+                                  m w))))
+
+(defun test-inversion/ntt (v m w)
+  "Tests inversion property of the fast NTTs."
+  (is (equalp v
+              (h::ntt-reverse (h::ntt-forward (copy-seq v)
+                                              :modulus m
+                                              :primitive-root w)
+                              :modulus m
+                              :primitive-root w))))
+
+
+(deftest test-inversion-properties ()
+  "Test that the forward and reverse transforms are actually inverses."
+  (let ((N (expt 2 6)))
+    (dolist (m (append h::*moduli* (h::find-suitable-moduli N :count 15)))
+      (let* ((v (make-array N :element-type 'h::ntt-coefficient :initial-element 0))
+             (w (h::find-primitive-root N m)))
+        (map-into v (lambda () (random m)))
+        (test-inversion/matrix v m w)
+        (test-inversion/direct v m w)
+        (test-inversion/ntt v m w)))))
+
+(deftest test-ntt-from-various-definitions ()
+  "Test that the NTTs agree in their transforms."
+  (let ((N (expt 2 8)))
+    (dolist (m (append h::*moduli* (h::find-suitable-moduli N :count 15)))
+      (let* ((v (make-array N :element-type 'h::ntt-coefficient :initial-element 0))
+             (w (h::find-primitive-root n m)))
+        (map-into v (lambda () (random m)))
+        (let ((a (matvecmul (ntt-forward-matrix N m w) v m))
+              (b (ntt-forward-direct v m w))
+              (c (h::ntt-forward (copy-seq v) :modulus m :primitive-root w)))
+          (h::bit-reversed-permute! c)
+          (is (equalp a b)))
+        (let ((a (matvecmul (ntt-reverse-matrix N m w) v m))
+              (b (ntt-reverse-direct v m w))
+              (c (let ((v (copy-seq v)))
+                   (h::bit-reversed-permute! v)
+                   (h::ntt-reverse v :modulus m :primitive-root w))))
+          (is (equalp a b))
+          (is (equalp b c)))))))

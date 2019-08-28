@@ -161,7 +161,9 @@ Assumes 0 <= A, B < M."
 
 (defun expt-mod/safe (a n m)
   "Compute A ^ N (mod M) for integer N."
-  (assert (not (minusp n)))
+  (when (minusp n)
+    (setf a (inv-mod a m)
+          n (- n)))
 
   (let ((result 1))
     (loop
@@ -327,8 +329,8 @@ If MAX-WASTE is provided, then any moduli which have more than MAX-WASTE bits of
 ;;; Once we have a suitable modulus, we need to find primitive roots
 ;;; of unity for that modulus.
 
-(defun primitive-root-test-function (m)
-  "Generate a unary function which tests if a value is a primitive root of the field Z/mZ. (This presumes that the modulus M forms a field.)"
+(defun generator-test-function (m)
+  "Generate a unary function which tests if a value is a generator of the field Z/mZ. (This presumes that the modulus M forms a field.)"
   (let* ((m-1 (1- m))
          (prime-factors (mapcar #'car (factorize m-1)))
          (test-powers (mapcar (lambda (f) (floor m-1 f)) prime-factors)))
@@ -336,32 +338,43 @@ If MAX-WASTE is provided, then any moduli which have more than MAX-WASTE bits of
       (loop :for power :in test-powers
             :never (= 1 (expt-mod/safe a power m))))))
 
-(defun find-primitive-root (m)
-  "Find the smallest primitive M-th root of unity for the prime modulus M."
-  (loop :with primitivep := (primitive-root-test-function m)
+(defun find-finite-field-generator (m)
+  "Find the smallest generator of Z/mZ."
+  (loop :with primitivep := (generator-test-function m)
         :for p := 2 :then (next-prime p)
         ;; :when (>= m p) :do (return-from find-primitive-root nil)
         :until (funcall primitivep p)
         :finally (return p)))
 
-(defun ordered-root-from-primitive-root (r n m)
-  "Compute a root of order N from the primitive M-th root of unity R.
+(defun primitive-root-from-generator (g n m)
+  "Compute the primitive Nth root of unity from the generator G in Z/mZ.
 
-Note: N should divide M-1."
-  (expt-mod/safe r
-                 (floor (1- m) n)
-                 m))
+Note: N must divide M - 1."
+  (let ((k (/ (1- m) n)))
+    (assert (integerp k))
+    (expt-mod/safe g k m)))
 
-(defun naive-primitive-root-p (w m)
-  "Is the number W a primitive root in the (supposed) field of integers mod M?
+(defun find-primitive-root (n m)
+  "Find a primitive Nth root of unity for Z/mZ."
+  (primitive-root-from-generator (find-finite-field-generator m) n m))
 
-The method to test is derived from the definition of a primitive root, and as such, is a very expensive computation."
+(defun naive-generator-p (g m)
+  "Is G a generator of Z/mZ?"
   (let ((seen (make-array m :element-type 'bit :initial-element 0)))
     (loop :for i :below m
-          :for x := w :then (m* w x m)
+          :for x := g :then (m* g x m)
           :do (setf (sbit seen x) 1)
-          :finally (progn (setf (aref seen 0) 1)
+          :finally (progn (setf (sbit seen 0) 1)
                           (return (notany #'zerop seen))))))
+
+(defun naive-primitive-root-p (w n m)
+  "Is W a primitive Nth root of unity in Z/mZ?"
+  (and (= 1 (expt-mod w n m))
+       (loop :for k :from 1 :below n
+             :always (zerop (loop :with s := 0
+                                  :for j :below n
+                                  :do (setf s (m+ s (expt-mod w (* j k) m) m))
+                                  :finally (return s))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;; EXAMPLE OUTPUT ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

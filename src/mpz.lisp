@@ -231,14 +231,3 @@ If MPZ is equal to 0, then this is 0."
 (defun mpz-- (a b)
   (mpz-+ a (mpz-negate b)))
 
-(defun test-+ (n len)
-  (flet ((r ()
-           (- (expt 10 len) (random (* 2 (expt 10 len))))))
-    (loop :repeat n
-          :for a := (r)
-          :for za := (integer-mpz a)
-          :for b := (r)
-          :for zb := (integer-mpz b)
-          :when (/= (+ a b)
-                    (mpz-integer (mpz-+ za zb)))
-            :do (format t "(+ ~D ~D) = ~D, got ~D~%" a b (+ a b) (mpz-integer (mpz-+ za zb))))))

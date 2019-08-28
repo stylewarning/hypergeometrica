@@ -13,8 +13,8 @@
   `(integer 2 (,$base)))
 
 ;; These are NOTINLINE'd below.
-(declaim (ftype (function (digit digit modulus) digit) m+ m- m*))
-(declaim (inline  m+ m- m* m/ m1+ m1- negate-mod inv-mod expt-mod))
+(declaim (ftype (function (digit digit modulus) digit) m+ m-))
+(declaim (inline  m+ m- m* m/ m1+ m1- negate-mod inv-mod expt-mod m*-ub63))
 
 (defun m- (a b m)
   "Compute A - B (mod M).
@@ -61,7 +61,7 @@ Assumes 0 <= A < M."
       (- m a)))
 
 ;;; TODO: Figure out http://cacr.uwaterloo.ca/techreports/1999/corr99-39.pdf
-(defun m* (a b m)
+(defun m*-ub63 (a b m)
   "Compute A*B (mod M).
 
 Assumes 0 <= A, B < M."
@@ -69,7 +69,8 @@ Assumes 0 <= A, B < M."
   ;; doubling.
   (declare (type (unsigned-byte 63) a b m)
            ;(optimize (speed 0) safety debug)
-           (optimize speed (safety 0) (debug 0) (space 0) (compilation-speed 0)))
+           ;(optimize speed (safety 0) (debug 0) (space 0) (compilation-speed 0))
+           )
   ;; invariants:  0 <= a, b < m <= 2^63 - 1
   (loop :with p :of-type (unsigned-byte 64) := 0
         :for i :from 63 :downto 0 :do
@@ -89,19 +90,10 @@ Assumes 0 <= A, B < M."
 
         :finally (return p)))
 
-(defun test-m* (n low)
-  (declare (notinline m*))
-  (flet ((r (&optional (high (expt 2 63)))
-           (+ low (random (- high low)))))
-    (loop :repeat n
-          :for m := (r)
-          :for a := (r m)
-          :for b := (r m)
-          :for x := (m* a b m)
-          :for y := (mod (* a b) m)
-          :when (/= x y)
-            :do (format t "fail: ~A*~A (mod ~A). Got ~A expected ~A~%" a b m x y))))
-
+(defun m* (a b m)
+  (typecase m
+    ((unsigned-byte 63) (m*-ub63 a b m))
+    (unsigned-byte      (mod (* a b) m))))
 
 (defun inv-mod (x m)
   "Compute X^-1 (mod M)."
@@ -167,6 +159,19 @@ Assumes 0 <= A, B < M."
         (return-from expt-mod result))
       (setf a (m* a a m)))))
 
+(defun expt-mod/safe (a n m)
+  "Compute A ^ N (mod M) for integer N."
+  (assert (not (minusp n)))
+
+  (let ((result 1))
+    (loop
+      (when (oddp n)
+        (setf result (mod (* result a) m)))
+      (setf n (floor n 2))
+      (when (zerop n)
+        (return-from expt-mod/safe result))
+      (setf a (mod (* a a) m)))))
+
 (declaim (notinline m+ m- m* m/ m1+ m1- negate-mod inv-mod expt-mod))
 
 
@@ -198,7 +203,7 @@ This test uses the Miller-Rabin primality procedure. The positive integer K dete
           (t
            (multiple-value-bind (d s) (factor-out (- n 1) 2)
              (labels ((strong-liar? (a)
-                        (let ((x (mod (expt a d) n)))
+                        (let ((x (expt-mod/safe a d n)))
                           (or (= x 1)
                               (loop :repeat s
                                     :for y := x :then (mod (* y y) n)
@@ -329,7 +334,7 @@ If MAX-WASTE is provided, then any moduli which have more than MAX-WASTE bits of
          (test-powers (mapcar (lambda (f) (floor m-1 f)) prime-factors)))
     (lambda (a)
       (loop :for power :in test-powers
-            :never (= 1 (expt-mod a power m))))))
+            :never (= 1 (expt-mod/safe a power m))))))
 
 (defun find-primitive-root (m)
   "Find the smallest primitive M-th root of unity for the prime modulus M."
@@ -343,9 +348,9 @@ If MAX-WASTE is provided, then any moduli which have more than MAX-WASTE bits of
   "Compute a root of order N from the primitive M-th root of unity R.
 
 Note: N should divide M-1."
-  (expt-mod r
-            (floor (1- m) n)
-            m))
+  (expt-mod/safe r
+                 (floor (1- m) n)
+                 m))
 
 (defun naive-primitive-root-p (w m)
   "Is the number W a primitive root in the (supposed) field of integers mod M?
@@ -354,8 +359,7 @@ The method to test is derived from the definition of a primitive root, and as su
   (let ((seen (make-array m :element-type 'bit :initial-element 0)))
     (loop :for i :below m
           :for x := w :then (m* w x m)
-          :do (print x)
-          :do (setf (bit seen x) 1)
+          :do (setf (sbit seen x) 1)
           :finally (progn (setf (aref seen 0) 1)
                           (return (notany #'zerop seen))))))
 

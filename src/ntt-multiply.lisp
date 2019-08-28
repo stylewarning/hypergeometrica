@@ -208,8 +208,7 @@
            :for ay :in raw-ntts-y
            :collect (with-rebind (m ax ay)
                       (lparallel:future
-                        (dotimes (i length)
-                          (setf (aref ax i) (m* (aref ax i) (aref ay i) m)))))))
+                        (multiply-pointwise! ax ay length m)))))
     (funcall report-time)
 
     ;; Tell the garbage collector we don't need no vectors anymore.

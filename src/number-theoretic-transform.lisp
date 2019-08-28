@@ -75,6 +75,15 @@ The input must be in bit-reversed order."
 
   a)
 
+(defun multiply-pointwise! (a b length m)
+  (declare (type raw-storage a b)
+           (type alexandria:array-length length)
+           (type modulus m)
+           (inline m*)
+           (optimize speed (safety 0) (debug 0) (space 0) (compilation-speed 0)))
+  (dotimes (i length)
+    (setf (aref a i) (m* (aref a i) (aref b i) m))))
+
 #+#:ignore-DIF
 (defun ntt-reverse (a &key ((:modulus m) (first (find-suitable-moduli (length a))))
                            ((:primitive-root w) (ordered-root-from-primitive-root

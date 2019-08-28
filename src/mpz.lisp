@@ -8,10 +8,6 @@
   "The sign of an integer."
   '(member 1 -1))
 
-(deftype digit ()
-  "A digit in an MPZ."
-  '(integer 0 (#.$base)))
-
 (deftype intermediate ()
   "An intermediate computation with a digit."
   'fixnum)
@@ -69,6 +65,15 @@
 If MPZ is equal to 0, then this is 0."
   (1+ (or (position-if-not #'zerop (storage mpz) :from-end t)
           0)))
+
+(defun mpz-integer-length (mpz)
+  "How many bits are needed to represent MPZ in two's complement?"
+  (let ((size (mpz-size mpz)))
+    (if (zerop size)
+        0
+        (+ (* $digit-bits (1- size))
+           (integer-length (aref (storage mpz) (1- size)))
+           (/ (1- (sign mpz)) 2)))))
 
 (defun mpz-zerop (mpz)
   (every #'zerop (storage mpz)))

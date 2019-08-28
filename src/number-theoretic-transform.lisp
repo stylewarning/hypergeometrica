@@ -263,10 +263,10 @@ This test uses the Miller-Rabin primality procedure. The positive integer K dete
           (t
            (multiple-value-bind (d s) (factor-out (- n 1) 2)
              (labels ((strong-liar? (a)
-                        (let ((x (expt-mod a d n)))
+                        (let ((x (mod (expt a d) n)))
                           (or (= x 1)
                               (loop :repeat s
-                                    :for y := x :then (m* y y n)
+                                    :for y := x :then (mod (* y y) n)
                                       :thereis (= y (- n 1)))))))
                (declare (inline strong-liar?))
                (loop :repeat k

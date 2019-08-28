@@ -17,6 +17,7 @@
   :components ((:file "package")
                (:file "config")
                (:file "math-utilities")
+               (:file "digit")
                (:file "mpz")
                (:file "strandh-elster-reversal")
                (:file "number-theoretic-transform")

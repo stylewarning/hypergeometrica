@@ -200,8 +200,10 @@
                                 m)))
          (ntts-x (make-ntt-work x length moduli))
          (ntts-y (make-ntt-work y length moduli))
-         ;; TODO don't allocate
-         (result (make-array length :element-type 'ntt-coefficient :initial-element 0))
+         ;; By the time we write to RESULT, NTTS-Y will be done.
+         ;;
+         ;; However (!), we will need to remember to clear it.
+         (result (first ntts-y))
          (report-time (let ((start-time (get-internal-real-time)))
                         (lambda ()
                           (when *verbose*
@@ -239,6 +241,10 @@
                 (setf (aref ax i) (m* (aref ax i) (aref ay i) m)))
               (write-char #\.))
     (funcall report-time)
+
+    ;; Tell the garbage collector we don't need no vectors anymore.
+    (setf ntts-y nil)
+    (fill result 0)
 
     ;; Inverse transform
     (when *verbose*

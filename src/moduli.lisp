@@ -13,8 +13,8 @@
   `(integer 2 (,$base)))
 
 ;; These are NOTINLINE'd below.
-(declaim (ftype (function (digit digit modulus) digit) m+ m-))
-(declaim (inline  m+ m- m* m/ m1+ m1- negate-mod inv-mod expt-mod m*-ub63))
+(declaim (ftype (function (digit digit modulus) digit) m+ m- m*))
+(declaim (inline  m+ m- m* m/ m1+ m1- negate-mod inv-mod expt-mod))
 
 (defun m- (a b m)
   "Compute A - B (mod M).
@@ -61,38 +61,10 @@ Assumes 0 <= A < M."
       (- m a)))
 
 ;;; TODO: Figure out http://cacr.uwaterloo.ca/techreports/1999/corr99-39.pdf
-(declaim (inline m*-ub63))
-(defun m*-ub63 (a b m)
-  "Compute A*B (mod M).
-
-Assumes 0 <= A, B < M."
-  ;; We limit this to 63 bits because we need one extra bit for
-  ;; doubling.
-  (declare (type (unsigned-byte 63) a b m)
-           (optimize speed (safety 0) (debug 0) (space 0) (compilation-speed 0)))
-  ;; invariants:  0 <= a, b < m <= 2^63 - 1
-  (loop :with p :of-type (unsigned-byte 64) := 0
-        :for i :from 63 :downto 0 :do
-          ;; invariant: 0 <= p < m
-          ;;
-          ;; p := 2*p  (mod m)
-          (setf p (the (unsigned-byte 63) (ash p 1)))
-          ;; Normalize.
-          (when (>= p m)
-            (decf p m))
-          ;; d := d + next_bit(a) * b   (mod m)
-          (when (logbitp i a)
-            (incf p b)
-            ;; Normalize.
-            (when (>= p m)
-              (decf p m)))
-
-        :finally (return (the (unsigned-byte 63) p))))
-
 (defun m* (a b m)
-  (etypecase m
-    ((unsigned-byte 63) (m*-ub63 a b m))
-    (unsigned-byte      (mod (* a b) m))))
+  (declare (type modulus m)
+           (type digit a b))
+  (mod (* a b) m))
 
 (defun inv-mod (x m)
   "Compute X^-1 (mod M)."

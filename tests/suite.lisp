@@ -5,10 +5,11 @@
 (in-package #:hypergeometrica-tests)
 
 (defun test-hypergeometrica ()
-  (run-package-tests :package ':hypergeometrica-tests
-                     :verbose nil
-                     :describe-failures t
-                     :interactive t))
+  (let ((h::*verbose* nil))
+    (run-package-tests :package ':hypergeometrica-tests
+                       :verbose nil
+                       :describe-failures t
+                       :interactive t)))
 
 ;;; Tests start HERE!
 

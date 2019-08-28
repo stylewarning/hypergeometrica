@@ -4,20 +4,23 @@
 
 (in-package #:hypergeometrica)
 
-(defconstant $base (expt 2 64))
-(defconstant $base-bits (1- (integer-length $base)))
+(defconstant $base (1+ most-positive-fixnum))
+(defconstant $digit-bits (1- (integer-length $base)))
 
 (deftype digit ()
   "A digit in an MPZ."
   `(integer 0 (,$base)))
 
+(deftype simple-digit-vector ()
+  '(simple-array digit (*)))
+
 (defmacro define-fx-op (op-name (base-op &rest args))
   `(progn
      (declaim (inline ,op-name))
      (defun ,op-name ,args
-       (declare (type (unsigned-byte 64) ,@args)
+       (declare (type digit ,@args)
                 (optimize speed (safety 0) (debug 0) (space 0) (compilation-speed 0)))
-       (the (unsigned-byte 64) (mod (,base-op ,@args) ,(expt 2 64))))))
+       (the digit (mod (,base-op ,@args) ,$base)))))
 
 (define-fx-op fx+ (+ a b))
 (define-fx-op fx- (- a b))

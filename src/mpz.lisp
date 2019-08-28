@@ -10,7 +10,7 @@
 
 (deftype intermediate ()
   "An intermediate computation with a digit."
-  'fixnum)
+  '(signed-byte 64))
 
 ;;; Digit storage
 
@@ -29,14 +29,14 @@
 ;;; Conversion functions
 
 (defun mpz-integer (mpz)
-  (check-type mpz mpz)
+  (declare (type mpz mpz))
   (* (sign mpz)
      (loop :for digit :across (storage mpz)
            :for b := 1 :then (* b $base)
            :sum (* digit b))))
 
 (defun integer-mpz (n)
-  (check-type n integer)
+  (declare (type integer n))
   (cond
     ((zerop n)
      (load-time-value

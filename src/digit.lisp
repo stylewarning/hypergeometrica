@@ -11,9 +11,6 @@
   "A digit in an MPZ."
   `(integer 0 (,$base)))
 
-(deftype simple-digit-vector ()
-  '(simple-array digit (*)))
-
 (defmacro define-fx-op (op-name (base-op &rest args))
   `(progn
      (declaim (inline ,op-name))

@@ -228,6 +228,7 @@ This test uses the Miller-Rabin primality procedure. The positive integer K dete
     p = q * 2^n + 1
 
 is a prime number."
+  (declare (ignore q n))
   (error "not implemented"))
 
 (defun factorize (number)

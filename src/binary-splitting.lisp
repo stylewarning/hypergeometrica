@@ -119,8 +119,8 @@ Each of the function a, b, p, and q are integer-valued.
                 :p (mpz-* (partial-p left) (partial-p right))
                 :q (mpz-* (partial-q left) (partial-q right))
                 :b (mpz-* (partial-b left) (partial-b right))
-                :r (mpz-+ (mpz-* (partial-b right) (partial-q right) (partial-r left))
-                          (mpz-* (partial-b left)  (partial-p left)  (partial-r right)))))
+                :r (mpz-+ (mpz-* (partial-b right) (mpz-* (partial-q right) (partial-r left)))
+                          (mpz-* (partial-b left)  (mpz-* (partial-p left)  (partial-r right))))))
 
 (defun binary-split (series lower upper)
   (declare (type series series)

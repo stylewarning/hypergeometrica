@@ -256,7 +256,7 @@ This is just the conjugate-transpose of the NTT matrix, scaled by N."
   "Test that the forward and reverse transforms are actually inverses."
   (let ((N (expt 2 6)))
     (dolist (m (append h::*moduli* (h::find-suitable-moduli N :count 15)))
-      (let* ((v (make-array N :element-type 'h::ntt-coefficient :initial-element 0))
+      (let* ((v (h::make-storage N))
              (w (h::find-primitive-root N m)))
         (map-into v (lambda () (random m)))
         (test-inversion/matrix v m w)
@@ -267,7 +267,7 @@ This is just the conjugate-transpose of the NTT matrix, scaled by N."
   "Test that the NTTs agree in their transforms."
   (let ((N (expt 2 8)))
     (dolist (m (append h::*moduli* (h::find-suitable-moduli N :count 15)))
-      (let* ((v (make-array N :element-type 'h::ntt-coefficient :initial-element 0))
+      (let* ((v (h::make-storage N))
              (w (h::find-primitive-root n m)))
         (map-into v (lambda () (random m)))
         (let ((a (matvecmul (ntt-forward-matrix N m w) v m))

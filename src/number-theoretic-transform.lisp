@@ -6,27 +6,6 @@
 
 ;;;;;;;;;;;;;;;;;;;;; Number-Theoretic Transform ;;;;;;;;;;;;;;;;;;;;;
 
-;;; We use a separate data type for NTTs because they can in princple
-;;; use a different (perhaps smaller!) coefficient domain.
-
-(deftype ntt-coefficient ()
-  'digit)
-
-(deftype ntt-array ()
-  '(simple-array ntt-coefficient (*)))
-
-(defun make-ntt-array (n)
-  (make-array n :element-type 'ntt-coefficient
-                :initial-element 0))
-
-(declaim (ftype (function (ntt-array) storage) ntt-array-to-storage))
-(defun ntt-array-to-storage (x)
-  ;; This MUST match up with MAKE-STORAGE.
-  (make-array (length x) :element-type 'digit
-                         :adjustable t
-                         :displaced-to x))
-
-
 ;;; Decimation-in-frequency algorithm.
 (defun ntt-forward (a m w)
   "Compute the forward number-theoretic transform of the array of integers A, with modulus M and primitive root W. If they are not provided, a suitable one will be computed.
@@ -34,9 +13,9 @@
 The array must have a power-of-two length.
 
 The resulting array (a mutation of the input) will be in bit-reversed order."
-  (declare (type ntt-array a)
+  (declare (type raw-storage a)
            (type modulus m)
-           (type ntt-coefficient w))
+           (type digit w))
   (let* ((N  (length a))
          (ln (1- (integer-length N))))
     (loop :for lsubn :from ln :downto 2 :do
@@ -67,9 +46,9 @@ The resulting array (a mutation of the input) will be in bit-reversed order."
 The array must have a power-of-two length.
 
 The input must be in bit-reversed order."
-  (declare (type ntt-array a)
+  (declare (type raw-storage a)
            (type modulus m)
-           (type ntt-coefficient w))
+           (type digit w))
   (let* ((1/w (inv-mod w m))
          (N   (length a))
          (1/N (inv-mod N m))

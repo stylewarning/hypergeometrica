@@ -4,45 +4,6 @@
 
 (in-package #:hypergeometrica)
 
-(defun mpz-*/one-modulus (x y)
-  (let* ((result-size (+ 1 (mpz-size x) (mpz-size y)))
-         (result-storage (make-storage result-size))
-         (length (least-power-of-two->= result-size))
-         (result-ntt (make-ntt-array length))
-         (temp-ntt (make-ntt-array length))
-         (m (first (find-suitable-moduli (max length (expt $base 2)))))
-         (w (find-primitive-root length m)))
-    ;; Copy one of the factors and transform it
-    (replace result-ntt (storage x))
-    (setf result-ntt (ntt-forward result-ntt m w))
-
-    ;; Copy
-    (replace temp-ntt (storage y))
-    ;; Transform
-    (setf temp-ntt (ntt-forward temp-ntt m w))
-    ;; Pointwise multiply
-    (dotimes (i length)
-      (setf (aref result-ntt i)
-            (m* (aref result-ntt i) (aref temp-ntt i) m)))
-
-    ;; Inverse transform
-    (setf result-ntt (ntt-reverse result-ntt m w))
-
-    ;; Unpack the result.
-    (loop :with carry := 0
-          :for i :below result-size
-          :for ci := (+ carry (aref result-ntt i))
-          :if (>= ci $base)
-            :do (multiple-value-setq (carry ci) (floor ci $base))
-          :else
-            :do (setf carry 0)
-          :do (setf (aref result-storage i) ci)
-          :finally (assert (zerop carry))
-                   (return (make-mpz (* (sign x) (sign y))
-                                     result-storage)))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; other ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 (defun count-trailing-zeroes (n)
   (assert (plusp n))
   (loop :for z :from 0
@@ -99,8 +60,10 @@
 
 (defun make-ntt-work (mpz length moduli)
   (loop :for m :in moduli
-        :for a := (make-array length :element-type 'ntt-coefficient :initial-element 0)
-        :collect (map-into a (modder m) (storage mpz))))
+        :for a := (make-storage length)
+        :for raw-a := (raw-storage-of-storage a)
+        :do (map-into raw-a (modder m) (storage mpz))
+        :collect a))
 
 (defun mpz-square (x)
   (let* ((size (mpz-size x))
@@ -110,8 +73,9 @@
          (roots (loop :for m :in moduli
                       :collect (find-primitive-root length m)))
          (ntts (make-ntt-work x length moduli))
+         (raw-ntts (mapcar #'raw-storage-of-storage ntts))
          ;; TODO don't allocate
-         (result (make-array length :element-type 'ntt-coefficient :initial-element 0))
+         (result (make-storage length))
          (report-time (let ((start-time (get-internal-real-time)))
                         (lambda ()
                           (when *verbose*
@@ -131,7 +95,7 @@
       (format t "Forward"))
     (loop :for m :in moduli
           :for w :in roots
-          :for a :in ntts
+          :for a :in raw-ntts
           :do (ntt-forward a m w)
               (when *verbose*
                 (write-char #\.)))
@@ -141,7 +105,7 @@
     (when *verbose*
       (format t "Pointwise multiply"))
     (loop :for m :in moduli
-          :for a :in ntts
+          :for a :in raw-ntts
           :do (dotimes (i length)
                 (let ((ai (aref a i)))
                   (setf (aref a i) (m* ai ai m))))
@@ -154,7 +118,7 @@
       (format t "Reverse"))
     (loop :for m :in moduli
           :for w :in roots
-          :for a :in ntts
+          :for a :in raw-ntts
           :do (ntt-reverse a m w)
               (when *verbose*
                 (write-char #\.)))
@@ -166,14 +130,15 @@
     (let* ((composite   (reduce #'* moduli))
            (complements (mapcar (lambda (m) (/ composite m)) moduli))
            (inverses    (mapcar #'inv-mod complements moduli))
-           (factors     (mapcar #'* complements inverses)))
+           (factors     (mapcar #'* complements inverses))
+           (raw-result  (raw-storage-of-storage result)))
       (dotimes (i length)
-        (loop :for a :in ntts
+        (loop :for a :in raw-ntts
               :for f :in factors
               :sum (* f (aref a i)) :into result-digit
-              :finally (add-big-digit (mod result-digit composite) result i)))
+              :finally (add-big-digit (mod result-digit composite) raw-result i)))
       (funcall report-time))
-    (make-mpz 1 (ntt-array-to-storage result))))
+    (make-mpz 1 result)))
 
 (defun mpz-* (x y)
   (let* ((size (+ (mpz-size x) (mpz-size y)))
@@ -183,7 +148,9 @@
          (roots (loop :for m :in moduli
                       :collect (find-primitive-root length m)))
          (ntts-x (make-ntt-work x length moduli))
+         (raw-ntts-x (mapcar #'raw-storage-of-storage ntts-x))
          (ntts-y (make-ntt-work y length moduli))
+         (raw-ntts-y (mapcar #'raw-storage-of-storage ntts-y))
          ;; By the time we write to RESULT, NTTS-Y will be done.
          ;;
          ;; However (!), we will need to remember to clear it.
@@ -207,8 +174,8 @@
       (format t "Forward"))
     (loop :for m :in moduli
           :for w :in roots
-          :for ax :in ntts-x
-          :for ay :in ntts-y
+          :for ax :in raw-ntts-x
+          :for ay :in raw-ntts-y
           :do (ntt-forward ax m w)
               (when *verbose*
                 (write-char #\.))
@@ -221,8 +188,8 @@
     (when *verbose*
       (format t "Pointwise multiply"))
     (loop :for m :in moduli
-          :for ax :in ntts-x
-          :for ay :in ntts-y
+          :for ax :in raw-ntts-x
+          :for ay :in raw-ntts-y
           :do (dotimes (i length)
                 (setf (aref ax i) (m* (aref ax i) (aref ay i) m)))
               (when *verbose*
@@ -231,14 +198,14 @@
 
     ;; Tell the garbage collector we don't need no vectors anymore.
     (setf ntts-y nil)
-    (fill result 0)
+    (fill (raw-storage-of-storage result) 0)
 
     ;; Inverse transform
     (when *verbose*
       (format t "Reverse"))
     (loop :for m :in moduli
           :for w :in roots
-          :for ax :in ntts-x
+          :for ax :in raw-ntts-x
           :do (ntt-reverse ax m w)
               (when *verbose*
                 (write-char #\.)))
@@ -250,11 +217,12 @@
     (let* ((composite   (reduce #'* moduli))
            (complements (mapcar (lambda (m) (/ composite m)) moduli))
            (inverses    (mapcar #'inv-mod complements moduli))
-           (factors     (mapcar #'* complements inverses)))
+           (factors     (mapcar #'* complements inverses))
+           (raw-result  (raw-storage-of-storage result)))
       (dotimes (i length)
         (loop :for a :in ntts-x
               :for f :in factors
               :sum (* f (aref a i)) :into result-digit
-              :finally (add-big-digit (mod result-digit composite) result i)))
+              :finally (add-big-digit (mod result-digit composite) raw-result i)))
       (funcall report-time))
-    (make-mpz (* (sign x) (sign y)) (ntt-array-to-storage result))))
+    (make-mpz (* (sign x) (sign y)) result)))

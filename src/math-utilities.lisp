@@ -16,3 +16,9 @@
   (if (power-of-two-p n)
       (1- (integer-length n))
       (integer-length n)))
+
+(defun least-power-of-two->= (n)
+  "What is the least power-of-two greater than or equal to N?"
+  (if (power-of-two-p n)
+      n
+      (ash 1 (integer-length n))))

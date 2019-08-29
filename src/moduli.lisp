@@ -10,7 +10,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;; Modular Arithmetic ;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (deftype modulus ()
-  `(integer 2 (,$base)))
+  `(integer 2 (,(ash $base -1))))
 
 ;; These are NOTINLINE'd below.
 (declaim (ftype (function (digit digit modulus) digit) m+ m- m*))

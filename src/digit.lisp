@@ -4,12 +4,22 @@
 
 (in-package #:hypergeometrica)
 
-(defconstant $base (1+ most-positive-fixnum))
-(defconstant $digit-bits (1- (integer-length $base)))
+(defconstant $base
+  (1+ most-positive-fixnum)
+  ;;(expt 2 64)
+  )
+(defconstant $digit-bits
+  (1- (integer-length $base))
+  ;;64
+  )
 
 (deftype digit ()
   "A digit in an MPZ."
   `(integer 0 (,$base)))
+
+(deftype intermediate ()
+  "An intermediate computation with a digit."
+  `(signed-byte ,(+ 2 $digit-bits)))
 
 (defmacro define-fx-op (op-name (base-op &rest args))
   `(progn

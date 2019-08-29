@@ -8,10 +8,6 @@
   "The sign of an integer."
   '(member 1 -1))
 
-(deftype intermediate ()
-  "An intermediate computation with a digit."
-  '(signed-byte 64))
-
 ;;; Digit storage
 
 (deftype storage ()

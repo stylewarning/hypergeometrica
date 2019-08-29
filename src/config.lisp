@@ -7,3 +7,5 @@
 (defvar *verbose* nil)
 
 (setf lparallel:*kernel* (lparallel:make-kernel 8 :name "Hypergeometrica"))
+
+;; (push :hypergeometrica-parallel *features*)

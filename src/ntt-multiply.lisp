@@ -68,7 +68,18 @@
       (iterate f (funcall f x) (1- n))))
 
 (defun force-each (seq)
-  (map nil #'lparallel:force seq))
+  #+hypergeometrica-parallel
+  (map nil #'lparallel:force seq)
+  #-hypergeometrica-parallel
+  (map nil #'identity seq))
+
+(defmacro future (&body body)
+  #+hypergeometrica-parallel
+  `(lparallel:future
+   ,@body)
+  #-hypergeometrica-parallel
+  `(progn
+     ,@body))
 
 (defmacro with-rebind ((&rest vars) &body body)
   `(let ,(loop :for var :in vars :collect (list var var))
@@ -192,10 +203,10 @@
            :for ax :in raw-ntts-x
            :for ay :in raw-ntts-y
            :collect (with-rebind (m w ax)
-                      (lparallel:future
+                      (future
                         (ntt-forward ax m w)))
            :collect (with-rebind (m w ay)
-                      (lparallel:future
+                      (future
                         (ntt-forward ay m w)))))
     (funcall report-time)
 
@@ -207,7 +218,7 @@
            :for ax :in raw-ntts-x
            :for ay :in raw-ntts-y
            :collect (with-rebind (m ax ay)
-                      (lparallel:future
+                      (future
                         (multiply-pointwise! ax ay length m)))))
     (funcall report-time)
 
@@ -223,7 +234,7 @@
            :for w :in roots
            :for ax :in raw-ntts-x
            :collect (with-rebind (m w ax)
-                      (lparallel:future
+                      (future
                         (ntt-reverse ax m w)))))
     (funcall report-time)
 
@@ -235,7 +246,8 @@
            (inverses    (mapcar #'inv-mod complements moduli))
            (factors     (mapcar #'* complements inverses))
            (raw-result  (raw-storage-of-storage result)))
-      (lparallel:pdotimes (i length)
+      (#+hypergeometrica-parallel lparallel:pdotimes
+       #-hypergeometrica-parallel dotimes (i length)
         (loop :for a :in raw-ntts-x
               :for f :in factors
               :sum (* f (aref a i)) :into result-digit

@@ -64,6 +64,10 @@ Assumes 0 <= A < M."
 (defun m* (a b m)
   (declare (type modulus m)
            (type digit a b))
+  #+sbcl
+  (multiple-value-bind (lo hi) (mul128 a b)
+    (the digit (nth-value 1 (div128 lo hi m))))
+  #-sbcl
   (mod (* a b) m))
 
 (defun inv-mod (x m)

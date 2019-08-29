@@ -18,6 +18,7 @@
   :components ((:file "package")
                (:file "config")
                (:file "math-utilities")
+               (:file "sbcl-intrinsics" :if-feature :sbcl)
                (:file "digit")
                (:file "mpz")
                (:file "moduli")

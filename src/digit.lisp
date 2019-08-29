@@ -26,3 +26,20 @@
 (define-fx-op fxneg (- a))
 (define-fx-op fx* (* a b))
 (define-fx-op fx/ (floor a b))
+
+(declaim (ftype (function ((unsigned-byte 64) (unsigned-byte 64))
+                          (values (unsigned-byte 64) (unsigned-byte 64) &optional))
+                mul128))
+(defun mul128 (x y)
+  #+sbcl (mul128 x y)
+  #-sbcl (let ((r (* x y)))
+           (ldb (byte 64 0) r)
+           (ldb (byte 64 64) r)))
+
+(declaim (ftype (function ((unsigned-byte 64) (unsigned-byte 64) (unsigned-byte 64))
+                          (values (unsigned-byte 64) (unsigned-byte 64) &optional))
+                div128))
+(defun div128 (dividend-lo dividend-hi divisor)
+  #+sbcl (div128 dividend-lo dividend-hi divisor)
+  #-sbcl (truncate (dpb dividend-hi (byte 64 64) dividend-lo) dividend))
+

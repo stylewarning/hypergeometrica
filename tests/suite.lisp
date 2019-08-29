@@ -34,7 +34,7 @@
   (flet ((r (&optional (high h::$base))
            (+ low (random (- high low)))))
     (loop :repeat n
-          :for m := (r)
+          :for m := (r h::$max-modulus)
           :for a := (r m)
           :for b := (r m)
           :for x := (h::m* a b m)

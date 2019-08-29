@@ -9,8 +9,9 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;; Modular Arithmetic ;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defconstant $max-modulus (1- $base))
 (deftype modulus ()
-  `(integer 2 (,(ash $base -1))))
+  `(integer 2 ,$max-modulus))
 
 ;; These are NOTINLINE'd below.
 (declaim (ftype (function (digit digit modulus) digit) m+ m- m*))

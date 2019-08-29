@@ -52,7 +52,7 @@ The input must be in bit-reversed order."
   (declare (type raw-storage a)
            (type modulus m)
            (type digit w)
-           (inline m+ m- m*)
+           (inline m+ m- m* expt-mod)
            (optimize speed (safety 0) (debug 0) (space 0) (compilation-speed 0)))
   (let* ((1/w (inv-mod w m))
          (N   (length a))
@@ -64,7 +64,7 @@ The input must be in bit-reversed order."
     (loop :for ldm :from 2 :to ldn :do
       (let* ((subn (ash 1 ldm))
              (subn/2 (floor subn 2))
-             (dw (expt-mod 1/w (ash 1 (- ldn ldm)) m))
+             (dw (expt-mod/2^n 1/w (- ldn ldm) m))
              (w^j 1))
         (loop :for j :below subn/2 :do
           (loop :for r :from 0 :to (- n subn) :by subn :do

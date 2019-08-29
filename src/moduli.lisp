@@ -126,11 +126,13 @@ Assumes 0 <= A < M."
 
 (defun expt-mod (a n m)
   "Compute A ^ N (mod M) for integer N."
-  (when (minusp n)
-    (setf a (inv-mod a m)
-          n (- n)))
-
+  (declare (type digit a)
+           (type alexandria:non-negative-fixnum n)
+           (type modulus m)
+           (inline m*)
+           (optimize speed (safety 0) (debug 0) (space 0)))
   (let ((result 1))
+    (declare (type digit result))
     (loop
       (when (oddp n)
         (setf result (m* result a m)))
@@ -138,6 +140,17 @@ Assumes 0 <= A < M."
       (when (zerop n)
         (return-from expt-mod result))
       (setf a (m* a a m)))))
+
+(declaim (inline expt-mod/2^n))
+(defun expt-mod/2^n (a n m)
+  "Compute A ^ (2 ^ N) (mod M) for integer N."
+  (declare (type digit a)
+           (type alexandria:non-negative-fixnum n)
+           (type modulus m)
+           (inline m*)
+           (optimize speed (safety 0) (debug 0) (space 0)))
+  (dotimes (i n a)
+    (setf a (m* a a m))))
 
 (defun expt-mod/safe (a n m)
   "Compute A ^ N (mod M) for integer N."

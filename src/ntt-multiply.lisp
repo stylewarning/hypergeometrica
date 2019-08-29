@@ -67,22 +67,33 @@
       x
       (iterate f (funcall f x) (1- n))))
 
-(defun force-each (seq)
-  #+hypergeometrica-parallel
-  (map nil #'lparallel:force seq)
-  #-hypergeometrica-parallel
-  (map nil #'identity seq))
-
-(defmacro future (&body body)
-  #+hypergeometrica-parallel
-  `(lparallel:future
-   ,@body)
-  #-hypergeometrica-parallel
-  `(progn
-     ,@body))
 
 (defmacro with-rebind ((&rest vars) &body body)
   `(let ,(loop :for var :in vars :collect (list var var))
+     ,@body))
+
+(defmacro with-task ((&rest vars) &body work)
+  `(with-rebind ,vars
+     ,@work))
+
+(defmacro with-parallel-work (() &body body)
+  #+hypergeometrica-parallel
+  (alexandria:with-gensyms (ch num-items i work vars)
+    `(let ((,num-items 0)
+           (,ch (lparallel:make-channel)))
+       (declare (type fixnum ,num-items))
+       (macrolet ((with-task ((&rest ,vars) &body ,work)
+                    `(with-rebind ,,vars
+                       (incf ,',num-items)
+                       (lparallel:submit-task ,',ch
+                                              (lambda ()
+                                                ,@,work)))))
+         ,@body)
+       ;; do work
+       (dotimes (,i ,num-items)
+         (lparallel:receive-result ,ch))))
+  #-hypergeometrica-parallel
+  `(progn
      ,@body))
 
 (defun make-ntt-work (mpz length moduli)
@@ -197,29 +208,26 @@
       (format t "Moduli: ~{#x~16X~^, ~}~%" moduli)
 
       (format t "Forward..."))
-    (force-each
+    (with-parallel-work ()
      (loop :for m :in moduli
            :for w :in roots
            :for ax :in raw-ntts-x
            :for ay :in raw-ntts-y
-           :collect (with-rebind (m w ax)
-                      (future
-                        (ntt-forward ax m w)))
-           :collect (with-rebind (m w ay)
-                      (future
-                        (ntt-forward ay m w)))))
+           :do (with-task (m w ax)
+                 (ntt-forward ax m w))
+           :do (with-task (m w ay)
+                 (ntt-forward ay m w))))
     (funcall report-time)
 
     ;; Pointwise multiply. The NTT work for X is mutated.
     (when *verbose*
       (format t "Pointwise multiply"))
-    (force-each
+    (with-parallel-work ()
      (loop :for m :in moduli
            :for ax :in raw-ntts-x
            :for ay :in raw-ntts-y
-           :collect (with-rebind (m ax ay)
-                      (future
-                        (multiply-pointwise! ax ay length m)))))
+           :do (with-task (m ax ay)
+                 (multiply-pointwise! ax ay length m))))
     (funcall report-time)
 
     ;; Tell the garbage collector we don't need no vectors anymore.
@@ -229,16 +237,17 @@
     ;; Inverse transform
     (when *verbose*
       (format t "Reverse"))
-    (force-each
+    (with-parallel-work ()
      (loop :for m :in moduli
            :for w :in roots
            :for ax :in raw-ntts-x
-           :collect (with-rebind (m w ax)
-                      (future
-                        (ntt-reverse ax m w)))))
+           :do (with-task (m w ax)
+                 (ntt-reverse ax m w))))
     (funcall report-time)
 
     ;; Unpack the result.
+    ;;
+    ;; This allocates a lot, but seems to be fast in practice.
     (when *verbose*
       (format t "CRT..."))
     (let* ((composite   (reduce #'* moduli))
@@ -246,8 +255,7 @@
            (inverses    (mapcar #'inv-mod complements moduli))
            (factors     (mapcar #'* complements inverses))
            (raw-result  (raw-storage-of-storage result)))
-      (#+hypergeometrica-parallel lparallel:pdotimes
-       #-hypergeometrica-parallel dotimes (i length)
+      (dotimes (i length)
         (loop :for a :in raw-ntts-x
               :for f :in factors
               :sum (* f (aref a i)) :into result-digit

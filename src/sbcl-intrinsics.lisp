@@ -4,6 +4,11 @@
 
 (in-package #:hypergeometrica)
 
+(sb-c:defknown add64 ((unsigned-byte 64) (unsigned-byte 64))
+    (values (unsigned-byte 64) bit)
+    (sb-c:foldable sb-c:flushable sb-c:movable)
+  :overwrite-fndb-silently t)
+
 (sb-c:defknown mul128 ((unsigned-byte 64) (unsigned-byte 64))
     (values (unsigned-byte 64) (unsigned-byte 64))
     (sb-c:foldable sb-c:flushable sb-c:movable)
@@ -15,6 +20,23 @@
   :overwrite-fndb-silently t)
 
 (in-package #:sb-vm)
+
+(define-vop (hypergeometrica::add64)
+  (:translate hypergeometrica::add64)
+  (:policy :fast-safe)
+  (:args (x :scs (unsigned-reg) :target sum)
+         (y :scs (unsigned-reg unsigned-stack)))
+  (:arg-types unsigned-num
+              unsigned-num)
+  (:results (sum   :scs (unsigned-reg) :from (:argument 0))
+            (carry :scs (unsigned-reg)))
+  (:result-types unsigned-num
+                 unsigned-num)
+  (:generator 6
+    (inst add x y)
+    (inst set carry :c)
+    (inst and :dword carry 1)
+    (move sum x)))
 
 (define-vop (hypergeometrica::mul128)
   (:translate hypergeometrica::mul128)

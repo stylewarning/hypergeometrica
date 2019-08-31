@@ -62,6 +62,7 @@
   (storage (make-storage 0) :type storage :read-only t))
 #+sbcl (declaim (sb-ext:freeze-type mpz))
 
+(declaim (ftype (function (mpz) raw-storage) raw-storage))
 (defun raw-storage (mpz)
   (raw-storage-of-storage (storage mpz)))
 
@@ -78,13 +79,11 @@
   (declare (type integer n))
   (cond
     ((zerop n)
-     (load-time-value
-       (make-mpz 1 (make-storage 1))))
+     (make-mpz 1 (make-storage 1)))
     ((= 1 n)
-     (load-time-value
-      (make-mpz 1 (let ((s (make-storage 1)))
-                    (setf (aref s 0) 1)
-                    s))))
+     (make-mpz 1 (let ((s (make-storage 1)))
+                   (setf (aref s 0) 1)
+                   s)))
     (t
      (let ((sign (if (minusp n) -1 1)))
        (setf n (abs n))

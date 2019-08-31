@@ -196,12 +196,18 @@ If MPZ is equal to 0, then this is 0."
 (defun mpz-<= (a b)
   (not (mpz-> a b)))
 
-(defun %add-storages/unsafe (a size-a b size-b)
-  (declare (type raw-storage a b)
+(defun %add-storages/unsafe (r a size-a b size-b)
+  (declare (type storage r)
+           (type raw-storage a b)
            (type alexandria:array-length size-a size-b))
+  #+hypergeometrica-safe
+  (assert (>= size-a size-b))
+  #+hypergeometrica-safe
+  (assert (>= (length r) size-a))
+  #+hypergeometrica-hygiene
+  (fill (raw-storage-of-storage r) 0)
   ;; size-a >= size-b
-  (let* ((r     (make-storage (1+ size-a)))
-         (raw   (raw-storage-of-storage r))
+  (let* ((raw   (raw-storage-of-storage r))
          (carry 0))
     (declare (type digit carry))
     (dotimes (i size-b)
@@ -218,20 +224,25 @@ If MPZ is equal to 0, then this is 0."
           (setf carry new-carry
                 (aref raw i) sum))))
     ;; Account for the carry.
-    (cond
-      ((zerop carry) (resize-storage-by r -1))
-      (t             (setf (aref raw size-a) carry)))
+    (unless (zerop carry)
+      ;; Do we have enough storage? If not, make some.
+      (unless (< size-a (length r))
+        (resize-storage-by r 1))
+      (setf (aref raw size-a) carry))
     ;; Return the storage
     r))
 
 (defun %mpz-+ (a b)
   (assert (= 1 (sign a) (sign b)))
-  (let ((size-a (mpz-size a))
-        (size-b (mpz-size b)))
+  (let* ((size-a (mpz-size a))
+         (size-b (mpz-size b))
+         (r      (make-storage (1+ (max size-a size-b)))))
     (if (>= size-a size-b)
-        (make-mpz 1 (%add-storages/unsafe (raw-storage a) size-a
+        (make-mpz 1 (%add-storages/unsafe r
+                                          (raw-storage a) size-a
                                           (raw-storage b) size-b))
-        (make-mpz 1 (%add-storages/unsafe (raw-storage b) size-b
+        (make-mpz 1 (%add-storages/unsafe r
+                                          (raw-storage b) size-b
                                           (raw-storage a) size-a)))))
 
 (defun %subtract-storages/unsafe (a size-a b size-b)
@@ -265,7 +276,7 @@ If MPZ is equal to 0, then this is 0."
             (t
              (multiple-value-setq (sum carry) (add64 sum $max-digit))
              (setf (aref raw i) sum))))))
-    #+hypergeometric-safe
+    #+hypergeometrica-safe
     (assert (= 1 carry))
     r))
 
@@ -322,7 +333,8 @@ If MPZ is equal to 0, then this is 0."
                (setf (aref raw i) lo)
                (setf carry (fx+ hi sub-carry))))))
        (when (plusp carry)
-         (resize-storage-by (storage mpz) 1)
+         (when (mpz-uses-minimal-storage-p mpz)
+           (resize-storage-by (storage mpz) 1))
          (setf (aref (raw-storage mpz) size) carry))
        nil))))
 

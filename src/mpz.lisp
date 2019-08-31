@@ -98,6 +98,7 @@
 
 ;;; Size, Length, etc.
 
+(declaim (ftype (function (mpz) alexandria:array-length) mpz-size))
 (defun mpz-size (mpz)
   "How many digits does the MPZ have?
 
@@ -198,27 +199,20 @@ If MPZ is equal to 0, then this is 0."
   (let* ((r     (make-storage (1+ size-a)))
          (raw   (raw-storage-of-storage r))
          (carry 0))
-    (loop :for i :below size-b
-          :for ai := (aref a i)
-          :for bi := (aref b i)
-          :for d :of-type intermediate := (+ ai bi carry)
-          :do (cond
-                ((>= d $base)
-                 (decf d $base)
-                 (setf carry 1))
-                (t
-                 (setf carry 0)))
-              (setf (aref raw i) d))
-    (loop :for i :from size-b :below size-a
-          :for ai := (aref a i)
-          :for d :of-type intermediate := (+ ai carry)
-          :do (cond
-                ((>= d $base)
-                 (decf d $base)
-                 (setf carry 1))
-                (t
-                 (setf carry 0)))
-              (setf (aref raw i) d))
+    (declare (type digit carry))
+    (dotimes (i size-b)
+      (let ((ai (aref a i))
+            (bi (aref b i)))
+        ;; AI + BI + CARRY
+        (multiple-value-bind (sum c) (add64 ai bi)
+          (multiple-value-setq (sum carry) (add64 sum carry))
+          (incf carry c)
+          (setf (aref raw i) sum))))
+    (do-range (i size-b size-a)
+      (let ((ai (aref a i)))
+        (multiple-value-bind (sum new-carry) (add64 ai carry)
+          (setf carry new-carry
+                (aref raw i) sum))))
     ;; Account for the carry.
     (cond
       ((zerop carry) (resize-storage-by r -1))
@@ -243,30 +237,32 @@ If MPZ is equal to 0, then this is 0."
   (assert (>= size-a size-b))
   (let* ((r (make-storage size-a))
          (raw (raw-storage-of-storage r))
-         (carry 0))
+         (carry 1))
     (declare (type bit carry))
-    (loop :for i :below size-b
-          :for ai := (aref a i)
-          :for bi := (aref b i)
-          :for d :of-type intermediate := (- ai bi carry)
-          :do (cond
-                ((minusp d)
-                 (incf d $base)
-                 (setf carry 1))
-                (t
-                 (setf carry 0)))
-              (setf (aref raw i) d))
-    (loop :for i :from size-b :below size-a
-          :for ai := (aref a i)
-          :for d :of-type intermediate := (- ai carry)
-          :do (cond
-                ((minusp d)
-                 (incf d $base)
-                 (setf carry 1))
-                (t
-                 (setf carry 0)))
-              (setf (aref raw i) d))
-    (assert (zerop carry))
+    (dotimes (i size-b)
+      (let ((ai (aref a i))
+            (neg-bi (complement-digit (aref b i))))
+        ;; AI + CARRY - BI
+        (multiple-value-bind (sum c) (add64 ai carry)
+          (cond
+            ((= 1 c)
+             (setf (aref raw i) neg-bi
+                   carry        1))
+            (t
+             (multiple-value-setq (sum carry) (add64 sum neg-bi))
+             (setf (aref raw i) sum))))))
+    (do-range (i size-b size-a)
+      (let ((ai (aref a i)))
+        (multiple-value-bind (sum c) (add64 ai carry)
+          (cond
+            ((= 1 c)
+             (setf (aref raw i) $max-digit
+                   carry        1))
+            (t
+             (multiple-value-setq (sum carry) (add64 sum $max-digit))
+             (setf (aref raw i) sum))))))
+    #+hypergeometric-safe
+    (assert (= 1 carry))
     r))
 
 (defun %mpz-- (a b)

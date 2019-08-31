@@ -36,7 +36,7 @@ Each of the function a, b, p, and q are integer-valued.
 #+ignore
 (defun product (f lower upper)
   "Compute the product
- 
+
   F(LOWER) * F(LOWER + 1) * ... * F(UPPER - 1)."
   (declare (type fixnum lower upper))
   (labels ((rec (current accum)
@@ -235,7 +235,7 @@ Each of the function a, b, p, and q are integer-valued.
                     (1+ (* 2 n)))
                :p (lambda (n)
                     (if (zerop n) 1 n))
-               :q (lambda (n) 
+               :q (lambda (n)
                     (if (zerop n)
                         1
                         (+ 2 (* 4 n))))))
@@ -255,4 +255,3 @@ Each of the function a, b, p, and q are integer-valued.
                         (- (expt n 5))))
                :q (lambda (n)
                     (* 32 (expt (1+ (* 2 n)) 5)))))
-

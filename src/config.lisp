@@ -11,3 +11,5 @@
 ;; (push :hypergeometrica-parallel *features*)
 
 (push :hypergeometric-safe *features*)
+
+(push :hypergeometrica-hygiene *features*)

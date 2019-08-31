@@ -10,6 +10,9 @@
 
 ;; (push :hypergeometrica-parallel *features*)
 
-(push :hypergeometric-safe *features*)
+;;; Enable safety checks. This may slow down code, but help debug.
+(push :hypergeometrica-safe *features*)
 
+;;; Enable explicit and ruthless initialization of objects. Don't
+;;; trust "re-used" objects.
 (push :hypergeometrica-hygiene *features*)

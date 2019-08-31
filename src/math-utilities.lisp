@@ -4,7 +4,11 @@
 
 (in-package #:hypergeometrica)
 
-;;; This file contains mathematical utilities.
+(defmacro do-range ((var from to &optional result) &body body)
+  (alexandria:once-only (from to)
+    `(do ((,var ,from (1+ ,var)))
+         ((= ,var ,to) ,result)
+       ,@body)))
 
 (defun power-of-two-p (n)
   "Is N a power-of-two?"

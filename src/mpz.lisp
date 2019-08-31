@@ -58,7 +58,7 @@
                 (:predicate mpz?)
                 (:copier nil)
                 (:constructor make-mpz (sign storage)))
-  (sign 1 :type sign :read-only t)
+  (sign 1 :type sign)
   (storage (make-storage 0) :type storage :read-only t))
 #+sbcl (declaim (sb-ext:freeze-type mpz))
 
@@ -147,6 +147,10 @@ If MPZ is equal to 0, then this is 0."
 
 (defun mpz-negate (mpz)
   (make-mpz (- (sign mpz)) (storage mpz)))
+
+(defun mpz-negate! (mpz)
+  (setf (sign mpz) (- (sign mpz)))
+  nil)
 
 (defun mpz-= (a b)
   (and (= (sign a) (sign b))
@@ -297,3 +301,52 @@ If MPZ is equal to 0, then this is 0."
 (defun mpz-- (a b)
   (mpz-+ a (mpz-negate b)))
 
+(defun mpz-multiply-by-digit! (d mpz)
+  (declare (type digit d)
+           (type mpz mpz))
+  (cond
+    ((zerop d) (integer-mpz 0))
+    ((=  1 d) mpz)
+    (t
+     (let ((d    (abs d))
+           (size (mpz-size mpz))
+           (carry 0))
+       (declare (type (unsigned-byte 64) d)
+                (type alexandria:array-length size)
+                (type (unsigned-byte 64) carry))
+       (let ((raw (raw-storage mpz)))
+         (declare (type raw-storage raw))
+         (dotimes (i size)
+           (multiple-value-bind (lo hi) (mul128 d (aref raw i))
+             (multiple-value-bind (lo sub-carry) (add64 lo carry)
+               (setf (aref raw i) lo)
+               (setf carry (fx+ hi sub-carry))))))
+       (when (plusp carry)
+         (resize-storage-by (storage mpz) 1)
+         (setf (aref (raw-storage mpz) size) carry))
+       nil))))
+
+(defun mpz-multiply-by-s64! (d mpz)
+  (declare (type (signed-byte 64) d)
+           (type mpz mpz))
+  (cond
+    ((zerop d) (integer-mpz 0))
+    ((=  1 d)  mpz)
+    ((= -1 d)  (mpz-negate mpz))
+    (t
+     (mpz-multiply-by-digit! (abs d) mpz)
+     (when (minusp d)
+       (mpz-negate! mpz))
+     nil)))
+
+;;;
+
+(defun mpz-debug (mpz &optional (stream *standard-output*))
+  (print-unreadable-object (mpz stream :type t :identity nil)
+    (format stream "(~D) ~:[-1~;+1~] *"
+            (mpz-size mpz)
+            (= 1 (sign mpz)))
+    (dotimes (i (mpz-size mpz))
+      (format stream " ~16,'0X" (aref (storage mpz) i)))
+    (terpri stream)
+    (format stream "~D" (mpz-integer mpz))))

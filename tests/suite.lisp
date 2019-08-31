@@ -144,6 +144,23 @@
               (is (= (* a a) (h::mpz-integer (h::mpz-square za))))
               (is (= (* a b) (h::mpz-integer (h::mpz-* za zb)))))))
 
+(deftest test-s64*mpz ()
+  (flet ((test (a b)
+           (= (* a b)
+              (let ((x (h::integer-mpz b)))
+                (h::mpz-multiply-by-s64! a x)
+                (h::mpz-integer x)))))
+    (is (test 0 0))
+    (is (test 1 1))
+    (is (test 1 most-positive-fixnum))
+    (is (test -2 2))
+    (is (test 2 -2))
+    (is (test most-positive-fixnum 1))
+    (is (test most-positive-fixnum most-positive-fixnum))
+    (is (test 1 (expt most-positive-fixnum 3)))
+    (is (test 2 (expt most-positive-fixnum 3)))
+    (is (test most-positive-fixnum (expt most-positive-fixnum 3)))))
+
 ;;;;;;; These are various NTT implementations used for testing ;;;;;;;
 
 (defun ntt-forward-matrix (N m w)

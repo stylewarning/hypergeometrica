@@ -4,22 +4,18 @@
 
 (in-package #:hypergeometrica)
 
-(defconstant $base
-  (1+ most-positive-fixnum)
-  ;;(expt 2 64)
-  )
-(defconstant $digit-bits
-  (1- (integer-length $base))
-  ;;64
-  )
+(defconstant $digit-bits 64)
+
+(defconstant $base (expt 2 $digit-bits))
+
+;; These two have the same value, but are used differently. The former
+;; is a numerical quantity. The latter is for bit twiddling.
+(defconstant $max-digit (1- $base))
+(defconstant $digit-ones (ldb (byte $digit-bits 0) -1))
 
 (deftype digit ()
   "A digit in an MPZ."
-  `(integer 0 (,$base)))
-
-(deftype intermediate ()
-  "An intermediate computation with a digit."
-  `(signed-byte ,(+ 2 $digit-bits)))
+  `(unsigned-byte ,$digit-bits))
 
 (defmacro define-fx-op (op-name (base-op &rest args))
   `(progn
@@ -27,7 +23,7 @@
      (defun ,op-name ,args
        (declare (type digit ,@args)
                 (optimize speed (safety 0) (debug 0) (space 0) (compilation-speed 0)))
-       (the digit (mod (,base-op ,@args) ,$base)))))
+       (the digit (ldb (byte $digit-bits 0) (,base-op ,@args))))))
 
 (define-fx-op fx+ (+ a b))
 (define-fx-op fx- (- a b))
@@ -37,6 +33,7 @@
 (define-fx-op fx* (* a b))
 (define-fx-op fx/ (floor a b))
 
+;; 64 x 64 -> 128
 (declaim (ftype (function ((unsigned-byte 64) (unsigned-byte 64))
                           (values (unsigned-byte 64) bit &optional))
                 add64))
@@ -45,17 +42,6 @@
   #-sbcl (let ((s (+ x y)))
            (values (ldb (byte 64 0) s)
                    (ldb (byte 1 64) s))))
-
-(declaim (inline sub64))
-(defun sub64 (x y)
-  (declare (type (unsigned-byte 64) x y)
-           (values )
-           (optimize speed (safety 0) (debug 0) (space 0)))
-  (let ((sign 1))
-    (when (< x y)
-      (rotatef x y)
-      (setf sign -1))
-    (values (the (unsigned-byte 64) (- x y)) (the (member -1 1) sign))))
 
 (declaim (ftype (function ((unsigned-byte 64) (unsigned-byte 64))
                           (values (unsigned-byte 64) (unsigned-byte 64) &optional))
@@ -73,3 +59,7 @@
   #+sbcl (div128 dividend-lo dividend-hi divisor)
   #-sbcl (truncate (dpb dividend-hi (byte 64 64) dividend-lo) dividend))
 
+(declaim (inline complement-digit))
+(defun complement-digit (n)
+  (declare (type digit n))
+  (logxor n $digit-ones))

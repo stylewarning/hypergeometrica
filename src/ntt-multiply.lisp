@@ -177,7 +177,31 @@
       (funcall report-time))
     (make-mpz 1 result)))
 
+(defparameter *ntt-threshold* 100)
+
 (defun mpz-* (x y)
+  (optimize-storage x)
+  (optimize-storage y)
+  (when (< (mpz-size x) (mpz-size y))
+    (rotatef x y))
+  ;; Now the size of X is guaranteed greater-or-equal Y.
+  (cond
+    ((= 1 (mpz-size y))
+     (let ((d (aref (storage y) 0))
+           (r (make-mpz (* (sign x) (sign y))
+                        (make-storage (+ 2 (mpz-size x))))))
+       (replace (raw-storage r) (raw-storage x))
+       (mpz-multiply-by-digit! d r)
+       (optimize-storage r)
+       r))
+    ((< (mpz-size y) *ntt-threshold*)
+     (let ((r-storage (%multiply-storage/schoolboy
+                       (raw-storage x) (mpz-size x)
+                       (raw-storage y) (mpz-size y))))
+       (make-mpz (* (sign x) (sign y)) r-storage)))
+    (t (mpz-*/ntt x y))))
+
+(defun mpz-*/ntt (x y)
   (let* ((size (+ (mpz-size x) (mpz-size y)))
          (length (least-power-of-two->= size))
          (bound-bits (integer-length (* length (expt (1- $base) 2))))

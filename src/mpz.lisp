@@ -351,6 +351,22 @@ If MPZ is equal to 0, then this is 0."
        (mpz-negate! mpz))
      nil)))
 
+(defun %multiply-storage/schoolboy (a a-size b b-size)
+  #+hypergeometrica-safe
+  (assert (>= a-size b-size))
+  (let* ((length (+ 1 a-size b-size))
+         (r (make-storage length)))
+    (let ((raw-a (raw-storage-of-storage r))
+          (temp (make-mpz 1 (make-storage length))))
+      (dotimes (i b-size r)
+        (let ((bi (aref b i)))
+          (fill (raw-storage temp) 0)
+          (replace (raw-storage temp) a :start2 i)
+          (mpz-multiply-by-digit! bi temp)
+          (%add-storages/unsafe r
+                                (raw-storage temp) length
+                                raw-a              length))))))
+
 ;;;
 
 (defun mpz-debug (mpz &optional (stream *standard-output*))

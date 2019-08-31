@@ -88,43 +88,6 @@ The input must be in bit-reversed order."
   (dotimes (i length)
     (setf (aref a i) (m* (aref a i) (aref b i) m))))
 
-#+#:ignore-DIF
-(defun ntt-reverse (a &key ((:modulus m) (first (find-suitable-moduli (length a))))
-                           ((:primitive-root w) (ordered-root-from-primitive-root
-                                                 (find-primitive-root m)
-                                                 (length a)
-                                                 m)))
-  "Compute the inverse number-theoretic transform of the array of integers A, with modulus MODULUS and primitive root PRIMITIVE-ROOT. If they are not provided, a suitable one will be computed.
-
-The array must have a power-of-two length."
-  (format t "m=#x~X (~D)    w=~D~%" m m w)
-  (setf w (inv-mod w m))
-  (let* ((N   (length a))
-         (ln (1- (integer-length N))))
-    (loop :for lsubn :from ln :downto 2 :do
-      (let* ((subn (ash 1 lsubn))
-             (subn/2 (floor subn 2))
-             (w^j 1))
-        (loop :for j :below subn/2 :do
-          (loop :for r :from 0 :to (- n subn) :by subn :do
-            (let* ((r+j (+ r j))
-                   (r+j+subn/2 (+ r+j subn/2))
-                   (u (aref a r+j))
-                   (v (aref a r+j+subn/2)))
-              (setf (aref a r+j)        (m+ u v m)
-                    (aref a r+j+subn/2) (m* w^j (m- u v m) m))))
-          (setf w^j (m* w w^j m)))
-        (setf w (m* w w m))))
-
-    ;; This includes normalization.
-    (loop :for r :below N :by 2 :do
-      (psetf (aref a r)      (m/ (m+ (aref a r) (aref a (1+ r)) m) N m)
-             (aref a (1+ r)) (m/ (m- (aref a r) (aref a (1+ r)) m) N m))))
-
-  (bit-reversed-permute! a)
-
-  a)
-
 
 ;;;;;;;;;;;;;;;;;;;; Reference DIF FFT algorithm ;;;;;;;;;;;;;;;;;;;;;
 

@@ -131,9 +131,15 @@
   (is (h::mpz-zerop (h::integer-mpz 0)))
   (is (h::mpz-minusp (h::integer-mpz -1))))
 
-(deftest test-mpz-plus-minus-times ()
+(deftest test-mpz-mult-simple ()
+  (let* ((k (expt 2 128))
+         (n (h::integer-mpz k)))
+    (is (= (h::mpz-integer (h::mpz-* n n))
+           (* k k)))))
+
+(deftest test-mpz-plus-minus-times-randomly ()
   (flet ((r ()
-           (- (floor (expt 10 10000) 2) (random (* 2 (expt 10 10000))))))
+           (- (floor (expt 10 100) 2) (random (* 2 (expt 10 100))))))
     (loop :repeat 10
           :for a := (r)
           :for za := (h::integer-mpz a)
@@ -142,7 +148,11 @@
           :do (is (= (+ a b) (h::mpz-integer (h::mpz-+ za zb))))
               (is (= (- a b) (h::mpz-integer (h::mpz-- za zb))))
               (is (= (* a a) (h::mpz-integer (h::mpz-square za))))
-              (is (= (* a b) (h::mpz-integer (h::mpz-* za zb)))))))
+              (let ((ab (* a b)))
+                (let ((h::*ntt-multiply-threshold* most-positive-fixnum))
+                  (is (= ab (h::mpz-integer (h::mpz-* za zb)))))
+                (let ((h::*ntt-multiply-threshold* 0))
+                  (is (= ab (h::mpz-integer (h::mpz-* za zb)))))))))
 
 (deftest test-s64*mpz ()
   (flet ((test (a b)
@@ -159,7 +169,9 @@
     (is (test most-positive-fixnum most-positive-fixnum))
     (is (test 1 (expt most-positive-fixnum 3)))
     (is (test 2 (expt most-positive-fixnum 3)))
-    (is (test most-positive-fixnum (expt most-positive-fixnum 3)))))
+    (is (test most-positive-fixnum (expt most-positive-fixnum 3)))
+    (is (test (- (random most-positive-fixnum) (floor most-positive-fixnum 2))
+              (expt (+ most-positive-fixnum (random 31337)) (+ 2 (random 10)))))))
 
 ;;;;;;; These are various NTT implementations used for testing ;;;;;;;
 

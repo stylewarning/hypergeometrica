@@ -177,7 +177,8 @@
       (funcall report-time))
     (make-mpz 1 result)))
 
-(defparameter *ntt-threshold* 100)
+(defparameter *ntt-multiply-threshold* 100
+  "Up to how many digits can the smaller number of a multiplication have before NTT multiplication is used?")
 
 (defun mpz-* (x y)
   (optimize-storage x)
@@ -194,12 +195,13 @@
        (mpz-multiply-by-digit! d r)
        (optimize-storage r)
        r))
-    ((< (mpz-size y) *ntt-threshold*)
+    ((<= (mpz-size y) *ntt-multiply-threshold*)
      (let ((r-storage (%multiply-storage/schoolboy
                        (raw-storage x) (mpz-size x)
                        (raw-storage y) (mpz-size y))))
        (make-mpz (* (sign x) (sign y)) r-storage)))
-    (t (mpz-*/ntt x y))))
+    (t
+     (mpz-*/ntt x y))))
 
 (defun mpz-*/ntt (x y)
   (let* ((size (+ (mpz-size x) (mpz-size y)))

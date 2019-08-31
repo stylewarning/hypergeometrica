@@ -204,8 +204,6 @@ If MPZ is equal to 0, then this is 0."
   (assert (>= size-a size-b))
   #+hypergeometrica-safe
   (assert (>= (length r) size-a))
-  #+hypergeometrica-hygiene
-  (fill (raw-storage-of-storage r) 0)
   ;; size-a >= size-b
   (let* ((raw   (raw-storage-of-storage r))
          (carry 0))
@@ -316,8 +314,13 @@ If MPZ is equal to 0, then this is 0."
   (declare (type digit d)
            (type mpz mpz))
   (cond
-    ((zerop d) (integer-mpz 0))
-    ((=  1 d) mpz)
+    ((zerop d)
+     (setf (sign mpz) 1)
+     (resize-storage (storage mpz) 0)
+     nil)
+    ((= 1 d)
+     ;; Do absolutely nothin!
+     nil)
     (t
      (let ((d    (abs d))
            (size (mpz-size mpz))
@@ -341,31 +344,36 @@ If MPZ is equal to 0, then this is 0."
 (defun mpz-multiply-by-s64! (d mpz)
   (declare (type (signed-byte 64) d)
            (type mpz mpz))
-  (cond
-    ((zerop d) (integer-mpz 0))
-    ((=  1 d)  mpz)
-    ((= -1 d)  (mpz-negate mpz))
-    (t
-     (mpz-multiply-by-digit! (abs d) mpz)
-     (when (minusp d)
-       (mpz-negate! mpz))
-     nil)))
+  (mpz-multiply-by-digit! (abs d) mpz)
+  (when (minusp d)
+    (mpz-negate! mpz))
+  nil)
 
 (defun %multiply-storage/schoolboy (a a-size b b-size)
   #+hypergeometrica-safe
   (assert (>= a-size b-size))
   (let* ((length (+ 1 a-size b-size))
          (r (make-storage length)))
-    (let ((raw-a (raw-storage-of-storage r))
-          (temp (make-mpz 1 (make-storage length))))
+    (let ((temp (make-mpz 1 (make-storage length))))
       (dotimes (i b-size r)
         (let ((bi (aref b i)))
-          (fill (raw-storage temp) 0)
-          (replace (raw-storage temp) a :start2 i)
-          (mpz-multiply-by-digit! bi temp)
-          (%add-storages/unsafe r
-                                (raw-storage temp) length
-                                raw-a              length))))))
+          (unless (zerop bi)
+            ;; We re-use TEMP. Clear dirty info. (XXX: We could
+            ;; probably optimize START and END.)
+            ;;
+            ;; TEMP := 0
+            (fill (raw-storage temp) 0)
+            ;; :START1 i should be interpreted as a left shift of A by I
+            ;; digits.
+            ;;
+            ;; TEMP := A * 2^(64 * I).
+            (replace (raw-storage temp) a :start1 i)
+            ;; TEMP := B[i] * TEMP
+            (mpz-multiply-by-digit! bi temp)
+            ;; R := R + TEMP
+            (%add-storages/unsafe r
+                                  (raw-storage-of-storage r) length
+                                  (raw-storage temp)         length)))))))
 
 ;;;
 

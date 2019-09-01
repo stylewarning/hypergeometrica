@@ -4,49 +4,8 @@
 
 (in-package #:hypergeometrica)
 
-(defun count-trailing-zeroes (n)
-  (assert (plusp n))
-  (loop :for z :from 0
-        :for x := n :then (ash x -1)
-        :while (evenp x)
-        :finally (return z)))
 
-(defparameter *moduli*
-  (sort (remove-duplicates
-         (remove-if-not (lambda (m)
-                          (<= 58 (integer-length m) (1- $digit-bits)))
-                        (loop :for len :from 54 :to 60
-                              :append (find-suitable-moduli (expt 2 len) :count 100))))
-        #'>)
-  "A set of moduli used to do transforms. They are sorted in decreasing order.")
-
-(defparameter *max-transform-length-bits*
-  (alexandria:extremum (mapcar (alexandria:compose #'count-trailing-zeroes #'1-) *moduli*) #'<)
-  "The maximum lg(size) of a transform.")
-
-(defparameter *primitive-roots*
-  (let ((roots-table (make-array (1+ *max-transform-length-bits*) :initial-element nil)))
-    (dotimes (power (1+ *max-transform-length-bits*) roots-table)
-      (setf (aref roots-table power) (loop :for m :in *moduli*
-                                           :collect (find-primitive-root (expt 2 power) m)))))
-  "A map from a transform size of 2^N to the primitive Nth roots of the corresponding moduli.")
-
-;;; TODO: check that the transform lengths are compatible with this
-
-
-
-(defun moduli-for-bits (bits)
-  (labels ((get-em (moduli-collected moduli-left bits-remaining)
-             (cond
-               ((plusp bits-remaining)
-                (assert (not (endp moduli-left)))
-                (let ((mod (first moduli-left)))
-                  (get-em (cons mod moduli-collected)
-                          (rest moduli-left)
-                          (- bits-remaining (integer-length mod)))))
-               (t
-                (nreverse moduli-collected)))))
-    (get-em nil *moduli* bits)))
+(global-vars:define-global-parameter **scheme** (make-modular-scheme (default-moduli)))
 
 (defun modder (m)
   (lambda (n)
@@ -107,8 +66,8 @@
   (let* ((size (mpz-size x))
          (length (least-power-of-two->= (* 2 size)))
          (bound-bits (integer-length (* length (expt (1- $base) 2))))
-         (moduli (moduli-for-bits bound-bits))
-         (roots (aref *primitive-roots* (next-power-of-two length)))
+         (moduli (moduli-for-bits **scheme** bound-bits))
+         (roots (aref (scheme-primitive-roots **scheme**) (next-power-of-two length)))
          (ntts (make-ntt-work x length moduli))
          (raw-ntts (mapcar #'raw-storage-of-storage ntts))
          ;; TODO don't allocate
@@ -207,8 +166,8 @@
   (let* ((size (+ (mpz-size x) (mpz-size y)))
          (length (least-power-of-two->= size))
          (bound-bits (integer-length (* length (expt (1- $base) 2))))
-         (moduli (moduli-for-bits bound-bits))
-         (roots (aref *primitive-roots* (next-power-of-two length)))
+         (moduli (moduli-for-bits **scheme** bound-bits))
+         (roots (aref (scheme-primitive-roots **scheme**) (next-power-of-two length)))
          (ntts-x (make-ntt-work x length moduli))
          (raw-ntts-x (mapcar #'raw-storage-of-storage ntts-x))
          (ntts-y (make-ntt-work y length moduli))

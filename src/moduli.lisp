@@ -99,31 +99,6 @@ Assumes 0 <= A < M."
   "Compute A / B = A * B^-1 (mod M)."
   (m* a (inv-mod b m) m))
 
-(defmacro with-modular-arithmetic (m &body body)
-  (check-type m (and (integer 2) (unsigned-byte 63)))
-  `(labels ((cm+ (a b)
-              (declare (type (unsigned-byte 64) a b)
-                       (optimize speed (safety 0) (debug 0) (space 0))
-                       (inline m+ m- m* m/))
-              (m+ a b ,m))
-            (cm- (a b)
-              (declare (type (unsigned-byte 64) a b)
-                       (optimize speed (safety 0) (debug 0) (space 0))
-                       (inline m+ m- m* m/))
-              (m- a b ,m))
-            (cm* (a b)
-              (declare (type (unsigned-byte 64) a b)
-                       (optimize speed (safety 0) (debug 0) (space 0))
-                       (inline m+ m- m* m/))
-              (m* a b ,m))
-            (cm/ (a b)
-              (declare (type (unsigned-byte 64) a b)
-                       (optimize speed (safety 0) (debug 0) (space 0))
-                       (inline m+ m- m* m/))
-              (m/ a b ,m)))
-     (declare (inline cm+ cm- cm* cm/))
-     ,@body))
-
 (defun expt-mod (a n m)
   "Compute A ^ N (mod M) for integer N."
   (declare (type digit a)
@@ -405,3 +380,126 @@ Note: N must divide M - 1."
           (d (mod (denominator q) m)))
       (* (signum q) (m/ n d m)))))
 
+
+;;; Moduli used for transforms
+
+;;; This code is adaptible, but fast modular multiplication requires a
+;;; product to have fewer than 64 + min_length(moduli) bits! So if you
+;;; have too big a range, you'll have a bad time.
+(defconstant +modulus-bits+ 63
+  "The number of bits that each modulus must have.")
+(defconstant +lg-modulus+ (1- +modulus-bits+))
+
+(defun default-moduli ()
+  "Compute a list of default moduli."
+  ;;'(#x28d8000000000001 #x2a88000000000001 #x2ed8000000000001 #x3508000000000001 #x3aa8000000000001)
+  (sort (remove-duplicates
+         (remove-if-not (lambda (m)
+                          (= +modulus-bits+ (integer-length m)))
+                        (find-suitable-moduli (2^ 55) :count 1000)))
+        #'>))
+
+(defun max-transform-length-bits (moduli)
+  (alexandria:extremum (map 'list (alexandria:compose #'count-trailing-zeroes #'1-) moduli) #'<))
+
+(defun min-modulus-length (moduli)
+  (alexandria:extremum (map 'list #'integer-length moduli) #'<))
+
+(defstruct (modular-scheme (:constructor %make-modular-scheme)
+                           (:conc-name scheme-))
+  (moduli               nil :read-only t :type (simple-array digit (*)))
+  (max-transform-length nil :read-only t :type (integer 0 (64)))
+  ;; "A map from a transform size of 2^N to the primitive Nth roots of the corresponding moduli."
+  (primitive-roots      nil :read-only t :type simple-vector)
+  ;; The INVERSES are used for fast modular reduction.
+  (inverses             nil :read-only t :type (simple-array digit (*)))
+  )
+
+(defmethod print-object ((scheme modular-scheme) stream)
+  (print-unreadable-object (scheme stream :type t :identity nil)
+    (format stream "~D mods" (length (scheme-moduli scheme)))))
+
+(defun make-modular-scheme (moduli)
+  (declare (optimize (speed 0) safety debug))
+  (let* ((moduli (make-array (length moduli) :element-type 'digit
+                                             :initial-contents (sort (copy-seq moduli) #'>)))
+         (max-trans (max-transform-length-bits moduli))
+         (lg-modulus (loop :for m :across moduli
+                           :minimize (lg m)))
+         (roots-table (make-array (1+ max-trans) :initial-element nil))
+         (inverses (copy-seq moduli)))
+
+    ;; Initialize table of primitive roots for each transform length.
+    (dotimes (power (1+ max-trans))
+      (setf (aref roots-table power)
+            (loop :for m :across moduli
+                  :collect (find-primitive-root (expt 2 power) m))))
+    ;; Initialize modular inverses for fast multiplication.
+    (flet ((%inverse (m)
+             (floor (2^ (+ 64 lg-modulus)) m)))
+      (map-into inverses #'%inverse inverses))
+
+    (%make-modular-scheme
+     :moduli moduli
+     :max-transform-length max-trans
+     :primitive-roots roots-table
+     :inverses inverses)))
+
+;; TODO: change to return num moduli needed
+(defun moduli-for-bits (scheme bits)
+  (let* ((moduli (scheme-moduli scheme))
+         (n (length moduli)))
+    (labels ((get-em (moduli-collected modulus-index bits-remaining)
+               (cond
+                 ((plusp bits-remaining)
+                  (assert (/= n modulus-index) (scheme)
+                          "Scheme ~A doesn't support enough moduli to accommodate ~D bit~:P."
+                          scheme
+                          bits)
+                  (let ((mod (aref moduli modulus-index)))
+                    (get-em (cons mod moduli-collected)
+                            (1+ modulus-index)
+                            (- bits-remaining (integer-length mod)))))
+                 (t
+                  (nreverse moduli-collected)))))
+      (get-em nil 0 bits))))
+
+
+;;; Mega-Fast Multiplication
+
+;;; Has a precondition that  < 2^(64 + min-modulus-length)
+(declaim (inline mod128/fast m*/fast))
+(defun mod128/fast (lo hi m m-inv)
+  "Reduce
+
+    lo + hi*2^64 (mod m)
+
+using m and its inverse m-inv."
+  (declare (type (unsigned-byte 64) lo hi m m-inv)
+           (optimize speed (safety 0) (debug 0) (space 0)))
+  #+hypergeometrica-safe
+  (assert (or (zerop hi) (< (lg hi) +lg-modulus+)))
+  (let* ((a1 (dpb (ldb (byte +lg-modulus+ 0) hi)
+                  (byte +lg-modulus+ (- 64 +lg-modulus+))
+                  (ash lo (- +lg-modulus+))))
+         (q (nth-value 1 (mul128 a1 m-inv))))
+    ;; r = r - q*m - m*2
+    (multiple-value-bind (slo shi) (mul128 q m)
+      (multiple-value-setq (lo hi) (sub128 lo hi slo shi))
+      ;; Note that 2*M will always fit in 64 bits.
+      (multiple-value-setq (lo hi) (sub128 lo hi (fx* 2 m) 0)))
+
+    (multiple-value-setq (lo hi) (add128 lo hi (logand m (ub64/2 hi)) 0))
+    (fx+ lo (logand m hi))))
+
+(defun m*/fast (a b m m-inv)
+  "Reduce
+
+    a*b (mod m)
+
+using m and its inverse m-inv."
+  (declare (type (unsigned-byte 64) a b m m-inv)
+           (optimize speed (safety 0) (debug 0) (space 0)))
+  ;;(assert (= (* a b) (+ lo (ash hi 64))))
+  (multiple-value-bind (lo hi) (mul128 a b)
+    (mod128/fast lo hi m m-inv)))

@@ -29,6 +29,9 @@
         :for j := (expt 2 i)
         :do (is (= i (h::next-power-of-two j)))))
 
+(deftest test-arith-intrinsics ()
+  "Test the arithmetic intrinsics."
+  (skip))
 
 (defun %test-m* (n low)
   (flet ((r (&optional (high h::$base))
@@ -48,6 +51,22 @@
   (%test-m* 10000 1000000)
   (%test-m* 10000 1000000000)
   (%test-m* 10000 1000000000000))
+
+(deftest test-scheme-is-sufficient ()
+  (is (<= 3 (length (h::scheme-moduli h::**scheme**))))
+  (is (<= 50 (h::scheme-max-transform-length h::**scheme**)))
+  (is (<= (+ 64 64 50) (reduce #'+ (h::scheme-moduli h::**scheme**) :key #'h::lg))))
+
+(deftest test-m*/fast ()
+  (let ((moduli (h::scheme-moduli h::**scheme**)))
+    (dotimes (nmod (length moduli))
+      (let* ((m (aref moduli nmod))
+             (mi (aref (h::scheme-inverses h::**scheme**) nmod)))
+        (loop :repeat 100000 :do
+                (let ((a (random m))
+                      (b (random m)))
+                  (is (= (mod (* a b) m)
+                         (h::m*/fast a b m mi)))))))))
 
 (deftest test-factor-out ()
   (flet ((test-it (p k)
@@ -284,7 +303,9 @@ This is just the conjugate-transpose of the NTT matrix, scaled by N."
 (deftest test-inversion-properties ()
   "Test that the forward and reverse transforms are actually inverses."
   (let ((N (expt 2 6)))
-    (dolist (m (append h::*moduli* (h::find-suitable-moduli N :count 15)))
+    (dolist (m (concatenate 'list
+                            (h::scheme-moduli h::**scheme**)
+                            (h::find-suitable-moduli N :count 15)))
       (let* ((v (h::make-storage N))
              (w (h::find-primitive-root N m)))
         (map-into v (lambda () (random m)))
@@ -295,7 +316,9 @@ This is just the conjugate-transpose of the NTT matrix, scaled by N."
 (deftest test-ntt-from-various-definitions ()
   "Test that the NTTs agree in their transforms."
   (let ((N (expt 2 8)))
-    (dolist (m (append h::*moduli* (h::find-suitable-moduli N :count 15)))
+    (dolist (m (concatenate 'list
+                            (h::scheme-moduli h::**scheme**)
+                            (h::find-suitable-moduli N :count 15)))
       (let* ((v (h::make-storage N))
              (w (h::find-primitive-root n m)))
         (map-into v (lambda () (random m)))

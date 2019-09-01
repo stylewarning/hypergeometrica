@@ -27,6 +27,17 @@
       n
       (ash 1 (integer-length n))))
 
+(declaim (inline lg))
+(defun lg (n)
+  (1- (integer-length n)))
+
 (declaim (inline 2^))
 (defun 2^ (n)
   (expt 2 n))
+
+(defun count-trailing-zeroes (n)
+  (assert (plusp n))
+  (loop :for z :from 0
+        :for x := n :then (ash x -1)
+        :while (evenp x)
+        :finally (return z)))

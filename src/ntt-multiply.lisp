@@ -7,18 +7,46 @@
 
 (global-vars:define-global-parameter **scheme** (make-modular-scheme (default-moduli)))
 
-(defun modder (m)
-  (lambda (n)
-    (mod n m)))
-
-(defun add-big-digit (digit storage i)
+(defun add-big-digit (big-digit storage i)
+  (declare (type unsigned-byte big-digit)
+           (type raw-storage storage)
+           (type alexandria:array-index i)
+           (optimize speed))
   (cond
-    ((zerop digit) storage)
-    ((>= i (length storage)) (error "Trying to add ~D at index ~D" digit i))
-    (t (let ((sum (+ digit (aref storage i))))
-         (multiple-value-bind (quo rem) (floor sum $base)
-           (setf (aref storage i) rem)
-           (add-big-digit quo storage (1+ i)))))))
+    ((zerop big-digit) storage)
+    ((>= i (length storage)) (error "Trying to add ~D at index ~D. ~
+                                     This is unexpected and indicates ~
+                                     a grave inconsistency."
+                                    big-digit i))
+    ((typep big-digit 'fixnum)
+     (multiple-value-bind (x carry) (add64 big-digit (aref storage i))
+       (declare (type bit carry))
+       (setf (aref storage i) x)
+       (add-big-digit carry storage (1+ i))))
+    ;; Specially written to not cons.
+    #+sbcl
+    (t (dotimes (j (sb-bignum:%bignum-length big-digit) storage)
+         (let* ((offset (+ i j))
+                (si (aref storage offset))
+                (bi (sb-bignum:%bignum-ref big-digit j)))
+           (declare (type alexandria:array-index offset)
+                    (type (unsigned-byte 64) si bi))
+           (multiple-value-bind (x carry) (add64 si bi)
+             (setf (aref storage offset) x)
+             (add-big-digit carry storage (1+ offset))))))
+    ;; Otherwise, we gotta cons...
+    #-sbcl
+    (t (let ((si (aref storage i))
+             (digit-lo64 (ldb (byte $digit-bits 0) big-digit)))
+         (declare (type (unsigned-byte 64) si digit-lo64))
+         (multiple-value-bind (x carry) (add64 si digit-lo64)
+           (declare (type bit carry))
+           (setf (aref storage i) x)
+           (let ((quo (ash big-digit #.(- $digit-bits))))
+             ;; Do QUO + CARRY in two separate steps to avoid a bignum
+             ;; addition on the Lisp side.
+             (add-big-digit quo storage (1+ i))
+             (add-big-digit carry storage (1+ i))))))))
 
 (defun iterate (f x n)
   (assert (not (minusp n)))
@@ -162,32 +190,6 @@
       (funcall report-time))
     (make-mpz 1 result)))
 
-(defparameter *ntt-multiply-threshold* 100
-  "Up to how many digits can the smaller number of a multiplication have before NTT multiplication is used?")
-
-(defun mpz-* (x y)
-  (optimize-storage x)
-  (optimize-storage y)
-  (when (< (mpz-size x) (mpz-size y))
-    (rotatef x y))
-  ;; Now the size of X is guaranteed greater-or-equal Y.
-  (cond
-    ((= 1 (mpz-size y))
-     (let ((d (aref (storage y) 0))
-           (r (make-mpz (* (sign x) (sign y))
-                        (make-storage (+ 2 (mpz-size x))))))
-       (replace (raw-storage r) (raw-storage x))
-       (mpz-multiply-by-digit! d r)
-       (optimize-storage r)
-       r))
-    ((<= (mpz-size y) *ntt-multiply-threshold*)
-     (let ((r-storage (%multiply-storage/schoolboy
-                       (raw-storage x) (mpz-size x)
-                       (raw-storage y) (mpz-size y))))
-       (make-mpz (* (sign x) (sign y)) r-storage)))
-    (t
-     (mpz-*/ntt x y))))
-
 (defun mpz-*/ntt (x y)
   (let* ((size (+ (mpz-size x) (mpz-size y)))
          (length (least-power-of-two->= size))
@@ -271,3 +273,42 @@
               :finally (add-big-digit (mod result-digit composite) raw-result i)))
       (funcall report-time))
     (make-mpz (* (sign x) (sign y)) result)))
+
+;;; Multiplication Driver
+
+(defparameter *ntt-multiply-threshold* 100
+  "Up to how many digits can the smaller number of a multiplication have before NTT multiplication is used?")
+
+(defun mpz-* (x y)
+  (optimize-storage x)
+  (optimize-storage y)
+  (when (< (mpz-size x) (mpz-size y))
+    (rotatef x y))
+  ;; Now the size of X is guaranteed greater-or-equal Y.
+  (optimize-storage
+   (cond
+     ((mpz-zerop y)
+      (integer-mpz 0))
+     ((= 1 (mpz-size y))
+      (let ((d (aref (storage y) 0)))
+        (cond
+          ((= 1 d)
+           (if (= -1 (sign y))
+               (mpz-negate x)
+               x))
+          (t
+           (let ((r (make-mpz (* (sign x) (sign y))
+                              (make-storage (+ 2 (mpz-size x))))))
+             (replace (raw-storage r) (raw-storage x))
+             (mpz-multiply-by-digit! d r)
+             r)))))
+     ((<= (mpz-size y) *ntt-multiply-threshold*)
+      (let ((r-storage (%multiply-storage/schoolboy
+                        (raw-storage x) (mpz-size x)
+                        (raw-storage y) (mpz-size y))))
+        (make-mpz (* (sign x) (sign y)) r-storage)))
+     ((eq x y)
+      (mpz-square x))
+     (t
+      (mpz-*/ntt x y)))))
+

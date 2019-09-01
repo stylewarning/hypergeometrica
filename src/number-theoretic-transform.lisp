@@ -33,6 +33,7 @@ The resulting array (a mutation of the input) will be in bit-reversed order."
     (loop :for lsubn :from ln :downto 2 :do
       (let* ((subn (ash 1 lsubn))
              (subn/2 (floor subn 2))
+             (dw (expt-mod/2^n w (- ln lsubn) m))
              (w^j 1))
         (loop :for j :below subn/2 :do
           (loop :for r :from 0 :to (- n subn) :by subn :do
@@ -43,8 +44,7 @@ The resulting array (a mutation of the input) will be in bit-reversed order."
               (declare (type alexandria:array-index r+j r+j+subn/2))
               (setf (aref a r+j)        (m+ u v m)
                     (aref a r+j+subn/2) (m*/fast w^j (m- u v m) m m-inv))))
-          (setf w^j (m*/fast w w^j m m-inv)))
-        (setf w (m*/fast w w m m-inv))))
+          (setf w^j (m*/fast dw w^j m m-inv)))))
 
     (loop :for r :below N :by 2 :do
       (psetf (aref a r)      (m+ (aref a r) (aref a (1+ r)) m)

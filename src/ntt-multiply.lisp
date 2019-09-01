@@ -85,7 +85,7 @@
               (round (/ (* size $digit-bits) 8 1024 1024)))
       (format t "Transform length: ~D~%" length)
       (format t "Convolution bits: ~D~%" bound-bits)
-      (format t "Moduli: ~{#x~16X~^, ~}~%" (scheme-moduli **scheme**))
+      (format t "Moduli: ~{#x~16X~^, ~}~%" (coerce (scheme-moduli **scheme**) 'list))
 
       (format t "Forward..."))
     (loop :for i :below num-moduli
@@ -183,7 +183,7 @@
               (round (/ (* size $digit-bits) 8 1024 1024)))
       (format t "Transform length: ~D~%" length)
       (format t "Convolution bits: ~D~%" bound-bits)
-      (format t "Moduli: ~{#x~16X~^, ~}~%" (scheme-moduli **scheme**))
+      (format t "Moduli: ~{#x~16X~^, ~}~%" (coerce (scheme-moduli **scheme**) 'list))
 
       (format t "Forward..."))
     (with-parallel-work ()
@@ -198,7 +198,7 @@
 
     ;; Pointwise multiply. The NTT work for X is mutated.
     (when *verbose*
-      (format t "Pointwise multiply"))
+      (format t "Pointwise multiply..."))
     (with-parallel-work ()
      (loop :for i :below num-moduli
            :for ax :in raw-ntts-x
@@ -213,7 +213,7 @@
 
     ;; Inverse transform
     (when *verbose*
-      (format t "Reverse"))
+      (format t "Reverse..."))
     (with-parallel-work ()
      (loop :for i :below num-moduli
            :for ax :in raw-ntts-x

@@ -4,6 +4,11 @@
 
 (in-package #:hypergeometrica)
 
+(sb-c:defknown ub64/2 ((unsigned-byte 64))
+    (unsigned-byte 64)
+    (sb-c:foldable sb-c:flushable sb-c:movable)
+  :overwrite-fndb-silently t)
+
 (sb-c:defknown add64 ((unsigned-byte 64) (unsigned-byte 64))
     (values (unsigned-byte 64) bit)
     (sb-c:foldable sb-c:flushable sb-c:movable)
@@ -19,7 +24,30 @@
     (sb-c:foldable sb-c:flushable sb-c:movable)
   :overwrite-fndb-silently t)
 
+(sb-c:defknown add128 ((unsigned-byte 64) (unsigned-byte 64)
+                       (unsigned-byte 64) (unsigned-byte 64))
+    (values (unsigned-byte 64) (unsigned-byte 64))
+    (sb-c:foldable sb-c:flushable sb-c:movable)
+  :overwrite-fndb-silently t)
+
+(sb-c:defknown sub128 ((unsigned-byte 64) (unsigned-byte 64)
+                       (unsigned-byte 64) (unsigned-byte 64))
+    (values (unsigned-byte 64) (unsigned-byte 64))
+    (sb-c:foldable sb-c:flushable sb-c:movable)
+  :overwrite-fndb-silently t)
+
 (in-package #:sb-vm)
+
+(define-vop (hypergeometrica::ub64/2)
+  (:translate hypergeometrica::ub64/2)
+  (:policy :fast-safe)
+  (:args (x :scs (unsigned-reg) :target r))
+  (:arg-types unsigned-num)
+  (:results (r :scs (unsigned-reg) :from (:argument 0)))
+  (:result-types unsigned-num)
+  (:generator 6
+    (inst sar x 1)
+    (move r x)))
 
 (define-vop (hypergeometrica::add64)
   (:translate hypergeometrica::add64)
@@ -61,6 +89,7 @@
     (move r-lo rax)
     (move r-hi rdx)))
 
+;;; XXX: This won't properly detect overflow.
 (define-vop (hypergeometrica::div128)
   (:translate hypergeometrica::div128)
   (:policy :fast-safe)
@@ -86,3 +115,45 @@
     (inst div rax divisor)
     (move quotient rax)
     (move remainder rdx)))
+
+(define-vop (hypergeometrica::add128)
+  (:translate hypergeometrica::add128)
+  (:policy :fast-safe)
+  (:args (a-lo :scs (unsigned-reg) :target c-lo)
+         (a-hi :scs (unsigned-reg) :target c-hi)
+         (b-lo :scs (unsigned-reg))
+         (b-hi :scs (unsigned-reg)))
+  (:arg-types unsigned-num
+              unsigned-num
+              unsigned-num
+              unsigned-num)
+  (:results (c-lo :scs (unsigned-reg) :from (:argument 0))
+            (c-hi :scs (unsigned-reg) :from (:argument 1)))
+  (:result-types unsigned-num
+                 unsigned-num)
+  (:generator 6
+    (inst add a-lo b-lo)
+    (inst adc a-hi b-hi)
+    (move c-lo a-lo)
+    (move c-hi a-hi)))
+
+(define-vop (hypergeometrica::sub128)
+  (:translate hypergeometrica::sub128)
+  (:policy :fast-safe)
+  (:args (a-lo :scs (unsigned-reg) :target c-lo)
+         (a-hi :scs (unsigned-reg) :target c-hi)
+         (b-lo :scs (unsigned-reg))
+         (b-hi :scs (unsigned-reg)))
+  (:arg-types unsigned-num
+              unsigned-num
+              unsigned-num
+              unsigned-num)
+  (:results (c-lo :scs (unsigned-reg) :from (:argument 0))
+            (c-hi :scs (unsigned-reg) :from (:argument 1)))
+  (:result-types unsigned-num
+                 unsigned-num)
+  (:generator 6
+    (inst sub a-lo b-lo)
+    (inst sbb a-hi b-hi)
+    (move c-lo a-lo)
+    (move c-hi a-hi)))

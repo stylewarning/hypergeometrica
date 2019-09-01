@@ -33,6 +33,13 @@
 (define-fx-op fx* (* a b))
 (define-fx-op fx/ (floor a b))
 
+(declaim (ftype (function ((unsigned-byte 64))
+                          (values (unsigned-byte 64) &optional))
+                ub64/2))
+(defun ub64/2 (x)
+  #+sbcl (ub64/2 x)
+  #-sbcl (error "goof em up"))
+
 ;; 64 x 64 -> 128
 (declaim (ftype (function ((unsigned-byte 64) (unsigned-byte 64))
                           (values (unsigned-byte 64) bit &optional))
@@ -58,6 +65,27 @@
 (defun div128 (dividend-lo dividend-hi divisor)
   #+sbcl (div128 dividend-lo dividend-hi divisor)
   #-sbcl (truncate (dpb dividend-hi (byte 64 64) dividend-lo) dividend))
+
+(declaim (ftype (function ((unsigned-byte 64) (unsigned-byte 64) (unsigned-byte 64) (unsigned-byte 64))
+                          (values (unsigned-byte 64) (unsigned-byte 64) &optional))
+                add128 sub128))
+(defun add128 (alo ahi blo bhi)
+  "Compute
+
+    (alo + ahi*2^64) + (blo + bhi*2^64)
+"
+  #+sbcl(add128 alo ahi blo bhi)
+  #-sbcl(error "ya dun goofed"))
+
+(defun sub128 (alo ahi blo bhi)
+  "Compute
+
+    (alo + ahi*2^64) - (blo + bhi*2^64)
+"
+  #+sbcl(sub128 alo ahi blo bhi)
+  #-sbcl(error "ya dun goofed"))
+
+
 
 (declaim (inline complement-digit))
 (defun complement-digit (n)

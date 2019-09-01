@@ -188,7 +188,6 @@ Symmetric A and B are not included, and are not needed for most bit-reversal app
 
 (defun bit-reversed-permute! (x)
   "Permute the simple vector X of length 2^N in bit reversed order."
-  (declare (type (simple-vector) x))
   (let* ((length (length x))
          (bits (integer-length (max 0 (1- length)))))
     ;; Check that this is a power of two.

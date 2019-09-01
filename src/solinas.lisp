@@ -7,6 +7,11 @@
 ;;; "Generalized Mersenne Primes" by Jerome Solinas
 
 (defun congruence-matrix (p)
+  "Given a polynomial P as a vector, generate the congruence relations of
+
+    t^(k + deg p)
+
+for 0 <= k < deg p. This will be a matrix M[k, i] where i is the polynomial coefficient index for relation k. (This is the matrix that Solinas produces with a linear-feedback shift register)"
   (let* ((deg (1- (length p)))
          (c (make-array (list deg deg) :initial-element 0)))
     ;; Calculate the first congruence
@@ -24,18 +29,13 @@
         (dotimes (i deg)
           (incf (aref c r i) (* coef (aref c 0 i))))))))
 
-(defun rational-homomorphism (m)
-  (lambda (q)
-    (let ((n (mod (abs (numerator q)) m))
-          (d (mod (denominator q) m)))
-      (* (signum q) (m/ n d m)))))
-
-(defun mod-matrix (mat hom)
+(defun mod-matrix! (mat hom)
   (loop :for i :below (array-total-size mat)
         :do (setf #1=(row-major-aref mat i) (funcall hom #1#))
         :finally (return mat)))
 
 (defun update-equations (p b a)
+  "Produce update equations from the Solinas polynomial P and variables B and A. Updates will be on B from values of A."
   (check-type b symbol)
   (check-type a symbol)
   (check-type p vector)

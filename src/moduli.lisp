@@ -397,3 +397,11 @@ Note: N must divide M - 1."
   (check-type n (unsigned-byte 64))
   (dotimes (i 8)
     (format stream " ~8,'0B" (ldb (byte 8 (* 8 (- 8 i 1))) n))))
+
+(defun rational-homomorphism (m)
+  "Construct a homomorphism Q -> Z/mZ."
+  (lambda (q)
+    (let ((n (mod (abs (numerator q)) m))
+          (d (mod (denominator q) m)))
+      (* (signum q) (m/ n d m)))))
+

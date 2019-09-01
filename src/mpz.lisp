@@ -113,6 +113,11 @@ If MPZ is equal to 0, then this is 0."
   (resize-storage (storage mpz) (mpz-size mpz))
   mpz)
 
+(defun mpz-set-zero! (mpz)
+  (setf (sign mpz) 1)
+  (resize-storage (storage mpz) 0)
+  nil)
+
 (defun mpz-integer-length (mpz)
   "How many bits are needed to represent MPZ in two's complement?"
   (let ((size (mpz-size mpz)))

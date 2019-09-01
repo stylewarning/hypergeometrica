@@ -291,7 +291,8 @@ is a prime number."
   (concatenate 'string "1 + " (factorization-string (factorize (1- modulus)))))
 
 (defun print-suitable-moduli (transform-length count &key (stream *standard-output*)
-                                                          max-waste)
+                                                          max-waste
+                                                          (print-function 'princ))
   "Print out up to COUNT suitable moduli for a desired transform length of TRANSFORM-LENGTH to the stream STREAM.
 
 Specifically, the following will be printed:
@@ -310,11 +311,11 @@ If MAX-WASTE is provided, then any moduli which have more than MAX-WASTE bits of
       (let* ((width (next-power-of-two modulus))
              (waste (- width (nth-value 1 (factor-out (1- modulus) 2)))))
         (unless (> waste max-waste)
-          (format stream "[~D,~D] ~D = ~A~%"
+          (format stream "[~D,~D] "
                   width
-                  waste
-                  modulus
-                  (modulus-factorization modulus)))))))
+                  waste)
+          (funcall print-function modulus stream)
+          (format stream " = ~A~%" (modulus-factorization modulus)))))))
 
 
 
@@ -391,3 +392,8 @@ Note: N must divide M - 1."
 ;;
 ;; > (find-primitive-root 180143985094819841)
 ;; 11
+
+(defun format-b64 (n &optional (stream *standard-output*))
+  (check-type n (unsigned-byte 64))
+  (dotimes (i 8)
+    (format stream " ~8,'0B" (ldb (byte 8 (* 8 (- 8 i 1))) n))))

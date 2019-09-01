@@ -25,15 +25,14 @@ The resulting array (a mutation of the input) will be in bit-reversed order."
          (m-inv (aref (scheme-inverses scheme) mod-num))
          (N     (length a))
          (ln    (lg N))
-         (w     (aref (scheme-primitive-roots scheme) ln mod-num 1)))
+         (roots (scheme-primitive-roots scheme)))
     (declare (type modulus m m-inv)
-             (type digit w)
              (type alexandria:array-length N)
              (type alexandria:non-negative-fixnum ln))
     (loop :for lsubn :from ln :downto 2 :do
       (let* ((subn (ash 1 lsubn))
              (subn/2 (floor subn 2))
-             (dw (expt-mod/2^n w (- ln lsubn) m))
+             (dw (aref roots ln mod-num (- ln lsubn)))
              (w^j 1))
         (loop :for j :below subn/2 :do
           (loop :for r :from 0 :to (- n subn) :by subn :do
@@ -70,7 +69,7 @@ The input must be in bit-reversed order."
          (m-inv (aref (scheme-inverses scheme) mod-num))
          (N     (length a))
          (ldn   (lg N))
-         (1/w   (inv-mod (aref (scheme-primitive-roots scheme) ldn mod-num 1) m))
+         (roots (scheme-inverse-primitive-roots scheme))
          (1/N   (inv-mod N m)))
     (loop :for r :below N :by 2 :do
       (psetf (aref a r)      (m*/fast 1/N (m+ (aref a r) (aref a (1+ r)) m) m m-inv)
@@ -78,7 +77,7 @@ The input must be in bit-reversed order."
     (loop :for ldm :from 2 :to ldn :do
       (let* ((subn (ash 1 ldm))
              (subn/2 (floor subn 2))
-             (dw (expt-mod/2^n 1/w (- ldn ldm) m))
+             (dw (aref roots ldn mod-num (- ldn ldm)))
              (w^j 1))
         (loop :for j :below subn/2 :do
           (loop :for r :from 0 :to (- n subn) :by subn :do

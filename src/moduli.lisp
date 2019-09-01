@@ -415,11 +415,12 @@ Note: N must divide M - 1."
   ;; PRIMITIVE-ROOTS is an array taking [n, m, k] to the 2^k-th power
   ;; of the primitive 2^n-th root of unity in the field of MODULI[m].
   ;;
-  ;; If you just want a damn primitive root, use [n, m, 1].
-  (primitive-roots      nil :read-only t :type (simple-array digit (* * *)))
+  ;; If you just want a damn primitive root, use [n, m, 0].
+  (primitive-roots nil :read-only t :type (simple-array digit (* * *)))
+  ;; Same deal, except 1/w instead of w.
+  (inverse-primitive-roots  nil :read-only t :type (simple-array digit (* * *)))
   ;; The INVERSES are used for fast modular reduction.
-  (inverses             nil :read-only t :type (simple-array digit (*)))
-  )
+  (inverses             nil :read-only t :type (simple-array digit (*))))
 
 (defmethod print-object ((scheme modular-scheme) stream)
   (print-unreadable-object (scheme stream :type t :identity nil)
@@ -435,6 +436,9 @@ Note: N must divide M - 1."
          (roots-table (make-array (list (1+ max-trans) (length moduli) (1+ max-trans))
                                   :element-type 'digit
                                   :initial-element 0))
+         (inv-roots-table (make-array (list (1+ max-trans) (length moduli) (1+ max-trans))
+                                      :element-type 'digit
+                                      :initial-element 0))
          (inverses (copy-seq moduli)))
 
     ;; Initialize table of primitive roots for each transform length.
@@ -442,8 +446,10 @@ Note: N must divide M - 1."
       (loop :for i :from 0
             :for m :across moduli
             :for w := (find-primitive-root (expt 2 power) m)
+            :for 1/w := (inv-mod w m)
             :do (dotimes (k (1+ max-trans))
-                  (setf (aref roots-table power i k) (expt-mod w k m)))))
+                  (setf (aref roots-table power i k)     (expt-mod/2^n w k m)
+                        (aref inv-roots-table power i k) (expt-mod/2^n 1/w k m)))))
     ;; Initialize modular inverses for fast multiplication.
     (flet ((%inverse (m)
              (floor (2^ (+ 64 lg-modulus)) m)))
@@ -453,6 +459,7 @@ Note: N must divide M - 1."
      :moduli moduli
      :max-transform-length max-trans
      :primitive-roots roots-table
+     :inverse-primitive-roots inv-roots-table
      :inverses inverses)))
 
 ;;; TODO: Verify this function should use lg or integer-length.

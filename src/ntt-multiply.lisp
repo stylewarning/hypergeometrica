@@ -56,7 +56,7 @@
      ,@body))
 
 (defun make-ntt-work (mpz length moduli)
-  (loop :for m :in moduli
+  (loop :for m :across moduli
         :for a := (make-storage length)
         :for raw-a := (raw-storage-of-storage a)
         :do (map-into raw-a (modder m) (storage mpz))
@@ -66,9 +66,8 @@
   (let* ((size (mpz-size x))
          (length (least-power-of-two->= (* 2 size)))
          (bound-bits (integer-length (* length (expt (1- $base) 2))))
-         (moduli (moduli-for-bits **scheme** bound-bits))
-         (roots (aref (scheme-primitive-roots **scheme**) (next-power-of-two length)))
-         (ntts (make-ntt-work x length moduli))
+         (num-moduli (num-moduli-needed-for-bits **scheme** bound-bits))
+         (ntts (make-ntt-work x length (scheme-moduli **scheme**)))
          (raw-ntts (mapcar #'raw-storage-of-storage ntts))
          ;; TODO don't allocate
          (result (make-storage length))
@@ -86,47 +85,42 @@
               (round (/ (* size $digit-bits) 8 1024 1024)))
       (format t "Transform length: ~D~%" length)
       (format t "Convolution bits: ~D~%" bound-bits)
-      (format t "Moduli: ~{#x~16X~^, ~}~%" moduli)
+      (format t "Moduli: ~{#x~16X~^, ~}~%" (scheme-moduli **scheme**))
 
-      (format t "Forward"))
-    (loop :for m :in moduli
-          :for w :in roots
+      (format t "Forward..."))
+    (loop :for i :below num-moduli
           :for a :in raw-ntts
-          :do (ntt-forward a m w)
-              (when *verbose*
-                (write-char #\.)))
+          :do (ntt-forward a **scheme** i))
     (funcall report-time)
 
     ;; Pointwise multiply
     (when *verbose*
-      (format t "Pointwise multiply"))
-    (loop :for m :in moduli
+      (format t "Pointwise multiply... "))
+    (loop :for i :below num-moduli
+          :for m := (aref (scheme-moduli **scheme**) i)
+          :for mi := (aref (scheme-inverses **scheme**) i)
           :for a :in raw-ntts
           :do (dotimes (i length)
                 (let ((ai (aref a i)))
-                  (setf (aref a i) (m* ai ai m))))
-              (when *verbose*
-                (write-char #\.)))
+                  (setf (aref a i) (m*/fast ai ai m mi)))))
     (funcall report-time)
 
     ;; Inverse transform
     (when *verbose*
-      (format t "Reverse"))
-    (loop :for m :in moduli
-          :for w :in roots
+      (format t "Reverse..."))
+    (loop :for i :below num-moduli
           :for a :in raw-ntts
-          :do (ntt-reverse a m w)
-              (when *verbose*
-                (write-char #\.)))
+          :do (ntt-reverse a **scheme** i))
     (funcall report-time)
 
     ;; Unpack the result.
     (when *verbose*
       (format t "CRT..."))
-    (let* ((composite   (reduce #'* moduli))
-           (complements (mapcar (lambda (m) (/ composite m)) moduli))
-           (inverses    (mapcar #'inv-mod complements moduli))
-           (factors     (mapcar #'* complements inverses))
+    (let* ((moduli      (subseq (scheme-moduli **scheme**) 0 num-moduli))
+           (composite   (reduce #'* moduli))
+           (complements (map 'list (lambda (m) (/ composite m)) moduli))
+           (inverses    (map 'list #'inv-mod complements moduli))
+           (factors     (map 'list #'* complements inverses))
            (raw-result  (raw-storage-of-storage result)))
       (dotimes (i length)
         (loop :for a :in raw-ntts
@@ -166,11 +160,10 @@
   (let* ((size (+ (mpz-size x) (mpz-size y)))
          (length (least-power-of-two->= size))
          (bound-bits (integer-length (* length (expt (1- $base) 2))))
-         (moduli (moduli-for-bits **scheme** bound-bits))
-         (roots (aref (scheme-primitive-roots **scheme**) (next-power-of-two length)))
-         (ntts-x (make-ntt-work x length moduli))
+         (num-moduli (num-moduli-needed-for-bits **scheme** bound-bits))
+         (ntts-x (make-ntt-work x length (scheme-moduli **scheme**)))
          (raw-ntts-x (mapcar #'raw-storage-of-storage ntts-x))
-         (ntts-y (make-ntt-work y length moduli))
+         (ntts-y (make-ntt-work y length (scheme-moduli **scheme**)))
          (raw-ntts-y (mapcar #'raw-storage-of-storage ntts-y))
          ;; By the time we write to RESULT, NTTS-Y will be done.
          ;;
@@ -190,29 +183,28 @@
               (round (/ (* size $digit-bits) 8 1024 1024)))
       (format t "Transform length: ~D~%" length)
       (format t "Convolution bits: ~D~%" bound-bits)
-      (format t "Moduli: ~{#x~16X~^, ~}~%" moduli)
+      (format t "Moduli: ~{#x~16X~^, ~}~%" (scheme-moduli **scheme**))
 
       (format t "Forward..."))
     (with-parallel-work ()
-     (loop :for m :in moduli
-           :for w :in roots
+     (loop :for i :below num-moduli
            :for ax :in raw-ntts-x
            :for ay :in raw-ntts-y
-           :do (with-task (m w ax)
-                 (ntt-forward ax m w))
-           :do (with-task (m w ay)
-                 (ntt-forward ay m w))))
+           :do (with-task (i ax)
+                 (ntt-forward ax **scheme** i))
+           :do (with-task (i ay)
+                 (ntt-forward ay **scheme** i))))
     (funcall report-time)
 
     ;; Pointwise multiply. The NTT work for X is mutated.
     (when *verbose*
       (format t "Pointwise multiply"))
     (with-parallel-work ()
-     (loop :for m :in moduli
+     (loop :for i :below num-moduli
            :for ax :in raw-ntts-x
            :for ay :in raw-ntts-y
-           :do (with-task (m ax ay)
-                 (multiply-pointwise! ax ay length m))))
+           :do (with-task (i ax ay)
+                 (multiply-pointwise! ax ay length **scheme** i))))
     (funcall report-time)
 
     ;; Tell the garbage collector we don't need no vectors anymore.
@@ -223,11 +215,10 @@
     (when *verbose*
       (format t "Reverse"))
     (with-parallel-work ()
-     (loop :for m :in moduli
-           :for w :in roots
+     (loop :for i :below num-moduli
            :for ax :in raw-ntts-x
-           :do (with-task (m w ax)
-                 (ntt-reverse ax m w))))
+           :do (with-task (i ax)
+                 (ntt-reverse ax **scheme** i))))
     (funcall report-time)
 
     ;; Unpack the result.
@@ -235,10 +226,11 @@
     ;; This allocates a lot, but seems to be fast in practice.
     (when *verbose*
       (format t "CRT..."))
-    (let* ((composite   (reduce #'* moduli))
-           (complements (mapcar (lambda (m) (/ composite m)) moduli))
-           (inverses    (mapcar #'inv-mod complements moduli))
-           (factors     (mapcar #'* complements inverses))
+    (let* ((moduli      (subseq (scheme-moduli **scheme**) 0 num-moduli))
+           (composite   (reduce #'* moduli))
+           (complements (map 'list (lambda (m) (/ composite m)) moduli))
+           (inverses    (map 'list #'inv-mod complements moduli))
+           (factors     (map 'list #'* complements inverses))
            (raw-result  (raw-storage-of-storage result)))
       (dotimes (i length)
         (loop :for a :in raw-ntts-x

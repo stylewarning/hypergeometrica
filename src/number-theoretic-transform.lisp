@@ -7,19 +7,28 @@
 ;;;;;;;;;;;;;;;;;;;;; Number-Theoretic Transform ;;;;;;;;;;;;;;;;;;;;;
 
 ;;; Decimation-in-frequency algorithm.
-(defun ntt-forward (a m w)
+(defun ntt-forward (a scheme mod-num)
   "Compute the forward number-theoretic transform of the array of integers A, with modulus M and primitive root W. If they are not provided, a suitable one will be computed.
+
+M and W are extracted from the MODULAR-SCHEME SCHEME based off of their index MOD-NUM.
 
 The array must have a power-of-two length.
 
 The resulting array (a mutation of the input) will be in bit-reversed order."
   (declare (type raw-storage a)
-           (type modulus m)
-           (type digit w)
-           (inline m+ m- m*)
+           (type modular-scheme scheme)
+           (type alexandria:array-index mod-num)
+           (inline m+ m- m*/fast)
            (optimize speed (safety 0) (debug 0) (space 0) (compilation-speed 0)))
-  (let* ((N  (length a))
-         (ln (1- (integer-length N))))
+  (let* ((m     (aref (scheme-moduli scheme)   mod-num))
+         (m-inv (aref (scheme-inverses scheme) mod-num))
+         (N     (length a))
+         (ln    (lg N))
+         (w     (nth mod-num (aref (scheme-primitive-roots scheme) ln))))
+    (declare (type modulus m m-inv)
+             (type digit w)
+             (type alexandria:array-length N)
+             (type alexandria:non-negative-fixnum ln))
     (loop :for lsubn :from ln :downto 2 :do
       (let* ((subn (ash 1 lsubn))
              (subn/2 (floor subn 2))
@@ -32,9 +41,9 @@ The resulting array (a mutation of the input) will be in bit-reversed order."
                    (v (aref a r+j+subn/2)))
               (declare (type alexandria:array-index r+j r+j+subn/2))
               (setf (aref a r+j)        (m+ u v m)
-                    (aref a r+j+subn/2) (m* w^j (m- u v m) m))))
-          (setf w^j (m* w w^j m)))
-        (setf w (m* w w m))))
+                    (aref a r+j+subn/2) (m*/fast w^j (m- u v m) m m-inv))))
+          (setf w^j (m*/fast w w^j m m-inv)))
+        (setf w (m*/fast w w m m-inv))))
 
     (loop :for r :below N :by 2 :do
       (psetf (aref a r)      (m+ (aref a r) (aref a (1+ r)) m)
@@ -43,24 +52,28 @@ The resulting array (a mutation of the input) will be in bit-reversed order."
   a)
 
 ;;; Decimation-in-time algorithm.
-(defun ntt-reverse (a m w)
+(defun ntt-reverse (a scheme mod-num)
   "Compute the inverse number-theoretic transform of the array of integers A, with modulus M and primitive root W. If they are not provided, a suitable one will be computed.
+
+M and W are extracted from the MODULAR-SCHEME SCHEME based off of their index MOD-NUM.
 
 The array must have a power-of-two length.
 
 The input must be in bit-reversed order."
   (declare (type raw-storage a)
-           (type modulus m)
-           (type digit w)
-           (inline m+ m- m* expt-mod)
+           (type modular-scheme scheme)
+           (type alexandria:array-index mod-num)
+           (inline m+ m- m* m*/fast)
            (optimize speed (safety 0) (debug 0) (space 0) (compilation-speed 0)))
-  (let* ((1/w (inv-mod w m))
-         (N   (length a))
-         (1/N (inv-mod N m))
-         (ldn (1- (integer-length N))))
+  (let* ((m     (aref (scheme-moduli scheme)   mod-num))
+         (m-inv (aref (scheme-inverses scheme) mod-num))
+         (N     (length a))
+         (ldn   (lg N))
+         (1/w   (inv-mod (nth mod-num (aref (scheme-primitive-roots scheme) ldn)) m))
+         (1/N   (inv-mod N m)))
     (loop :for r :below N :by 2 :do
-      (psetf (aref a r)      (m* 1/N (m+ (aref a r) (aref a (1+ r)) m) m)
-             (aref a (1+ r)) (m* 1/N (m- (aref a r) (aref a (1+ r)) m) m)))
+      (psetf (aref a r)      (m*/fast 1/N (m+ (aref a r) (aref a (1+ r)) m) m m-inv)
+             (aref a (1+ r)) (m*/fast 1/N (m- (aref a r) (aref a (1+ r)) m) m m-inv)))
     (loop :for ldm :from 2 :to ldn :do
       (let* ((subn (ash 1 ldm))
              (subn/2 (floor subn 2))
@@ -71,22 +84,24 @@ The input must be in bit-reversed order."
             (let* ((r+j (+ r j))
                    (r+j+subn/2 (+ r+j subn/2))
                    (u (aref a r+j))
-                   (v (m* w^j (aref a r+j+subn/2) m)))
+                   (v (m*/fast w^j (aref a r+j+subn/2) m m-inv)))
               (declare (type alexandria:array-index r+j r+j+subn/2))
               (setf (aref a r+j)        (m+ u v m)
                     (aref a r+j+subn/2) (m- u v m))))
-          (setf w^j (m* dw w^j m))))))
+          (setf w^j (m*/fast dw w^j m m-inv))))))
 
   a)
 
-(defun multiply-pointwise! (a b length m)
+(defun multiply-pointwise! (a b length scheme i)
   (declare (type raw-storage a b)
            (type alexandria:array-length length)
-           (type modulus m)
-           (inline m*)
+           (type alexandria:array-index i)
+           (type modular-scheme scheme)
            (optimize speed (safety 0) (debug 0) (space 0) (compilation-speed 0)))
-  (dotimes (i length)
-    (setf (aref a i) (m* (aref a i) (aref b i) m))))
+  (let ((m (aref (scheme-moduli scheme) i))
+        (m-inv (aref (scheme-inverses scheme) i)))
+    (dotimes (i length)
+      (setf (aref a i) (m*/fast (aref a i) (aref b i) m m-inv)))))
 
 
 ;;;;;;;;;;;;;;;;;;;; Reference DIF FFT algorithm ;;;;;;;;;;;;;;;;;;;;;

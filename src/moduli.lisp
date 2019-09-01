@@ -445,23 +445,23 @@ Note: N must divide M - 1."
      :primitive-roots roots-table
      :inverses inverses)))
 
-;; TODO: change to return num moduli needed
-(defun moduli-for-bits (scheme bits)
+;;; TODO: Verify this function should use lg or integer-length.
+(defun num-moduli-needed-for-bits (scheme bits)
   (let* ((moduli (scheme-moduli scheme))
          (n (length moduli)))
-    (labels ((get-em (moduli-collected modulus-index bits-remaining)
+    (labels ((get-em (moduli-collected moduli-needed bits-remaining)
                (cond
                  ((plusp bits-remaining)
-                  (assert (/= n modulus-index) (scheme)
+                  (assert (/= n moduli-needed) (scheme)
                           "Scheme ~A doesn't support enough moduli to accommodate ~D bit~:P."
                           scheme
                           bits)
-                  (let ((mod (aref moduli modulus-index)))
+                  (let ((mod (aref moduli moduli-needed)))
                     (get-em (cons mod moduli-collected)
-                            (1+ modulus-index)
+                            (1+ moduli-needed)
                             (- bits-remaining (integer-length mod)))))
                  (t
-                  (nreverse moduli-collected)))))
+                  moduli-needed))))
       (get-em nil 0 bits))))
 
 

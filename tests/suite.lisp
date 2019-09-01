@@ -294,44 +294,42 @@ This is just the conjugate-transpose of the NTT matrix, scaled by N."
               (ntt-reverse-direct (ntt-forward-direct v m w)
                                   m w))))
 
-(defun test-inversion/ntt (v m w)
+(defun test-inversion/ntt (v scheme i)
   "Tests inversion property of the fast NTTs."
   (is (equalp v
-              (h::ntt-reverse (h::ntt-forward (copy-seq v) m w) m w))))
+              (h::ntt-reverse (h::ntt-forward (copy-seq v) scheme i) scheme i))))
 
 
 (deftest test-inversion-properties ()
   "Test that the forward and reverse transforms are actually inverses."
   (let ((N (expt 2 6)))
-    (dolist (m (concatenate 'list
-                            (h::scheme-moduli h::**scheme**)
-                            (h::find-suitable-moduli N :count 15)))
+    (dolist (m (coerce (h::scheme-moduli h::**scheme**) 'list))
       (let* ((v (h::make-storage N))
-             (w (h::find-primitive-root N m)))
+             (scheme (h::make-modular-scheme (list m)))
+             (w (first (aref (h::scheme-primitive-roots scheme) (h::lg N)))))
         (map-into v (lambda () (random m)))
         (test-inversion/matrix v m w)
         (test-inversion/direct v m w)
-        (test-inversion/ntt v m w)))))
+        (test-inversion/ntt v scheme 0)))))
 
 (deftest test-ntt-from-various-definitions ()
   "Test that the NTTs agree in their transforms."
   (let ((N (expt 2 8)))
-    (dolist (m (concatenate 'list
-                            (h::scheme-moduli h::**scheme**)
-                            (h::find-suitable-moduli N :count 15)))
+    (dolist (m (coerce (h::scheme-moduli h::**scheme**) 'list))
       (let* ((v (h::make-storage N))
-             (w (h::find-primitive-root n m)))
+             (scheme (h::make-modular-scheme (list m)))
+             (w (first (aref (h::scheme-primitive-roots scheme) (h::lg N)))))
         (map-into v (lambda () (random m)))
         (let ((a (matvecmul (ntt-forward-matrix N m w) v m))
               (b (ntt-forward-direct v m w))
-              (c (h::ntt-forward (copy-seq v) m w)))
+              (c (h::ntt-forward (copy-seq v) scheme 0)))
           (h::bit-reversed-permute! c)
           (is (equalp a b)))
         (let ((a (matvecmul (ntt-reverse-matrix N m w) v m))
               (b (ntt-reverse-direct v m w))
               (c (let ((v (copy-seq v)))
                    (h::bit-reversed-permute! v)
-                   (h::ntt-reverse v m w))))
+                   (h::ntt-reverse v scheme 0))))
           (is (equalp a b))
           (is (equalp b c)))))))
 
@@ -381,16 +379,16 @@ This is just the conjugate-transpose of the NTT matrix, scaled by N."
          (length (h::least-power-of-two->= (+ 1 a-count b-count)))
          (a-digits (digits a :size length))
          (b-digits (digits b :size length))
-         (m (first (h::find-suitable-moduli (* length (expt 10 2)))))
-         (w (h::find-primitive-root length m)))
+         (m (aref (h::scheme-moduli h::**scheme**) 0))
+         (scheme (h::make-modular-scheme (list m))))
     (when h::*verbose*
       (format t "Multiplying ~D * ~D = ~D~%" a b (* a b))
 
       (format t "A's digits: ~A~%" a-digits)
       (format t "B's digits: ~A~%" b-digits))
 
-    (setf a-digits (h::ntt-forward a-digits m w))
-    (setf b-digits (h::ntt-forward b-digits m w))
+    (setf a-digits (h::ntt-forward a-digits scheme 0))
+    (setf b-digits (h::ntt-forward b-digits scheme 0))
 
     (when h::*verbose*
       (format t "NTT(A): ~A~%" a-digits)
@@ -401,7 +399,7 @@ This is just the conjugate-transpose of the NTT matrix, scaled by N."
     (when h::*verbose*
       (format t "C = NTT(A)*NTT(B) mod ~D = ~A~%" m a-digits))
 
-    (setf a-digits (h::ntt-reverse a-digits m w))
+    (setf a-digits (h::ntt-reverse a-digits scheme 0))
 
     (when h::*verbose*
       (format t "NTT^-1(C): ~A~%" a-digits))

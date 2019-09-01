@@ -26,3 +26,7 @@
   (if (power-of-two-p n)
       n
       (ash 1 (integer-length n))))
+
+(declaim (inline 2^))
+(defun 2^ (n)
+  (expt 2 n))

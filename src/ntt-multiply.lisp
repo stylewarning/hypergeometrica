@@ -56,11 +56,38 @@
      ,@body))
 
 (defun make-ntt-work (mpz length moduli)
-  (loop :for m :across moduli
-        :for a := (make-storage length)
-        :for raw-a := (raw-storage-of-storage a)
-        :do (map-into raw-a (modder m) (storage mpz))
-        :collect a))
+  (declare (type mpz mpz)
+           (type alexandria:array-length length)
+           (type (simple-array digit (*)) moduli))
+  (when *verbose*
+    (format t "Allocating..."))
+  (let ((start-time (get-internal-real-time)))
+    (prog1
+        (let ((raw-mpz (raw-storage mpz)))
+          #-hypergeometric-safe
+          (declare (optimize speed (safety 0) (debug 0) (space 0)))
+          (loop :for m :of-type modulus :across moduli
+                :collect
+                (let* ((a (make-storage length))
+                       (raw-a (raw-storage-of-storage a)))
+                  ;; NB. LENGTH is the total power-of-two length, not
+                  ;; the length of the mpz!
+                  (dotimes (i (length raw-mpz) a)
+                    (setf (aref raw-a i) (mod (aref raw-mpz i) m))))))
+      (when *verbose*
+        (format t " ~D ms~%" (round (* 1000 (- (get-internal-real-time) start-time)) internal-time-units-per-second))))))
+
+(defun multiply-pointwise! (a b length scheme i)
+  (declare (type raw-storage a b)
+           (type alexandria:array-length length)
+           (type alexandria:array-index i)
+           (type modular-scheme scheme)
+           (optimize speed (safety 0) (debug 0) (space 0) (compilation-speed 0)))
+  (let ((m (aref (scheme-moduli scheme) i))
+        (m-inv (aref (scheme-inverses scheme) i)))
+    (#+hypergeometrica-parallel lparallel:pdotimes
+     #-hypergeometrica-parallel dotimes (i length)
+      (setf (aref a i) (m*/fast (aref a i) (aref b i) m m-inv)))))
 
 (defun mpz-square (x)
   (let* ((size (mpz-size x))
@@ -78,19 +105,21 @@
                             (setf start-time (get-internal-real-time))
                             (finish-output))))))
     (when *verbose*
-      (format t "~&~%Size: ~D (approx ~D decimal~:P, ~D MiB)~%"
+      (format t "~&Size: ~D (approx ~D decimal~:P, ~D MiB)~%"
               size
               (round (* size $digit-bits)
                      (log 10.0d0 2.00))
-              (round (/ (* size $digit-bits) 8 1024 1024)))
+              (round (/ (* (1+ num-moduli) length $digit-bits) 8 1024 1024)))
       (format t "Transform length: ~D~%" length)
       (format t "Convolution bits: ~D~%" bound-bits)
       (format t "Moduli: ~{#x~16X~^, ~}~%" (coerce (scheme-moduli **scheme**) 'list))
 
       (format t "Forward..."))
-    (loop :for i :below num-moduli
-          :for a :in raw-ntts
-          :do (ntt-forward a **scheme** i))
+    (with-parallel-work ()
+      (loop :for i :below num-moduli
+            :for a :in raw-ntts
+            :do (with-task (a i)
+                  (ntt-forward a **scheme** i))))
     (funcall report-time)
 
     ;; Pointwise multiply
@@ -100,7 +129,8 @@
           :for m := (aref (scheme-moduli **scheme**) i)
           :for mi := (aref (scheme-inverses **scheme**) i)
           :for a :in raw-ntts
-          :do (dotimes (i length)
+          :do (#+hypergeometrica-parallel lparallel:pdotimes
+               #-hypergeometrica-parallel dotimes (i length)
                 (let ((ai (aref a i)))
                   (setf (aref a i) (m*/fast ai ai m mi)))))
     (funcall report-time)
@@ -108,9 +138,11 @@
     ;; Inverse transform
     (when *verbose*
       (format t "Reverse..."))
-    (loop :for i :below num-moduli
-          :for a :in raw-ntts
-          :do (ntt-reverse a **scheme** i))
+    (with-parallel-work ()
+      (loop :for i :below num-moduli
+            :for a :in raw-ntts
+            :do (with-task (a i)
+                  (ntt-reverse a **scheme** i))))
     (funcall report-time)
 
     ;; Unpack the result.
@@ -176,7 +208,7 @@
                             (setf start-time (get-internal-real-time))
                             (finish-output))))))
     (when *verbose*
-      (format t "~&~%Size: ~D (approx ~D decimal~:P, ~D MiB)~%"
+      (format t "~&Size: ~D (approx ~D decimal~:P, ~D MiB)~%"
               size
               (round (* size $digit-bits)
                      (log 10.0d0 2.00))

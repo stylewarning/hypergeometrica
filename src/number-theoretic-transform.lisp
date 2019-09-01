@@ -92,17 +92,6 @@ The input must be in bit-reversed order."
 
   a)
 
-(defun multiply-pointwise! (a b length scheme i)
-  (declare (type raw-storage a b)
-           (type alexandria:array-length length)
-           (type alexandria:array-index i)
-           (type modular-scheme scheme)
-           (optimize speed (safety 0) (debug 0) (space 0) (compilation-speed 0)))
-  (let ((m (aref (scheme-moduli scheme) i))
-        (m-inv (aref (scheme-inverses scheme) i)))
-    (dotimes (i length)
-      (setf (aref a i) (m*/fast (aref a i) (aref b i) m m-inv)))))
-
 
 ;;;;;;;;;;;;;;;;;;;; Reference DIF FFT algorithm ;;;;;;;;;;;;;;;;;;;;;
 

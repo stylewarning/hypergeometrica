@@ -21,8 +21,8 @@
            (add-big-digit quo storage (1+ i)))))))
 
 (defun iterate (f x n)
-  (assert (plusp n))
-  (if (= 1 n)
+  (assert (not (minusp n)))
+  (if (zerop n)
       x
       (iterate f (funcall f x) (1- n))))
 

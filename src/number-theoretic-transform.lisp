@@ -7,6 +7,7 @@
 ;;;;;;;;;;;;;;;;;;;;; Number-Theoretic Transform ;;;;;;;;;;;;;;;;;;;;;
 
 ;;; Decimation-in-frequency algorithm.
+
 (defun ntt-forward (a scheme mod-num)
   "Compute the forward number-theoretic transform of the array of integers A, with modulus M and primitive root W. If they are not provided, a suitable one will be computed.
 
@@ -24,7 +25,7 @@ The resulting array (a mutation of the input) will be in bit-reversed order."
          (m-inv (aref (scheme-inverses scheme) mod-num))
          (N     (length a))
          (ln    (lg N))
-         (w     (nth mod-num (aref (scheme-primitive-roots scheme) ln))))
+         (w     (aref (scheme-primitive-roots scheme) ln mod-num 1)))
     (declare (type modulus m m-inv)
              (type digit w)
              (type alexandria:array-length N)
@@ -69,7 +70,7 @@ The input must be in bit-reversed order."
          (m-inv (aref (scheme-inverses scheme) mod-num))
          (N     (length a))
          (ldn   (lg N))
-         (1/w   (inv-mod (nth mod-num (aref (scheme-primitive-roots scheme) ldn)) m))
+         (1/w   (inv-mod (aref (scheme-primitive-roots scheme) ldn mod-num 1) m))
          (1/N   (inv-mod N m)))
     (loop :for r :below N :by 2 :do
       (psetf (aref a r)      (m*/fast 1/N (m+ (aref a r) (aref a (1+ r)) m) m m-inv)

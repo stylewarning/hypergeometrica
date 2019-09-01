@@ -407,10 +407,16 @@ Note: N must divide M - 1."
 
 (defstruct (modular-scheme (:constructor %make-modular-scheme)
                            (:conc-name scheme-))
+  ;; A vector of moduli. The order of these will match the order of other items below.
   (moduli               nil :read-only t :type (simple-array digit (*)))
+  ;; The maximum length of a transform achievable with this scheme,
+  ;; expressed as an exponent of 2.
   (max-transform-length nil :read-only t :type (integer 0 (64)))
-  ;; "A map from a transform size of 2^N to the primitive Nth roots of the corresponding moduli."
-  (primitive-roots      nil :read-only t :type simple-vector)
+  ;; PRIMITIVE-ROOTS is an array taking [n, m, k] to the 2^k-th power
+  ;; of the primitive 2^n-th root of unity in the field of MODULI[m].
+  ;;
+  ;; If you just want a damn primitive root, use [n, m, 1].
+  (primitive-roots      nil :read-only t :type (simple-array digit (* * *)))
   ;; The INVERSES are used for fast modular reduction.
   (inverses             nil :read-only t :type (simple-array digit (*)))
   )
@@ -426,14 +432,18 @@ Note: N must divide M - 1."
          (max-trans (max-transform-length-bits moduli))
          (lg-modulus (loop :for m :across moduli
                            :minimize (lg m)))
-         (roots-table (make-array (1+ max-trans) :initial-element nil))
+         (roots-table (make-array (list (1+ max-trans) (length moduli) (1+ max-trans))
+                                  :element-type 'digit
+                                  :initial-element 0))
          (inverses (copy-seq moduli)))
 
     ;; Initialize table of primitive roots for each transform length.
     (dotimes (power (1+ max-trans))
-      (setf (aref roots-table power)
-            (loop :for m :across moduli
-                  :collect (find-primitive-root (expt 2 power) m))))
+      (loop :for i :from 0
+            :for m :across moduli
+            :for w := (find-primitive-root (expt 2 power) m)
+            :do (dotimes (k (1+ max-trans))
+                  (setf (aref roots-table power i k) (expt-mod w k m)))))
     ;; Initialize modular inverses for fast multiplication.
     (flet ((%inverse (m)
              (floor (2^ (+ 64 lg-modulus)) m)))

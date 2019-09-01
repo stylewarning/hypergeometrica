@@ -38,7 +38,7 @@
                :collect `(setf ,var ,(reverted-op value-form)))
        (values))))
 
-(defmacro do-non-symmetric-bit-reversals ((width i j &optional return) &body body)
+(defmacro do-non-symmetric-bit-reversals ((i j width &optional return) &body body)
   "Call the binary function F on numbers all numbers A and B such that:
 
     * A < B;
@@ -193,5 +193,5 @@ Symmetric A and B are not included, and are not needed for most bit-reversal app
          (bits (integer-length (max 0 (1- length)))))
     ;; Check that this is a power of two.
     (assert (zerop (logand length (1- length))))
-    (do-non-symmetric-bit-reversals (bits a b x)
+    (do-non-symmetric-bit-reversals (a b bits x)
       (rotatef (aref x a) (aref x b)))))

@@ -112,10 +112,10 @@
            (type modular-scheme scheme)
            (optimize speed (safety 0) (debug 0) (space 0) (compilation-speed 0)))
   (let ((m (aref (scheme-moduli scheme) i))
-        (m-inv (aref (scheme-inverses scheme) i)))
+        (m~ (aref (scheme-inverses scheme) i)))
     (#+hypergeometrica-parallel lparallel:pdotimes
      #-hypergeometrica-parallel dotimes (i length)
-      (setf (aref a i) (m*/fast (aref a i) (aref b i) m m-inv)))))
+      (setf (aref a i) (m*/fast (aref a i) (aref b i) m m~)))))
 
 (defun mpz-square (x)
   (let* ((size (mpz-size x))

@@ -21,6 +21,7 @@
                (:file "math-utilities")
                (:file "sbcl-intrinsics" :if-feature :sbcl)
                (:file "digit")
+               (:file "modular-arithmetic")
                (:file "mpz")
                (:file "moduli")
                (:file "strandh-elster-reversal")

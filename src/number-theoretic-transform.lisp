@@ -19,7 +19,7 @@ The resulting array (a mutation of the input) will be in bit-reversed order."
   (declare (type raw-storage a)
            (type modular-scheme scheme)
            (type alexandria:array-index mod-num)
-           (inline m+ m- m*/fast)
+           (inline m+ m- m*/fast m*/fast2 m*/fast2-unreduced)
            (optimize speed (safety 0) (debug 0) (space 0) (compilation-speed 0)))
   (let* ((m     (aref (scheme-moduli scheme)   mod-num))
          (m-inv (aref (scheme-inverses scheme) mod-num))
@@ -32,7 +32,8 @@ The resulting array (a mutation of the input) will be in bit-reversed order."
     (loop :for lsubn :from ln :downto 2 :do
       (let* ((subn (ash 1 lsubn))
              (subn/2 (floor subn 2))
-             (dw (aref roots ln mod-num (- ln lsubn)))
+             (dw (aref roots ln mod-num (- ln lsubn) 0))
+             (dw~ (aref roots ln mod-num (- ln lsubn) 1))
              (w^j 1))
         (loop :for j :below subn/2 :do
           (loop :for r :from 0 :to (- n subn) :by subn :do
@@ -43,7 +44,7 @@ The resulting array (a mutation of the input) will be in bit-reversed order."
               (declare (type alexandria:array-index r+j r+j+subn/2))
               (setf (aref a r+j)        (m+ u v m)
                     (aref a r+j+subn/2) (m*/fast w^j (m- u v m) m m-inv))))
-          (setf w^j (m*/fast dw w^j m m-inv)))))
+          (setf w^j (m*/fast2 dw dw~ w^j m)))))
 
     (loop :for r :below N :by 2 :do
       (psetf (aref a r)      (m+ (aref a r) (aref a (1+ r)) m)
@@ -63,21 +64,25 @@ The input must be in bit-reversed order."
   (declare (type raw-storage a)
            (type modular-scheme scheme)
            (type alexandria:array-index mod-num)
-           (inline m+ m- m* m*/fast)
+           (inline m+ m- m* m*/fast m*/fast2 m*/fast2-unreduced)
            (optimize speed (safety 0) (debug 0) (space 0) (compilation-speed 0)))
   (let* ((m     (aref (scheme-moduli scheme)   mod-num))
          (m-inv (aref (scheme-inverses scheme) mod-num))
          (N     (length a))
          (ldn   (lg N))
-         (roots (scheme-inverse-primitive-roots scheme))
-         (1/N   (inv-mod N m)))
-    (loop :for r :below N :by 2 :do
-      (psetf (aref a r)      (m*/fast 1/N (m+ (aref a r) (aref a (1+ r)) m) m m-inv)
-             (aref a (1+ r)) (m*/fast 1/N (m- (aref a r) (aref a (1+ r)) m) m m-inv)))
+         (roots (scheme-inverse-primitive-roots scheme)))
+    (let ((1/N  (aref (scheme-inverse-transform-lengths scheme) ldn mod-num 0))
+          (1/N~ (aref (scheme-inverse-transform-lengths scheme) ldn mod-num 1)))
+      #+hypergeometrica-paranoid
+      (assert (= 1/N (inv-mod N m)))
+      (loop :for r :below N :by 2 :do
+        (psetf (aref a r)      (m*/fast2 1/N 1/N~ (m+ (aref a r) (aref a (1+ r)) m) m)
+               (aref a (1+ r)) (m*/fast2 1/N 1/N~ (m- (aref a r) (aref a (1+ r)) m) m))))
     (loop :for ldm :from 2 :to ldn :do
       (let* ((subn (ash 1 ldm))
              (subn/2 (floor subn 2))
-             (dw (aref roots ldn mod-num (- ldn ldm)))
+             (dw (aref roots ldn mod-num (- ldn ldm) 0))
+             (dw~ (aref roots ldn mod-num (- ldn ldm) 1))
              (w^j 1))
         (loop :for j :below subn/2 :do
           (loop :for r :from 0 :to (- n subn) :by subn :do
@@ -88,7 +93,7 @@ The input must be in bit-reversed order."
               (declare (type alexandria:array-index r+j r+j+subn/2))
               (setf (aref a r+j)        (m+ u v m)
                     (aref a r+j+subn/2) (m- u v m))))
-          (setf w^j (m*/fast dw w^j m m-inv))))))
+          (setf w^j (m*/fast2 dw dw~ w^j m))))))
 
   a)
 

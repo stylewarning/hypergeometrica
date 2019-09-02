@@ -23,7 +23,7 @@
      (defun ,op-name ,args
        (declare (type digit ,@args)
                 (optimize speed (safety 0) (debug 0) (space 0) (compilation-speed 0)))
-       (the digit (ldb (byte $digit-bits 0) (,base-op ,@args))))))
+       (the digit (mod (,base-op ,@args) ,$base)))))
 
 (define-fx-op fx+ (+ a b))
 (define-fx-op fx- (- a b))

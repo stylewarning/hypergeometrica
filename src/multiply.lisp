@@ -39,7 +39,7 @@
         (make-mpz (* (sign x) (sign y)) r-storage)))
      ((eq x y)
       (mpz-square x))
-     #+#:ignore                         ; Ignoring until NTT is optimized
+     #+hypergeometrica-floating-point
      ((< (least-power-of-two->= (+ 1 (mpz-size x) (mpz-size y))) +fft-length-limit+)
       (mpz-*/fft x y))
      (t

@@ -66,7 +66,6 @@ Assumes 0 <= A < M."
       0
       (- m a)))
 
-;;; TODO: Figure out http://cacr.uwaterloo.ca/techreports/1999/corr99-39.pdf
 (defun m* (a b m)
   (declare (type modulus m)
            (type digit a b))

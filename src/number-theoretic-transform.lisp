@@ -118,8 +118,6 @@ The vector must have a power-of-two length."
       (psetf (aref a r)      (+ (aref a r) (aref a (1+ r)))
              (aref a (1+ r)) (- (aref a r) (aref a (1+ r))))))
 
-  (bit-reversed-permute! a)
-
   a)
 
 (defun dif-reverse (a)
@@ -145,8 +143,6 @@ The vector must have a power-of-two length."
       (psetf (aref a r)      (/ (+ (aref a r) (aref a (1+ r))) N)
              (aref a (1+ r)) (/ (- (aref a r) (aref a (1+ r))) N))))
 
-  (bit-reversed-permute! a)
-
   a)
 
 (defun dit-forward (a)
@@ -155,7 +151,6 @@ The vector must have a power-of-two length."
 The vector must have a power-of-two length."
   (let* ((N   (length a))
          (ldn (1- (integer-length N))))
-    (bit-reversed-permute! a)
     (loop :for r :below N :by 2 :do
       (psetf (aref a r)      (+ (aref a r) (aref a (1+ r)))
              (aref a (1+ r)) (- (aref a r) (aref a (1+ r)))))
@@ -182,7 +177,6 @@ Input must be in bit-reversed order.
 The vector must have a power-of-two length."
   (let* ((N   (length a))
          (ldn (1- (integer-length N))))
-    (bit-reversed-permute! a)
     (loop :for r :below N :by 2 :do
       (psetf (aref a r)      (/ (+ (aref a r) (aref a (1+ r))) N)
              (aref a (1+ r)) (/ (- (aref a r) (aref a (1+ r))) N)))

@@ -8,7 +8,8 @@
   :license "BSD 3-clause (See LICENSE.txt)"
   :depends-on (#:alexandria
                #:global-vars
-               #:lparallel)
+               #:lparallel
+               #:napa-fft3)
   :in-order-to ((asdf:test-op (asdf:test-op #:hypergeometrica/tests)))
   :around-compile (lambda (compile)
                     (let (#+sbcl (sb-ext:*derive-function-types* t))
@@ -25,6 +26,8 @@
                (:file "strandh-elster-reversal")
                (:file "number-theoretic-transform")
                (:file "ntt-multiply")
+               (:file "fft-multiply")
+               (:file "multiply")
                (:file "binary-splitting")))
 
 (asdf:defsystem #:hypergeometrica/tests

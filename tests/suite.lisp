@@ -431,7 +431,7 @@ This is just the conjugate-transpose of the NTT matrix, scaled by N."
     (when h::*verbose*
       (format t "C = FFT(A)*FFT(B) = ~A~%" a-digits))
 
-    (setf a-digits (h::dif-reverse a-digits))
+    (setf a-digits (h::dit-reverse a-digits))
 
     (when h::*verbose*
       (format t "FFT^-1(C): ~A~%" a-digits))

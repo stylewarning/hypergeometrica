@@ -103,8 +103,12 @@
   "How many digits does the MPZ have?
 
 If MPZ is equal to 0, then this is 0."
-  (1+ (or (position-if-not #'zerop (storage mpz) :from-end t)
-          0)))
+  (declare (optimize speed (safety 0) (debug 0)))
+  (loop :with raw := (raw-storage mpz)
+        :for i :from (1- (length raw)) :downto 0
+        :unless (zerop (aref raw i))
+          :do (return (1+ i))
+        :finally (return 0)))
 
 (defun mpz-uses-minimal-storage-p (mpz)
   (= (length (storage mpz)) (mpz-size mpz)))
@@ -137,7 +141,7 @@ If MPZ is equal to 0, then this is 0."
 ;;; Comparison functions
 
 (defun mpz-zerop (mpz)
-  (every #'zerop (storage mpz)))
+  (every #'zerop (raw-storage mpz)))
 
 (defun mpz-plusp (mpz)
   (and (= 1 (sign mpz))

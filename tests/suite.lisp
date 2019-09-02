@@ -137,6 +137,11 @@
       (is (every #'primitive-nth-root-p roots moduli)))))
 
 
+(deftest test-mpz-size ()
+  (is (zerop (h::mpz-size (h::integer-mpz 0))))
+  (is (= 1 (h::mpz-size (h::integer-mpz 1))))
+  (is (= 2 (h::mpz-size (h::integer-mpz h::$base)))))
+
 (deftest test-mpz-integer-idempotence ()
   (dotimes (i 100)
     (is (= i (h::mpz-integer (h::integer-mpz i)))))

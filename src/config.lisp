@@ -10,7 +10,7 @@
 
 ;;; Enable parallelism in some routines. This could make it harder to
 ;;; debug or profile.
-#+#:disabled(push :hypergeometrica-parallel *features*)
+#+disabled(push :hypergeometrica-parallel *features*)
 
 ;;; Enable cheap-ish safety checks. This may slow down code, but help debug.
 (push :hypergeometrica-safe *features*)
@@ -23,5 +23,6 @@
 ;;; trust "re-used" objects.
 (push :hypergeometrica-hygiene *features*)
 
-;;(push :hypergeometrica-floating-point *features*)
+#+disabled(push :hypergeometrica-floating-point *features*)
+
 

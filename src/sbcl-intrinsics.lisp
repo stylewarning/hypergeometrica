@@ -41,30 +41,38 @@
 (define-vop (hypergeometrica::ub64/2)
   (:translate hypergeometrica::ub64/2)
   (:policy :fast-safe)
-  (:args (x :scs (unsigned-reg) :target r))
+  (:args (x :scs (unsigned-reg) :target temp))
   (:arg-types unsigned-num)
+  (:temporary (:sc unsigned-reg :target r
+               :from (:argument 0) :to (:result 0))
+              temp)
   (:results (r :scs (unsigned-reg) :from (:argument 0)))
   (:result-types unsigned-num)
   (:generator 6
-    (inst sar x 1)
-    (move r x)))
+    (move temp x)
+    (inst sar temp 1)
+    (move r temp)))
 
 (define-vop (hypergeometrica::add64)
   (:translate hypergeometrica::add64)
   (:policy :fast-safe)
-  (:args (x :scs (unsigned-reg) :target sum)
+  (:args (x :scs (unsigned-reg) :target temp)
          (y :scs (unsigned-reg unsigned-stack)))
   (:arg-types unsigned-num
               unsigned-num)
+  (:temporary (:sc unsigned-reg :target sum
+               :from (:argument 0) :to (:result 0))
+              temp)
   (:results (sum   :scs (unsigned-reg) :from (:argument 0))
             (carry :scs (unsigned-reg)))
   (:result-types unsigned-num
                  unsigned-num)
   (:generator 6
-    (inst add x y)
+    (move temp x)
+    (inst add temp y)
     (inst set carry :c)
     (inst and :dword carry 1)
-    (move sum x)))
+    (move sum temp)))
 
 (define-vop (hypergeometrica::mul128)
   (:translate hypergeometrica::mul128)
@@ -79,8 +87,8 @@
   (:temporary (:sc unsigned-reg :offset rdx-offset :target r-hi
                :from :eval :to (:result 1))
               rdx)
-  (:results (r-lo :scs (unsigned-reg))
-            (r-hi :scs (unsigned-reg)))
+  (:results (r-lo :scs (unsigned-reg) :from (:argument 0))
+            (r-hi :scs (unsigned-reg) :from (:argument 1)))
   (:result-types unsigned-num
                  unsigned-num)
   (:generator 6
@@ -119,41 +127,57 @@
 (define-vop (hypergeometrica::add128)
   (:translate hypergeometrica::add128)
   (:policy :fast-safe)
-  (:args (a-lo :scs (unsigned-reg) :target c-lo)
-         (a-hi :scs (unsigned-reg) :target c-hi)
+  (:args (a-lo :scs (unsigned-reg) :target temp-lo)
+         (a-hi :scs (unsigned-reg) :target temp-hi)
          (b-lo :scs (unsigned-reg))
          (b-hi :scs (unsigned-reg)))
   (:arg-types unsigned-num
               unsigned-num
               unsigned-num
               unsigned-num)
+  (:temporary (:sc unsigned-reg :target c-lo
+               :from (:argument 0) :to (:result 0))
+              temp-lo)
+  (:temporary (:sc unsigned-reg :target c-hi
+               :from (:argument 1) :to (:result 1))
+              temp-hi)
   (:results (c-lo :scs (unsigned-reg) :from (:argument 0))
             (c-hi :scs (unsigned-reg) :from (:argument 1)))
   (:result-types unsigned-num
                  unsigned-num)
   (:generator 6
-    (inst add a-lo b-lo)
-    (inst adc a-hi b-hi)
-    (move c-lo a-lo)
-    (move c-hi a-hi)))
+    (move temp-lo a-lo)
+    (move temp-hi a-hi)
+    (inst add temp-lo b-lo)
+    (inst adc temp-hi b-hi)
+    (move c-lo temp-lo)
+    (move c-hi temp-hi)))
 
 (define-vop (hypergeometrica::sub128)
   (:translate hypergeometrica::sub128)
   (:policy :fast-safe)
-  (:args (a-lo :scs (unsigned-reg) :target c-lo)
-         (a-hi :scs (unsigned-reg) :target c-hi)
+  (:args (a-lo :scs (unsigned-reg) :target temp-lo)
+         (a-hi :scs (unsigned-reg) :target temp-hi)
          (b-lo :scs (unsigned-reg))
          (b-hi :scs (unsigned-reg)))
   (:arg-types unsigned-num
               unsigned-num
               unsigned-num
               unsigned-num)
+  (:temporary (:sc unsigned-reg :target c-lo
+               :from (:argument 0) :to (:result 0))
+              temp-lo)
+  (:temporary (:sc unsigned-reg :target c-hi
+               :from (:argument 1) :to (:result 1))
+              temp-hi)
   (:results (c-lo :scs (unsigned-reg) :from (:argument 0))
             (c-hi :scs (unsigned-reg) :from (:argument 1)))
   (:result-types unsigned-num
                  unsigned-num)
   (:generator 6
-    (inst sub a-lo b-lo)
-    (inst sbb a-hi b-hi)
-    (move c-lo a-lo)
-    (move c-hi a-hi)))
+    (move temp-lo a-lo)
+    (move temp-hi a-hi)
+    (inst sub temp-lo b-lo)
+    (inst sbb temp-hi b-hi)
+    (move c-lo temp-lo)
+    (move c-hi temp-hi)))

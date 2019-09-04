@@ -53,7 +53,7 @@
   (:translate hypergeometrica::add64)
   (:policy :fast-safe)
   (:args (x :scs (unsigned-reg) :target sum)
-         (y :scs (unsigned-reg unsigned-stack)))
+         (y :scs (unsigned-reg unsigned-stack) :to :save))
   (:arg-types unsigned-num
               unsigned-num)
   (:results (sum   :scs (unsigned-reg) :from (:argument 0))
@@ -61,8 +61,8 @@
   (:result-types unsigned-num
                  unsigned-num)
   (:generator 6
-    (move sum x)
     (zeroize carry)
+    (move sum x)
     (inst add sum y)
     (inst set carry :c)))
 

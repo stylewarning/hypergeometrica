@@ -62,8 +62,8 @@
                  unsigned-num)
   (:generator 6
     (move sum x)
+    (zeroize carry)
     (inst add sum y)
-    (inst xor carry carry)
     (inst set carry :c)))
 
 (define-vop (hypergeometrica::mul128)

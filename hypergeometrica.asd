@@ -31,6 +31,7 @@
                (:file "number-theoretic-transform")
                (:file "ntt-multiply")
                (:file "fft-multiply")
+               (:file "disk")
                (:file "multiply")
                (:file "binary-splitting")))
 

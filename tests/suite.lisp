@@ -65,7 +65,9 @@
                 (let ((p (+ (+ a64 (ash b64 64))
                             (+ b64 (ash a64 64)))))
                   (is (= lo (ldb (byte 64 0) p)))
-                  (is (= hi (ldb (byte 64 64) p))))))))
+                  (is (= hi (ldb (byte 64 64) p)))))
+              ;; TODO: test SUB128
+              )))
 
 (defun %test-m* (n low)
   (flet ((r (&optional (high h::$base))

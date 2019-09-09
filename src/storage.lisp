@@ -7,19 +7,20 @@
 ;;; Storage Protocol
 
 (defgeneric storage-length (s)
-  (:documentation "How many elements are storable in S?"))
+  (:documentation "How many digits are storable in S?"))
 
 (defgeneric resize-storage (s n)
-  (:documentation "Adjust the length of the storage S to a length of N elements.")
+  (:documentation "Adjust the length (in digits) of the storage S to N.")
   (:method :before (s n)
-    (assert (plusp n) () "Attempting to resize storage to ~D elements" n)))
+    (assert (not (minusp n)) () "Attempting to resize storage to ~D elements" n)))
 
 (defgeneric resize-storage-by (s delta)
-  (:documentation "Adjust the length of the storage S by N elements.")
+  (:documentation "Adjust the length (in digits) of the storage S by DELTA.")
   (:method (s delta)
     (resize-storage s (+ delta (storage-length s)))))
 
 (defgeneric optimize-storage (s)
+  (:documentation "Optimize the storage of S. (Typically, this might mean reducing the storage of S to the minimum necessary.)")
   (:method (s)
     s))
 
@@ -35,7 +36,9 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;; RAM Storage ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;;; We specialize methods on VECTOR.
 (deftype storage ()
+  "Storage of digits that fits in RAM."
   `(and (array digit (*))
         (not simple-array)))
 
@@ -88,18 +91,23 @@
 
 (defclass file-backed-storage ()
   ((length :initarg :length
-           :reader %storage-length)
+           :reader %storage-length
+           :type alexandria:array-length
+           :documentation "The length of this storage in digits.")
    (pathname :initarg :pathname
-             :reader file-backed-storage-pathname)
+             :reader file-backed-storage-pathname
+             :type pathname
+             :documentation "A filename where data is stored.")
    (stream :initarg :stream
            :reader file-backed-storage-stream
-           :type file-stream))
+           :type file-stream
+           :documentation "An open file stream from/to which data may be read/written."))
   (:documentation "Storage backed by a single file."))
 
 (defmethod storage-length ((s file-backed-storage))
   (let ((recorded-length (%storage-length s))
         (actual-length (file-length (file-backed-storage-stream s))))
-    (when (> actual-length (1+ recorded-length))
+    (when (> actual-length recorded-length)
       (warn "The storage ~A has a recorded length of ~D but is actually ~D."
             s
             recorded-length
@@ -189,13 +197,18 @@
     (rewind-file-backed-storage s)
     s))
 
+
+;;;;;;;;;;;;;;;;;;;;;;;; Conversion Routines ;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defun file-backed-storage-to-storage (fbs)
+  "Convert the file-backed storage FBS to a storage vector in RAM."
   (rewind-file-backed-storage fbs)
   (let ((s (make-storage (storage-length fbs))))
     (read-sequence s (file-backed-storage-stream fbs))
     s))
 
 (defun storage-to-file-backed-storage (s)
+  "Convert a storage vector in RAM to file-backed storage."
   (let ((fs (make-file-backed-storage (storage-length s))))
     (write-sequence s (file-backed-storage-stream fs))
     (rewind-file-backed-storage fs)

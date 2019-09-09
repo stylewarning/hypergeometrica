@@ -227,7 +227,6 @@
   (disk-reverse-mfa fa scheme mod-num)
   (when *verbose*
     (write-char #\Space))
-  (*tt "end conv" fa)
   (rewind-file-backed-storage fa)
   nil)
 
@@ -263,17 +262,12 @@
       (format t "   Transform length: ~D~%" length)
       (format t "   Convolution bits: ~D~%" bound-bits)
       (format t "   Moduli: ~{#x~16X~^, ~}~%" (coerce (scheme-moduli **scheme**) 'list))
-
-      (*tt "in x" fx)
-      (*tt "in y" fy)
       (format t "   Convolving..."))
     (with-parallel-work ()
      (loop :for i :below num-moduli
            :for ax :in ntts-x
            :for ay :in ntts-y
            :do (with-task (i ax)
-                 (*tt (format nil "pre x~D" i) ax)
-                 (*tt (format nil "pre y~D" i) ay)
                  (disk-convolution ax ay **scheme** i))))
     (funcall report-time)
 
@@ -281,7 +275,6 @@
     (setf ntts-y nil)
     (rewind-file-backed-storage result)
     (map-into-disk! (constantly 0) result)
-    (loop :with i := 0 :for x :in ntts-x :do (*tt (format nil "x~D" (incf i)) x))
     (rewind-file-backed-storage result)
 
     ;; Unpack the result.

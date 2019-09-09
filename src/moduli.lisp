@@ -276,10 +276,12 @@ Note: N must divide M - 1."
   ;; The maximum length of a transform achievable with this scheme,
   ;; expressed as an exponent of 2.
   (max-transform-length nil :read-only t :type (integer 0 (64)))
-  ;; PRIMITIVE-ROOTS is an array taking [n, m, k] to the 2^k-th power
-  ;; of the primitive 2^n-th root of unity in the field of MODULI[m].
+  ;; PRIMITIVE-ROOTS is an array taking [n, m, k, i] to the 2^k-th
+  ;; power of the primitive 2^n-th root of unity in the field of
+  ;; MODULI[m]. I=0 corresponds to the root, I=1 corresponds to an
+  ;; inverse suitable for fast multiplication.
   ;;
-  ;; If you just want a damn primitive root, use [n, m, 0].
+  ;; If you just want a damn primitive root, use [n, m, 0, 0].
   (primitive-roots nil :read-only t :type (simple-array digit (* * * 2)))
   ;; Same deal, except 1/w instead of w.
   (inverse-primitive-roots  nil :read-only t :type (simple-array digit (* * * 2)))

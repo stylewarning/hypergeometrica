@@ -10,19 +10,44 @@
 
 ;;; Enable parallelism in some routines. This could make it harder to
 ;;; debug or profile.
-#+disabled(push :hypergeometrica-parallel *features*)
+
+;;(push :hypergeometrica-parallel *features*)
+
 
 ;;; Enable cheap-ish safety checks. This may slow down code, but help debug.
+
 (push :hypergeometrica-safe *features*)
+
 
 ;;; Are you paranoid about the correctness of things? This is the
 ;;; feature for you.
-;(push :hypergeometrica-paranoid *features*)
+
+(push :hypergeometrica-paranoid *features*)
+
 
 ;;; Enable explicit and ruthless initialization of objects. Don't
 ;;; trust "re-used" objects.
+
 (push :hypergeometrica-hygiene *features*)
 
-#+disabled(push :hypergeometrica-floating-point *features*)
+
+;;; Enable the use of floating point FFTs for smallish inputs.
+
+;; (push :hypergeometrica-floating-point *features*)
 
 
+
+(defparameter *optimize-dangerously-fast* '(optimize speed (safety 0) (space 0) (space 0) (compilation-speed 0)))
+
+(defparameter *optimize-extremely-safely* '(optimize (speed 0) safety debug (space 0) (compilation-speed 0)))
+
+
+;;; Storage constants
+
+(defvar *maximum-file-size* (* 16 (expt 1024 3))
+  "The maximum size of a file in octets.")
+
+(defvar *maximum-vector-size (expt 1024 3)
+  "The maximum size of a vector in memory in octets.")
+
+(defvar *default-file-directory* (uiop:ensure-directory-pathname "/tmp/"))

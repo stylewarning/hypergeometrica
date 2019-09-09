@@ -9,7 +9,9 @@
   :depends-on (#:alexandria
                #:global-vars
                #:lparallel
-               #:napa-fft3)
+               #:napa-fft3
+               #:trivial-garbage
+               #:uiop)
   :in-order-to ((asdf:test-op (asdf:test-op #:hypergeometrica/tests)))
   :around-compile (lambda (compile)
                     (let (#+sbcl (sb-ext:*derive-function-types* t))
@@ -22,6 +24,7 @@
                (:file "sbcl-intrinsics" :if-feature :sbcl)
                (:file "digit")
                (:file "modular-arithmetic")
+               (:file "storage")
                (:file "mpz")
                (:file "moduli")
                (:file "strandh-elster-reversal")

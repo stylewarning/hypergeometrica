@@ -8,52 +8,6 @@
   "The sign of an integer."
   '(member 1 -1))
 
-;;; Digit storage
-
-(deftype storage ()
-  `(and (array digit (*))
-        (not simple-array)))
-
-(deftype raw-storage ()
-  #+sbcl
-  `(simple-array digit (*))
-  #-sbcl
-  `storage)
-
-(defun make-storage (n)
-  (assert (plusp n))
-  (make-array n :element-type 'digit
-                :initial-element 0
-                :adjustable t))
-
-(declaim (inline raw-storage-of-storage)
-         (ftype (function (storage) raw-storage) raw-storage-of-storage))
-(defun raw-storage-of-storage (a)
-  (declare (type storage a))
-  #+sbcl
-  (sb-ext:array-storage-vector a)
-  #-sbcl
-  a)
-
-(defun resize-storage (a n)
-  "Adjust the length of the storage A by N elements."
-  (declare (type storage a)
-           (type alexandria:array-length n))
-  (unless (= n (length a))
-    (adjust-array a n :initial-element 0))
-  (values))
-
-(defun resize-storage-by (a delta)
-  "Adjust the length of the storage A by DELTA elements."
-  (declare (type storage a)
-           (type fixnum delta))
-  (let ((new-length (+ delta (length a))))
-    (assert (plusp new-length))
-    (resize-storage a new-length)))
-
-
-;;; The MPZ type
-
 (defstruct (mpz (:conc-name nil)
                 (:predicate mpz?)
                 (:copier nil)
@@ -113,7 +67,7 @@ If MPZ is equal to 0, then this is 0."
 (defun mpz-uses-minimal-storage-p (mpz)
   (= (length (storage mpz)) (mpz-size mpz)))
 
-(defun optimize-storage (mpz)
+(defmethod optimize-storage ((mpz mpz))
   (resize-storage (storage mpz) (mpz-size mpz))
   mpz)
 

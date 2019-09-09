@@ -41,6 +41,10 @@ me is the Haible paper.
 
 - [Link](http://www.apfloat.org/ntt.html): Mikko Tommila's notes on the NTT.
 
+- [Speeding up the number theoretic transform](https://eprint.iacr.org/2016/504.pdf) by Longa and Naehrig
+
+- [The FFT - an algorithm the whole family can use](https://www.cs.dartmouth.edu/~rockmore/cse-fft.pdf): Just a fun paper title. Not useful for this project.
+
 ## Primes and Modular Arithmetic
 
 - [Generalized Mersenne Primes](http://cacr.uwaterloo.ca/techreports/1999/corr99-39.pdf): Solinas gives a method for reducing modular reduction of "nice" moduli to adds, subtracts, and shifts. Finnicky to get right though. Understanding this paper requires you to know what a [LFSR](https://pdfs.semanticscholar.org/a47e/2c91605fd3f0753a736d26f3bf3d8e1ef548.pdf) is.
@@ -97,6 +101,15 @@ shared. Too bad; the world is better when math software is open.
 
 - [SuperPi](http://www.superpi.net/): Port of a program that broke a record in the 90s. Became popular with benchmarkers.
 
+## Out-of-Core FFTs
+
+- [Fast Fourier Transforms---For Fun and Profit](http://cis.rit.edu/class/simg716/FFT_Fun_Profit.pdf): The OG paper about it.
+
+- [Determining an Out-of-Core FFT Decomposition Strategy](https://pdfs.semanticscholar.org/30e3/07cc26b038b654122426133d6d545d2cc7e7.pdf) by Thomas Cormen: Has info about Swarztrauber's method and out-of-core FFTs.
+
+- [FFTs in External or Hierarchical Memory](https://www.davidhbailey.com/dhbpapers/fftq.pdf) by David Bailey.
+
+- See also Arndt.
 
 ## Miscellaneous links
 

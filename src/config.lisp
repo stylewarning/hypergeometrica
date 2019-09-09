@@ -6,12 +6,13 @@
 
 (defvar *verbose* nil)
 
-(setf lparallel:*kernel* (lparallel:make-kernel 8 :name "Hypergeometrica"))
-
 ;;; Enable parallelism in some routines. This could make it harder to
 ;;; debug or profile.
 
 ;;(push :hypergeometrica-parallel *features*)
+
+#+lparallel
+(setf lparallel:*kernel* (lparallel:make-kernel 8 :name "Hypergeometrica"))
 
 
 ;;; Enable assembly intrinsics.

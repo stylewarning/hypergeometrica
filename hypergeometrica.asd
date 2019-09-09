@@ -8,7 +8,8 @@
   :license "BSD 3-clause (See LICENSE.txt)"
   :depends-on (#:alexandria
                #:global-vars
-               #-(ppc64 little-endian) #:lparallel
+               #-(and ppc64 little-endian)
+               #:lparallel
                #:napa-fft3
                #:trivial-garbage
                #:uiop)

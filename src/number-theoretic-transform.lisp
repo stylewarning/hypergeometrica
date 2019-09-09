@@ -49,6 +49,8 @@ The resulting array (a mutation of the input) will be in bit-reversed order."
            (type alexandria:array-index mod-num)
            (inline m+ m- m*/fast m*/fast2 m*/fast2-unreduced)
            (optimize speed (safety 0) debug (space 0) (compilation-speed 0)))
+  #+hypergeometrica-safe
+  (assert (power-of-two-p (length a)))
   (let* ((m     (aref (scheme-moduli scheme)   mod-num))
          (m~    (aref (scheme-inverses scheme) mod-num))
          (N     (length a))
@@ -57,6 +59,8 @@ The resulting array (a mutation of the input) will be in bit-reversed order."
     (declare (type modulus m m~)
              (type alexandria:array-length N)
              (type alexandria:non-negative-fixnum ln))
+    #+hypergeometrica-paranoid
+    (assert (every (lambda (x) (< x m)) a))
     (loop :for lsubn :from ln :downto 2 :do
       (let* ((subn (ash 1 lsubn))
              (subn/2 (floor subn 2))
@@ -72,13 +76,14 @@ The resulting array (a mutation of the input) will be in bit-reversed order."
               (declare (type alexandria:array-index r+j r+j+subn/2))
               (setf (aref a r+j)        (m+ u v m)
                     (aref a r+j+subn/2) (m*/fast w^j (m- u v m) m m~))))
-          (setf w^j (m*/fast2-unreduced dw dw~ w^j m)))))
+          (setf w^j (m*/fast2 dw dw~ w^j m)))))
 
-    (loop :for r :below N :by 2 :do
-      (symbol-macrolet ((u (aref a r))
-                        (v (aref a (1+ r))))
-        (psetf u (m+ u v m)
-               v (m- u v m)))))
+    (when (plusp ln)
+      (loop :for r :below N :by 2 :do
+        (symbol-macrolet ((u (aref a r))
+                          (v (aref a (1+ r))))
+          (psetf u (m+ u v m)
+                 v (m- u v m))))))
 
   a)
 
@@ -95,21 +100,26 @@ The input must be in bit-reversed order."
            (type modular-scheme scheme)
            (type alexandria:array-index mod-num)
            (inline m+ m- m* m*/fast m*/fast2 m*/fast2-unreduced)
-           (optimize speed (safety 0) (debug 3) (space 0) (compilation-speed 0)))
+           (optimize speed (safety 0) debug (space 0) (compilation-speed 0)))
   (let* ((m     (aref (scheme-moduli scheme)   mod-num))
          (m~    (aref (scheme-inverses scheme) mod-num))
          (N     (length a))
          (ldn   (lg N))
          (roots (scheme-inverse-primitive-roots scheme)))
+    #+hypergeometrica-safe
+    (assert (power-of-two-p (length a)))
+    #+hypergeometrica-paranoid
+    (assert (every (lambda (x) (< x m)) a))
     (let ((1/N  (aref (scheme-inverse-transform-lengths scheme) ldn mod-num 0))
           (1/N~ (aref (scheme-inverse-transform-lengths scheme) ldn mod-num 1)))
       #+hypergeometrica-paranoid
       (assert (= 1/N (inv-mod N m)))
-      (loop :for r :below N :by 2 :do
-        (symbol-macrolet ((u (aref a r))
-                          (v (aref a (1+ r))))
-          (psetf u (m*/fast2 1/N 1/N~ (m+ u v m) m)
-                 v (m*/fast2 1/N 1/N~ (m- u v m) m)))))
+      (when (plusp ldn)
+        (loop :for r :below N :by 2 :do
+          (symbol-macrolet ((u (aref a r))
+                            (v (aref a (1+ r))))
+            (psetf u (m*/fast2 1/N 1/N~ (m+ u v m) m)
+                   v (m*/fast2 1/N 1/N~ (m- u v m) m))))))
     (loop :for ldm :from 2 :to ldn :do
       (let* ((subn (ash 1 ldm))
              (subn/2 (floor subn 2))
@@ -125,7 +135,7 @@ The input must be in bit-reversed order."
               (declare (type alexandria:array-index r+j r+j+subn/2))
               (setf (aref a r+j)        (m+ u v m)
                     (aref a r+j+subn/2) (m- u v m))))
-          (setf w^j (m*/fast2-unreduced dw dw~ w^j m))))))
+          (setf w^j (m*/fast2 dw dw~ w^j m))))))
 
   a)
 

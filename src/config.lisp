@@ -14,6 +14,12 @@
 ;;(push :hypergeometrica-parallel *features*)
 
 
+;;; Enable assembly intrinsics.
+
+#+(and sbcl (or x86-64))
+(push :hypergeometrica-intrinsics *features*)
+
+
 ;;; Enable cheap-ish safety checks. This may slow down code, but help debug.
 
 (push :hypergeometrica-safe *features*)

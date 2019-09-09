@@ -37,34 +37,42 @@
                           (values (unsigned-byte 64) &optional))
                 ub64/2))
 (defun ub64/2 (x)
-  #+sbcl (ub64/2 x)
-  #-sbcl (error "goof em up"))
+  #+hypergeometrica-intrinsics
+  (ub64/2 x)
+  #-hypergeometrica-intrinsics
+  (ash x -1))
 
 ;; 64 x 64 -> 128
 (declaim (ftype (function ((unsigned-byte 64) (unsigned-byte 64))
                           (values (unsigned-byte 64) bit &optional))
                 add64))
 (defun add64 (x y)
-  #+sbcl (add64 x y)
-  #-sbcl (let ((s (+ x y)))
-           (values (ldb (byte 64 0) s)
-                   (ldb (byte 1 64) s))))
+  #+hypergeometrica-intrinsics
+  (add64 x y)
+  #-hypergeometrica-intrinsics
+  (let ((s (+ x y)))
+    (values (ldb (byte 64 0) s)
+            (ldb (byte 1 64) s))))
 
 (declaim (ftype (function ((unsigned-byte 64) (unsigned-byte 64))
                           (values (unsigned-byte 64) (unsigned-byte 64) &optional))
                 mul128))
 (defun mul128 (x y)
-  #+sbcl (mul128 x y)
-  #-sbcl (let ((r (* x y)))
-           (ldb (byte 64 0) r)
-           (ldb (byte 64 64) r)))
+  #+hypergeometrica-intrinsics
+  (mul128 x y)
+  #-hypergeometrica-intrinsics
+  (let ((r (* x y)))
+    (values (ldb (byte 64 0) r)
+            (ldb (byte 64 64) r))))
 
 (declaim (ftype (function ((unsigned-byte 64) (unsigned-byte 64) (unsigned-byte 64))
                           (values (unsigned-byte 64) (unsigned-byte 64) &optional))
                 div128))
 (defun div128 (dividend-lo dividend-hi divisor)
-  #+sbcl (div128 dividend-lo dividend-hi divisor)
-  #-sbcl (truncate (dpb dividend-hi (byte 64 64) dividend-lo) dividend))
+  #+hypergeometrica-intrinsics
+  (div128 dividend-lo dividend-hi divisor)
+  #-hypergeometrica-intrinsics
+  (truncate (dpb dividend-hi (byte 64 64) dividend-lo) divisor))
 
 (declaim (ftype (function ((unsigned-byte 64) (unsigned-byte 64) (unsigned-byte 64) (unsigned-byte 64))
                           (values (unsigned-byte 64) (unsigned-byte 64) &optional))
@@ -74,16 +82,27 @@
 
     (alo + ahi*2^64) + (blo + bhi*2^64)
 "
-  #+sbcl(add128 alo ahi blo bhi)
-  #-sbcl(error "ya dun goofed"))
+  #+hypergeometrica-intrinsics
+  (add128 alo ahi blo bhi)
+  #-hypergeometrica-intrinsics
+  (let ((sum (+ alo blo (* (expt 2 64) (+ ahi bhi)))))
+    (values (ldb (byte 64 0) sum)
+            (ldb (byte 64 64) sum))))
 
 (defun sub128 (alo ahi blo bhi)
   "Compute
 
     (alo + ahi*2^64) - (blo + bhi*2^64)
+
+for A >= B.
 "
-  #+sbcl(sub128 alo ahi blo bhi)
-  #-sbcl(error "ya dun goofed"))
+  #+hypergeometrica-intrinsics
+  (sub128 alo ahi blo bhi)
+  #-hypergeometrica-intrinsics
+  (let ((sum (+ (- alo blo) (* (expt 2 64) (- ahi bhi)))))
+    (assert (not (minusp sum)))
+    (values (ldb (byte 64 0) sum)
+            (ldb (byte 64 64) sum))))
 
 
 

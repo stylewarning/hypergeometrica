@@ -4,6 +4,34 @@
 
 (in-package #:hypergeometrica)
 
+(defun %make-ntt-work (raw-storage length modulus)
+  (declare (type raw-storage raw-storage)
+           (type alexandria:array-length length)
+           (type modulus modulus))
+  #-hypergeometric-safe
+  (declare (optimize speed (safety 0) (space 0)))
+  #+hypergeometrica-safe
+  (assert (and (>= length (length raw-storage))
+               (power-of-two-p length)))
+  (let* ((a (make-storage length))
+         (raw-a (raw-storage-of-storage a)))
+    ;; NB. LENGTH is the total power-of-two length, not
+    ;; the length of the mpz!
+    (dotimes (i (length raw-storage) a)
+      (setf (aref raw-a i) (mod (aref raw-storage i) modulus)))))
+
+(defun make-ntt-work (mpz length moduli)
+  (declare (type mpz mpz)
+           (type alexandria:array-length length)
+           (type (simple-array digit (*)) moduli))
+  (when *verbose*
+    (format t "Allocating..."))
+  (let ((start-time (get-internal-real-time)))
+    (prog1 (loop :for m :of-type modulus :across moduli
+                 :collect (%make-ntt-work (raw-storage mpz) length m))
+      (when *verbose*
+        (format t " ~D ms~%" (round (* 1000 (- (get-internal-real-time) start-time)) internal-time-units-per-second))))))
+
 ;;;;;;;;;;;;;;;;;;;;; Number-Theoretic Transform ;;;;;;;;;;;;;;;;;;;;;
 
 ;;; Decimation-in-frequency algorithm.

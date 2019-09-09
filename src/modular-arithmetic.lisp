@@ -27,6 +27,9 @@
 
 Assumes 0 <= A,B < M."
   (declare (optimize speed (safety 0) (debug 0) (space 0)))
+  #+hypergeometrica-paranoid
+  (assert (and (<= 0 a (1- m))
+               (<= 0 b (1- m))))
   (if (< a b)
       (the digit (+ (the digit (- m b)) a))
       (the digit (- a b))))
@@ -37,6 +40,9 @@ Assumes 0 <= A,B < M."
 Assumes 0 <= A,B < M."
   (declare (optimize speed (safety 0) (debug 0) (space 0))
            (inline m-))
+  #+hypergeometrica-paranoid
+  (assert (and (<= 0 a (1- m))
+               (<= 0 b (1- m))))
   (if (zerop b)
       a
       (m- a (the digit (- m b)) m)))
@@ -45,6 +51,8 @@ Assumes 0 <= A,B < M."
   "Increment A modulo M.
 
 Assumes 0 <= A < M."
+  #+hypergeometrica-paranoid
+  (<= 0 a (1- m))
   (let ((a (1+ a)))
     (if (= a m)
         0
@@ -54,6 +62,8 @@ Assumes 0 <= A < M."
   "Decrement A modulo M.
 
 Assumes 0 <= A < M."
+  #+hypergeometrica-paranoid
+  (<= 0 a (1- m))
   (if (zerop a)
       (1- m)
       (1- a)))
@@ -62,6 +72,8 @@ Assumes 0 <= A < M."
   "Negate A modulo M.
 
 Assumes 0 <= A < M."
+  #+hypergeometrica-paranoid
+  (<= 0 a (1- m))
   (if (zerop a)
       0
       (- m a)))
@@ -159,9 +171,9 @@ Assumes 0 <= A < M."
 
 using m and its inverse m-inv."
   (declare (type (unsigned-byte 64) lo hi m m-inv)
-           (optimize speed (safety 0) (debug 0) (space 0)))
-  #+hypergeometrica-safe
-  (assert (or (zerop hi) (< (lg hi) +lg-modulus+)))
+           (optimize speed (safety 0) debug (space 0)))
+  #+hypergeometrica-paranoid
+  (assert (< (+ lo (ash hi 64)) (ash 1 (+ 64 +lg-modulus+))))
   (let* ((a1 (dpb (ldb (byte +lg-modulus+ 0) hi)
                   (byte +lg-modulus+ (- 64 +lg-modulus+))
                   (ash lo (- +lg-modulus+))))
@@ -183,7 +195,9 @@ using m and its inverse m-inv."
 using m and its inverse m-inv."
   (declare (type (unsigned-byte 64) a b m m-inv)
            (optimize speed (safety 0) (debug 0) (space 0)))
-  ;;(assert (= (* a b) (+ lo (ash hi 64))))
+  #+hypergeometrica-paranoid
+  (assert (and (<= 0 a (1- m))
+               (<= 0 b (1- m))))
   (multiple-value-bind (lo hi) (mul128 a b)
     (mod128/fast lo hi m m-inv)))
 

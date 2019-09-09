@@ -1,0 +1,333 @@
+HYPERGEOMETRICA> (time (x^x^x 9))
+
+---------------------------- Exponent left: 387420489
+   Size: 2 (approx 39 decimals, 0 MiB)
+   Transform length: 2
+   Convolution bits: 129
+   Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+   Convolving... 1 ms
+CRT... 0 ms
+Mult time (len 1): 2 ms
+   Size: 2 (approx 39 decimals, 0 MiB)
+   Transform length: 2
+   Convolution bits: 129
+   Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+   Convolving... 1 ms
+CRT... 0 ms
+Mult time (len 1): 1 ms
+---------------------------- Exponent left: 193710244
+   Size: 2 (approx 39 decimals, 0 MiB)
+   Transform length: 2
+   Convolution bits: 129
+   Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+   Convolving... 1 ms
+CRT... 0 ms
+Mult time (len 1): 1 ms
+---------------------------- Exponent left: 96855122
+   Size: 2 (approx 39 decimals, 0 MiB)
+   Transform length: 2
+   Convolution bits: 129
+   Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+   Convolving... 1 ms
+CRT... 0 ms
+Mult time (len 1): 1 ms
+---------------------------- Exponent left: 48427561
+   Size: 2 (approx 39 decimals, 0 MiB)
+   Transform length: 2
+   Convolution bits: 129
+   Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+   Convolving... 1 ms
+CRT... 0 ms
+Mult time (len 1): 1 ms
+   Size: 2 (approx 39 decimals, 0 MiB)
+   Transform length: 2
+   Convolution bits: 129
+   Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+   Convolving... 1 ms
+CRT... 0 ms
+Mult time (len 1): 1 ms
+---------------------------- Exponent left: 24213780
+   Size: 2 (approx 39 decimals, 0 MiB)
+   Transform length: 2
+   Convolution bits: 129
+   Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+   Convolving... 0 ms
+CRT... 0 ms
+Mult time (len 2): 0 ms
+---------------------------- Exponent left: 12106890
+   Size: 4 (approx 77 decimals, 0 MiB)
+   Transform length: 4
+   Convolution bits: 130
+   Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+   Convolving... 1 ms
+CRT... 0 ms
+Mult time (len 4): 1 ms
+---------------------------- Exponent left: 6053445
+   Size: 5 (approx 96 decimals, 0 MiB)
+   Transform length: 8
+   Convolution bits: 131
+   Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+   Convolving... 2 ms
+CRT... 0 ms
+Mult time (len 4): 2 ms
+   Size: 8 (approx 154 decimals, 0 MiB)
+   Transform length: 8
+   Convolution bits: 131
+   Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+   Convolving... 2 ms
+CRT... 0 ms
+Mult time (len 7): 2 ms
+---------------------------- Exponent left: 3026722
+   Size: 14 (approx 270 decimals, 0 MiB)
+   Transform length: 16
+   Convolution bits: 132
+   Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+   Convolving... 2 ms
+CRT... 0 ms
+Mult time (len 13): 3 ms
+---------------------------- Exponent left: 1513361
+   Size: 17 (approx 328 decimals, 0 MiB)
+   Transform length: 32
+   Convolution bits: 133
+   Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+   Convolving... 4 ms
+CRT... 0 ms
+Mult time (len 17): 5 ms
+   Size: 26 (approx 501 decimals, 0 MiB)
+   Transform length: 32
+   Convolution bits: 133
+   Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+   Convolving... 4 ms
+CRT... 1 ms
+Mult time (len 26): 82 ms
+---------------------------- Exponent left: 756680
+   Size: 52 (approx 1002 decimals, 0 MiB)
+   Transform length: 64
+   Convolution bits: 134
+   Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+   Convolving... 9 ms
+CRT... 2 ms
+Mult time (len 51): 11 ms
+---------------------------- Exponent left: 378340
+   Size: 102 (approx 1965 decimals, 0 MiB)
+   Transform length: 128
+   Convolution bits: 135
+   Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+   Convolving... 13 ms
+CRT... 5 ms
+Mult time (len 102): 18 ms
+---------------------------- Exponent left: 189170
+   Size: 204 (approx 3930 decimals, 0 MiB)
+   Transform length: 256
+   Convolution bits: 136
+   Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+   Convolving... 30 ms
+CRT... 7 ms
+Mult time (len 203): 37 ms
+---------------------------- Exponent left: 94585
+   Size: 220 (approx 4239 decimals, 0 MiB)
+   Transform length: 256
+   Convolution bits: 136
+   Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+   Convolving... 27 ms
+CRT... 8 ms
+Mult time (len 220): 35 ms
+   Size: 406 (approx 7822 decimals, 0 MiB)
+   Transform length: 512
+   Convolution bits: 137
+   Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+   Convolving... 48 ms
+CRT... 15 ms
+Mult time (len 406): 63 ms
+---------------------------- Exponent left: 47292
+   Size: 812 (approx 15644 decimals, 0 MiB)
+   Transform length: 1024
+   Convolution bits: 138
+   Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+   Convolving... 106 ms
+CRT... 30 ms
+Mult time (len 812): 137 ms
+---------------------------- Exponent left: 23646
+   Size: 1624 (approx 31288 decimals, 0 MiB)
+   Transform length: 2048
+   Convolution bits: 139
+   Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+   Convolving... 198 ms
+CRT... 56 ms
+Mult time (len 1624): 256 ms
+---------------------------- Exponent left: 11823
+   Size: 1844 (approx 35526 decimals, 0 MiB)
+   Transform length: 2048
+   Convolution bits: 139
+   Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+   Convolving... 211 ms
+CRT... 63 ms
+Mult time (len 1843): 275 ms
+   Size: 3248 (approx 62576 decimals, 0 MiB)
+   Transform length: 4096
+   Convolution bits: 140
+   Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+   Convolving... 395 ms
+CRT... 120 ms
+Mult time (len 3247): 517 ms
+---------------------------- Exponent left: 5911
+   Size: 5090 (approx 98064 decimals, 0 MiB)
+   Transform length: 8192
+   Convolution bits: 141
+   Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+   Convolving... 756 ms
+CRT... 201 ms
+Mult time (len 5089): 964 ms
+   Size: 6494 (approx 125113 decimals, 0 MiB)
+   Transform length: 8192
+   Convolution bits: 141
+   Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+   Convolving... 746 ms
+CRT... 222 ms
+Mult time (len 6493): 972 ms
+---------------------------- Exponent left: 2955
+   Size: 11582 (approx 223138 decimals, 0 MiB)
+   Transform length: 16384
+   Convolution bits: 142
+   Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+   Convolving... 1497 ms
+CRT... 390 ms
+Mult time (len 11581): 1898 ms
+   Size: 12986 (approx 250187 decimals, 0 MiB)
+   Transform length: 16384
+   Convolution bits: 142
+   Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+   Convolving... 1502 ms
+CRT... 432 ms
+Mult time (len 12985): 1942 ms
+---------------------------- Exponent left: 1477
+   Size: 24566 (approx 473287 decimals, 0 MiB)
+   Transform length: 32768
+   Convolution bits: 143
+   Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+   Convolving... 3062 ms
+CRT... 831 ms
+Mult time (len 24565): 3911 ms
+   Size: 25970 (approx 500336 decimals, 0 MiB)
+   Transform length: 32768
+   Convolution bits: 143
+   Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+   Convolving... 3039 ms
+CRT... 844 ms
+Mult time (len 25969): 3897 ms
+---------------------------- Exponent left: 738
+   Size: 51938 (approx 1000633 decimals, 0 MiB)
+   Transform length: 65536
+   Convolution bits: 144
+   Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+   Convolving... 6219 ms
+CRT... 1732 ms
+Mult time (len 51937): 7981 ms
+---------------------------- Exponent left: 369
+   Size: 76502 (approx 1473881 decimals, 1 MiB)
+   Transform length: 131072
+   Convolution bits: 145
+   Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+   Convolving... 13046 ms
+CRT... 3116 ms
+Mult time (len 76501): 16287 ms
+   Size: 103874 (approx 2001228 decimals, 1 MiB)
+   Transform length: 131072
+   Convolution bits: 145
+   Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+   Convolving... 12784 ms
+CRT... 3939 ms
+Mult time (len 103873): 16784 ms
+---------------------------- Exponent left: 184
+   Size: 207746 (approx 4002418 decimals, 2 MiB)
+   Transform length: 262144
+   Convolution bits: 146
+   Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+   Convolving... 26524 ms
+CRT... 8057 ms
+Mult time (len 207745): 34702 ms
+---------------------------- Exponent left: 92
+   Size: 415490 (approx 8004797 decimals, 3 MiB)
+   Transform length: 524288
+   Convolution bits: 147
+   Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+   Convolving... 52474 ms
+CRT... 15962 ms
+Mult time (len 415489): 68667 ms
+---------------------------- Exponent left: 46
+   Size: 830978 (approx 16009555 decimals, 6 MiB)
+   Transform length: 1048576
+   Convolution bits: 148
+   Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+   Convolving...
+; compiling (DEFUN DISK-CONVOLUTION ...)fpbfpb 114816 ms
+CRT...
+; compiling (DEFUN DISK-CONVOLUTION ...) 33270 ms
+Mult time (len 830977): 148580 ms
+---------------------------- Exponent left: 23
+   Size: 907478 (approx 17483398 decimals, 7 MiB)
+   Transform length: 1048576
+   Convolution bits: 148
+   Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+   Convolving...fpb fpb fpb  114301 ms
+CRT... 33472 ms
+Mult time (len 907477): 148076 ms
+   Size: 1661954 (approx 32019072 decimals, 13 MiB)
+   Transform length: 2097152
+   Convolution bits: 149
+   Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+   Convolving...fpb fpb fpb  228707 ms
+CRT... 63437 ms
+Mult time (len 1661954): 293096 ms
+---------------------------- Exponent left: 11
+   Size: 2569431 (approx 49502452 decimals, 20 MiB)
+   Transform length: 4194304
+   Convolution bits: 150
+   Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+   Convolving...fpb fpb fpb  490193 ms
+CRT... 105758 ms
+Mult time (len 2569430): 599430 ms
+   Size: 3323908 (approx 64038145 decimals, 25 MiB)
+   Transform length: 4194304
+   Convolution bits: 150
+   Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+   Convolving...fpb fpb fpb  489841 ms
+CRT... 126876 ms
+Mult time (len 3323907): 618542 ms
+---------------------------- Exponent left: 5
+   Size: 5893337 (approx 113540558 decimals, 45 MiB)
+   Transform length: 8388608
+   Convolution bits: 151
+   Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+   Convolving...fpb fpb fpb  982594 ms
+CRT... 255055 ms
+Mult time (len 5893337): 1243167 ms
+   Size: 6647814 (approx 128076251 decimals, 51 MiB)
+   Transform length: 8388608
+   Convolution bits: 151
+   Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+   Convolving...fpb fpb fpb  996972 ms
+CRT... 261284 ms
+Mult time (len 6647813): 1261939 ms
+---------------------------- Exponent left: 2
+   Size: 13295626 (approx 256152464 decimals, 101 MiB)
+   Transform length: 16777216
+   Convolution bits: 152
+   Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+   Convolving...fpb fpb fpb  1982274 ms
+CRT... 522777 ms
+Mult time (len 13295626): 2512311 ms
+   Size: 19188963 (approx 369693022 decimals, 146 MiB)
+   Transform length: 33554432
+   Convolution bits: 153
+   Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+   Convolving...fpb fpb fpb  4045654 ms
+CRT... 827081 ms
+Mult time (len 19188962): 4903074 ms
+Evaluation took:
+  13475.217 seconds of real time
+  13362.304248 seconds of total run time (4929.693381 user, 8432.610867 system)
+  [ Run times consist of 45.267 seconds GC time, and 13317.038 seconds non-GC time. ]
+  99.16% CPU
+  31,046,483,291,992 processor cycles
+  3,138,573,653,376 bytes consed

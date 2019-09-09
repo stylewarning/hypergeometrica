@@ -1,0 +1,289 @@
+* (in-package :hypergeometrica)
+#<PACKAGE "HYPERGEOMETRICA">
+* (setq *verbose* t)
+T
+* (load "scratch")
+T
+* (time (x^x^x/ram 9))
+---------------------------- Exponent left: 387420489
+---------------------------- Exponent left: 193710244
+---------------------------- Exponent left: 96855122
+---------------------------- Exponent left: 48427561
+---------------------------- Exponent left: 24213780
+---------------------------- Exponent left: 12106890
+---------------------------- Exponent left: 6053445
+---------------------------- Exponent left: 3026722
+---------------------------- Exponent left: 1513361
+---------------------------- Exponent left: 756680
+---------------------------- Exponent left: 378340
+---------------------------- Exponent left: 189170
+Allocating... 0 ms
+Size: 102 (approx 1965 decimals, 0 MiB)
+Transform length: 256
+Convolution bits: 136
+Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+Forward... 72 ms
+Pointwise multiply...  5 ms
+Reverse... 1 ms
+CRT... 0 ms
+---------------------------- Exponent left: 94585
+Allocating... 0 ms
+Size: 203 (approx 3911 decimals, 0 MiB)
+Transform length: 512
+Convolution bits: 137
+Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+Forward... 0 ms
+Pointwise multiply...  0 ms
+Reverse... 0 ms
+CRT... 0 ms
+---------------------------- Exponent left: 47292
+Allocating... 0 ms
+Size: 406 (approx 7822 decimals, 0 MiB)
+Transform length: 1024
+Convolution bits: 138
+Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+Forward... 1 ms
+Pointwise multiply...  0 ms
+Reverse... 0 ms
+CRT... 0 ms
+---------------------------- Exponent left: 23646
+Allocating... 1 ms
+Size: 812 (approx 15644 decimals, 0 MiB)
+Transform length: 2048
+Convolution bits: 139
+Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+Forward... 0 ms
+Pointwise multiply...  0 ms
+Reverse... 1 ms
+CRT... 1 ms
+---------------------------- Exponent left: 11823
+Allocating... 0 ms
+Allocating... 0 ms
+Size: 1844 (approx 35526 decimals, 0 MiB)
+Transform length: 2048
+Convolution bits: 139
+Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+Forward... 1 ms
+Pointwise multiply... 10 ms
+Reverse... 0 ms
+CRT... 1 ms
+Allocating... 0 ms
+Size: 1624 (approx 31288 decimals, 0 MiB)
+Transform length: 4096
+Convolution bits: 140
+Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+Forward... 1 ms
+Pointwise multiply...  0 ms
+Reverse... 1 ms
+CRT... 2 ms
+---------------------------- Exponent left: 5911
+Allocating... 0 ms
+Allocating... 0 ms
+Size: 5090 (approx 98064 decimals, 0 MiB)
+Transform length: 8192
+Convolution bits: 141
+Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+Forward... 2 ms
+Pointwise multiply... 0 ms
+Reverse... 3 ms
+CRT... 4 ms
+Allocating... 0 ms
+Size: 3247 (approx 62556 decimals, 0 MiB)
+Transform length: 8192
+Convolution bits: 141
+Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+Forward... 3 ms
+Pointwise multiply...  1 ms
+Reverse... 2 ms
+CRT... 5 ms
+---------------------------- Exponent left: 2955
+Allocating... 0 ms
+Allocating... 0 ms
+Size: 11582 (approx 223138 decimals, 0 MiB)
+Transform length: 16384
+Convolution bits: 142
+Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+Forward... 6 ms
+Pointwise multiply... 0 ms
+Reverse... 5 ms
+CRT... 25 ms
+Allocating... 0 ms
+Size: 6493 (approx 125094 decimals, 0 MiB)
+Transform length: 16384
+Convolution bits: 142
+Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+Forward... 18 ms
+Pointwise multiply...  3 ms
+Reverse... 5 ms
+CRT... 5 ms
+---------------------------- Exponent left: 1477
+Allocating... 1 ms
+Allocating... 0 ms
+Size: 24566 (approx 473287 decimals, 0 MiB)
+Transform length: 32768
+Convolution bits: 143
+Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+Forward... 10 ms
+Pointwise multiply... 3 ms
+Reverse... 9 ms
+CRT... 10 ms
+Allocating... 0 ms
+Size: 12985 (approx 250168 decimals, 1 MiB)
+Transform length: 32768
+Convolution bits: 143
+Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+Forward... 35 ms
+Pointwise multiply...  6 ms
+Reverse... 10 ms
+CRT... 9 ms
+---------------------------- Exponent left: 738
+Allocating... 2 ms
+Size: 25969 (approx 500317 decimals, 2 MiB)
+Transform length: 65536
+Convolution bits: 144
+Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+Forward... 20 ms
+Pointwise multiply...  3 ms
+Reverse... 36 ms
+CRT... 20 ms
+---------------------------- Exponent left: 369
+Allocating... 2 ms
+Allocating... 1 ms
+Size: 76502 (approx 1473881 decimals, 1 MiB)
+Transform length: 131072
+Convolution bits: 145
+Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+Forward... 73 ms
+Pointwise multiply... 17 ms
+Reverse... 35 ms
+CRT... 34 ms
+Allocating... 1 ms
+Size: 51937 (approx 1000614 decimals, 4 MiB)
+Transform length: 131072
+Convolution bits: 145
+Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+Forward... 93 ms
+Pointwise multiply...  9 ms
+Reverse... 38 ms
+CRT... 42 ms
+---------------------------- Exponent left: 184
+Allocating... 2 ms
+Size: 103873 (approx 2001209 decimals, 8 MiB)
+Transform length: 262144
+Convolution bits: 146
+Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+Forward... 138 ms
+Pointwise multiply...  18 ms
+Reverse... 70 ms
+CRT... 83 ms
+---------------------------- Exponent left: 92
+Allocating... 4 ms
+Size: 207745 (approx 4002399 decimals, 16 MiB)
+Transform length: 524288
+Convolution bits: 147
+Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+Forward... 137 ms
+Pointwise multiply...  19 ms
+Reverse... 244 ms
+CRT... 174 ms
+---------------------------- Exponent left: 46
+Allocating... 9 ms
+Size: 415489 (approx 8004778 decimals, 32 MiB)
+Transform length: 1048576
+Convolution bits: 148
+Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+Forward... 339 ms
+Pointwise multiply...  46 ms
+Reverse... 342 ms
+CRT... 318 ms
+---------------------------- Exponent left: 23
+Allocating... 17 ms
+Allocating... 4 ms
+Size: 907478 (approx 17483398 decimals, 7 MiB)
+Transform length: 1048576
+Convolution bits: 148
+Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+Forward... 410 ms
+Pointwise multiply... 34 ms
+Reverse... 345 ms
+CRT... 351 ms
+Allocating... 17 ms
+Size: 830977 (approx 16009536 decimals, 64 MiB)
+Transform length: 2097152
+Convolution bits: 149
+Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+Forward... 758 ms
+Pointwise multiply...  60 ms
+Reverse... 847 ms
+CRT... 813 ms
+---------------------------- Exponent left: 11
+Allocating... 49 ms
+Allocating... 24 ms
+Size: 2569432 (approx 49502471 decimals, 20 MiB)
+Transform length: 4194304
+Convolution bits: 150
+Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+Forward... 2313 ms
+Pointwise multiply... 137 ms
+Reverse... 1788 ms
+CRT... 1260 ms
+Allocating... 56 ms
+Size: 1661954 (approx 32019072 decimals, 128 MiB)
+Transform length: 4194304
+Convolution bits: 150
+Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+Forward... 1774 ms
+Pointwise multiply...  125 ms
+Reverse... 1867 ms
+CRT... 1442 ms
+---------------------------- Exponent left: 5
+Allocating... 93 ms
+Allocating... 85 ms
+Size: 5893339 (approx 113540596 decimals, 45 MiB)
+Transform length: 8388608
+Convolution bits: 151
+Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+Forward... 5326 ms
+Pointwise multiply... 142 ms
+Reverse... 3979 ms
+CRT... 2518 ms
+Allocating... 100 ms
+Size: 3323908 (approx 64038145 decimals, 256 MiB)
+Transform length: 8388608
+Convolution bits: 151
+Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+Forward... 4420 ms
+Pointwise multiply...  188 ms
+Reverse... 4025 ms
+CRT... 2693 ms
+---------------------------- Exponent left: 2
+Allocating... 213 ms
+Size: 6647815 (approx 128076270 decimals, 512 MiB)
+Transform length: 16777216
+Convolution bits: 152
+Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+Forward... 9184 ms
+Pointwise multiply...  405 ms
+Reverse... 8664 ms
+CRT... 5127 ms
+Allocating... 412 ms
+Allocating... 187 ms
+Size: 19188968 (approx 369693118 decimals, 146 MiB)
+Transform length: 33554432
+Convolution bits: 153
+Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+Forward... 27367 ms
+Pointwise multiply... 255 ms
+Reverse... 18772 ms
+CRT... 8800 ms
+Evaluation took:
+  120.380 seconds of real time
+  404.413108 seconds of total run time (399.126501 user, 5.286607 system)
+  [ Run times consist of 0.398 seconds GC time, and 404.016 seconds non-GC time. ]
+  335.95% CPU
+  9 lambdas converted
+  277,390,485,842 processor cycles
+  35,199,897,440 bytes consed
+
+#<MPZ 1228093895 bits* {103DF8BB73}>
+

@@ -54,7 +54,7 @@
 (defvar *maximum-file-size* (* 16 (expt 1024 3))
   "The maximum size of a file in octets.")
 
-(defvar *maximum-vector-size (expt 1024 3)
+(defvar *maximum-vector-size* (expt 1024 3)
   "The maximum size of a vector in memory in octets.")
 
 (defvar *default-file-directory* (uiop:ensure-directory-pathname "/tmp/"))

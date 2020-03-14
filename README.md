@@ -52,6 +52,10 @@ There's also a broken implementation of out-of-core multiplication called the "m
 
 Please, yes. Even if it's just telling me to document something. File an issue!
 
+## I know a lot about {I/O, disks, computer arithmetic, assembly, SBCL, ...} but I'm not really interested in rolling up my sleeves for this project.
+
+Please contact me so I have somebody to ask questions to!
+
 
 ## Where can I learn more about arbitrary precision arithmetic?
 

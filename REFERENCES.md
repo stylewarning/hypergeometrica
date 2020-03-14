@@ -72,7 +72,7 @@ style. It's quite difficult to read though.
 - [GitHub Mirror](https://github.com/rurban/libbf)
 
 
-## Assembly and SBC
+## Assembly and SBCL
 
 Paul Khuong has a wonderful series on writing low-level code (read: assembly) in SBCL.
 

@@ -29,6 +29,8 @@ On top of multiplication, one can build checkpointed algorithms for computing a 
 
 It's a Lisp library that takes advantage of assembly code via SBCL's VOP facilities.
 
+It would probably be easier to get higher performance quicker in C or C++, but there's a lot of non-hot-loop code (such as calculating suitable primes) that are better served without the baggage of a low-level language.
+
 
 ## What works and what doesn't?
 

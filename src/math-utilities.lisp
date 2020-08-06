@@ -4,12 +4,6 @@
 
 (in-package #:hypergeometrica)
 
-(defmacro do-range ((var from to &optional result) &body body)
-  (alexandria:once-only (from to)
-    `(do ((,var ,from (1+ ,var)))
-         ((= ,var ,to) ,result)
-       ,@body)))
-
 (defun power-of-two-p (n)
   "Is N a power-of-two?"
   (and (plusp n)
@@ -63,3 +57,10 @@
              (return-from pairwise-coprimep nil)))))))
   ;; Otherwise, everything must be coprime.
   t)
+
+(defun minimum-signed-byte (bits)
+  (1- (expt 2 (1- bits))))
+
+(defun maximum-signed-byte (bits)
+  (- (expt 2 (1- bits))))
+

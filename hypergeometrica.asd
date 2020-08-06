@@ -20,6 +20,7 @@
   :serial t
   :components ((:file "package")
                (:file "config")
+               (:file "utilities")
                (:file "math-utilities")
                (:file "sbcl-intrinsics"         :if-feature :sbcl)
                (:file "sbcl-intrinsics-x86-64"  :if-feature (:and :sbcl :x86-64))
@@ -28,6 +29,7 @@
                (:file "modular-arithmetic")
                (:file "storage")
                (:file "mpz")
+               (:file "mpf")
                (:file "moduli")
                (:file "strandh-elster-reversal")
                (:file "number-theoretic-transform")

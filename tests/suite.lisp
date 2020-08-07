@@ -27,7 +27,17 @@
   ;; NEXT-POWER-OF-TWO
   (loop :for i :from 1 :to 25
         :for j := (expt 2 i)
-        :do (is (= i (h::next-power-of-two j)))))
+        :do (is (= i (h::next-power-of-two j))))
+
+  (is (h::coprimep 2 3))
+  (is (h::coprimep 4 9))
+  (is (not (h::coprimep 4 20)))
+
+  (is (h::pairwise-coprimep '(2 3 5 7 11)))
+  (is (h::pairwise-coprimep #(2 3 5 7 11)))
+
+  (is (not (h::pairwise-coprimep '(2 3 5 7 9 11))))
+  (is (not (h::pairwise-coprimep #(2 3 5 7 9 11)))))
 
 (deftest test-arith-intrinsics ()
   "Test the arithmetic intrinsics."
@@ -87,6 +97,15 @@
   (%test-m* 10000 1000000)
   (%test-m* 10000 1000000000)
   (%test-m* 10000 1000000000000))
+
+(deftest test-garner ()
+  (loop :repeat 50000 :do
+    (let* ((moduli #(2 3 5 7 11 13 17 19 23 29 31))
+           (n (random (reduce #'* moduli)))
+           (vals (h::to-congruence-relations moduli n))
+           (g (h::garner moduli vals))
+           (n* (h::reconstruct-from-garner moduli g)))
+      (is (= n n*)))))
 
 (deftest test-scheme-is-sufficient ()
   (is (<= 3 (length (h::scheme-moduli h::**scheme**))))

@@ -230,3 +230,58 @@ using m and its inverse m-inv."
     
     r))
 
+;;; Garner's Algorithm to compute CRT
+
+(defun garner (moduli values)
+  "Given a vector of moduli MODULI = m1, ..., mk and a vector of values VALUES = v1, ... vk, compute the value of w such that
+
+    w = v1 (mod m1)
+    w = v2 (mod m2)
+    ...
+    w = vk (mod mk).
+
+The return value w will be represented in a mixed-radix representation (w1, ..., wk) such that
+
+    w = w1 + w2*(m1) + w3*(m1*m2) + ... + wk(m1*m2*...*m(k-1)).
+
+W will be a vector.
+"
+  #+hypergeometrica-paranoid
+  (progn
+    ;; Same number of moduli and values
+    (assert (= (length moduli) (length values)))
+    ;; Each thing is a modulus
+    (assert (every (lambda (m) (typep m 'modulus)) moduli))
+    ;; Each thing is less than the modulus (not strictly required)
+    (assert (every (lambda (x m) (and (not (minusp x)) (< x m))) values moduli))
+    ;; Moduli must be pairwise coprime
+    (assert (pairwise-coprimep moduli)))
+
+  (let* ((k (length moduli))
+         (x (make-array k)))
+    (labels ((M (i)   (aref moduli i))
+             (R (i j) (inv-mod (M i) (M j))))
+      (replace x values)                ; Initialize x[i]
+      (dotimes (i k x)
+        (dotimes (j i)
+          (setf (aref x i) (m* (R j i) (m- (aref x i) (aref x j) (M i)) (M i))))))))
+
+;;; used for testing
+(defun to-congruence-relations (moduli integer)
+  (let* ((k (length moduli))
+         (values (make-array k)))
+    (loop :for i :below k
+          :for m :across moduli
+          :do (setf (aref values i) (mod integer m)))
+    values))
+
+;;; used for testing
+(defun reconstruct-from-garner (moduli mixed-radix)
+  (assert (= (length moduli) (length mixed-radix)))
+  (loop :with ans := (aref mixed-radix 0)
+        :with prod := 1
+        :for i :from 1 :below (length moduli)
+        :for m :across moduli
+        :do (setf prod (* prod m)
+                  ans (+ ans (* prod (aref mixed-radix i))))
+        :finally (return ans)))

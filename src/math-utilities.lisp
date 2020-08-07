@@ -41,3 +41,23 @@
         :for x := n :then (ash x -1)
         :while (evenp x)
         :finally (return z)))
+
+(defun coprimep (a b)
+  "Are the integers A and B coprime?"
+  (= 1 (gcd a b)))
+
+(defun pairwise-coprimep (seq)
+  (etypecase seq
+    (list
+     (loop :for m1 :on seq :do
+       (loop :for m2 :in (rest m1) :do
+         (unless (coprimep (first m1) m2)
+           (return-from pairwise-coprimep nil)))))
+    (vector
+     (let ((len (length seq)))
+       (loop :for i :below len :do
+         (loop :for j :from (1+ i) :below len :do
+           (unless (coprimep (aref seq i) (aref seq j))
+             (return-from pairwise-coprimep nil)))))))
+  ;; Otherwise, everything must be coprime.
+  t)

@@ -79,6 +79,15 @@
               ;; TODO: test SUB128
               )))
 
+(deftest test-integer-mpf ()
+  (is (h::mpf-zerop (h::integer-mpf 0)))
+  (is (h::mpf-finite? (h::integer-mpf 0)))
+  (is (h::mpf-finite? (h::integer-mpf 1)))
+  (is (not (h::mpf-finite? (h::make-mpf-nan))))
+  (is (h::mpf-nan? (h::make-mpf-nan)))
+  (dotimes (i 100)
+    (is (= i (h::mpf-expn (h::integer-mpf (expt 2 i)))))))
+
 (defun %test-m* (n low)
   (flet ((r (&optional (high h::$base))
            (+ low (random (- high low)))))

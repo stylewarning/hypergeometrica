@@ -59,8 +59,8 @@
   t)
 
 (defun minimum-signed-byte (bits)
-  (1- (expt 2 (1- bits))))
+  (- (expt 2 (1- bits))))
 
 (defun maximum-signed-byte (bits)
-  (- (expt 2 (1- bits))))
+  (1- (expt 2 (1- bits))))
 

@@ -8,6 +8,7 @@
 (global-vars:define-global-parameter **scheme** (make-modular-scheme (default-moduli)))
 
 (defun add-big-digit (big-digit storage i)
+  "Add the BIG-DIGIT (an UNSIGNED-BYTE) to the STORAGE (a RAW-STORAGE) beginning at the Ith digit."
   (declare (type unsigned-byte big-digit)
            (type raw-storage storage)
            (type alexandria:array-index i)

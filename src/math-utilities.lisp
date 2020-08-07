@@ -36,6 +36,7 @@
   (expt 2 n))
 
 (defun count-trailing-zeroes (n)
+  "Count the number of trailing zeros in the binary representation of the positive integer N."
   (assert (plusp n))
   (loop :for z :from 0
         :for x := n :then (ash x -1)
@@ -47,6 +48,7 @@
   (= 1 (gcd a b)))
 
 (defun pairwise-coprimep (seq)
+  "Are all integers in the sequence SEQ pairwise coprime?"
   (etypecase seq
     (list
      (loop :for m1 :on seq :do

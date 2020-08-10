@@ -49,7 +49,7 @@
   `storage)
 
 (defun make-storage (n)
-  (assert (plusp n))
+  ;; (assert (plusp n))    ; Do we need this? What breaks?
   (make-array n :element-type 'digit
                 :initial-element 0
                 :adjustable t))

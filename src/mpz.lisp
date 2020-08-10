@@ -39,7 +39,7 @@
                    (setf (aref s 0) 1)
                    s)))
     (t
-     (let ((sign (if (minusp n) -1 1)))
+     (let ((sign (signum n)))
        (setf n (abs n))
        (loop :until (zerop n)
              :collect (multiple-value-bind (quo rem) (floor n $base)

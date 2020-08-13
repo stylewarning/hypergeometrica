@@ -58,3 +58,15 @@
   "The maximum size of a vector in memory in octets.")
 
 (defvar *default-file-directory* (uiop:ensure-directory-pathname "/tmp/"))
+
+(defun hypergeometrica-work-directory ()
+  "Return the pathname of a directory where work files may be written to. This is controlled in order of priority by:
+
+    Environment variable: HYPERGEOMETRICA_WORK
+
+    Lisp variable: HYPERGEOMETRICA::*DEFAULT-FILE-DIRECTORY*
+"
+  (let ((env (uiop:getenv "HYPERGEOMETRICA_WORK")))
+    (if (null env)
+        *default-file-directory*
+        (uiop:ensure-directory-pathname env))))

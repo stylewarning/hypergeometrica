@@ -156,7 +156,7 @@
   (merge-pathnames (format nil "hypergeo-r~X-t~D"
                            (random most-positive-fixnum)
                            (get-internal-real-time))
-                   *default-file-directory*))
+                   (hypergeometrica-work-directory)))
 
 (defun make-file-backed-storage (n)
   (assert (<= 0 n (/ *maximum-file-size* 8)))

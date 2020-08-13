@@ -1,0 +1,538 @@
+HYPERGEOMETRICA> (test-it 8)  ; 8^8^8
+RAM &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+-------------------------
+Current exponent: 2 / 16777216
+-------------------------
+Current exponent: 4 / 16777216
+-------------------------
+Current exponent: 8 / 16777216
+-------------------------
+Current exponent: 16 / 16777216
+-------------------------
+Current exponent: 32 / 16777216
+-------------------------
+Current exponent: 64 / 16777216
+-------------------------
+Current exponent: 128 / 16777216
+-------------------------
+Current exponent: 256 / 16777216
+-------------------------
+Current exponent: 512 / 16777216
+-------------------------
+Current exponent: 1024 / 16777216
+-------------------------
+Current exponent: 2048 / 16777216
+-------------------------
+Current exponent: 4096 / 16777216
+-------------------------
+Current exponent: 8192 / 16777216
+Allocating... 0 ms
+Size: 193 (approx 3718 decimals, 0 MiB)
+Transform length: 512
+Convolution bits: 137
+Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+Forward... 1 ms
+Pointwise multiply...  0 ms
+Reverse... 1 ms
+CRT... 1 ms
+-------------------------
+Current exponent: 16384 / 16777216
+Allocating... 0 ms
+Size: 385 (approx 7417 decimals, 0 MiB)
+Transform length: 1024
+Convolution bits: 138
+Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+Forward... 0 ms
+Pointwise multiply...  1 ms
+Reverse... 3 ms
+CRT... 0 ms
+-------------------------
+Current exponent: 32768 / 16777216
+Allocating... 0 ms
+Size: 769 (approx 14815 decimals, 0 MiB)
+Transform length: 2048
+Convolution bits: 139
+Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+Forward... 2 ms
+Pointwise multiply...  1 ms
+Reverse... 6 ms
+CRT... 0 ms
+-------------------------
+Current exponent: 65536 / 16777216
+Allocating... 0 ms
+Size: 1537 (approx 29612 decimals, 0 MiB)
+Transform length: 4096
+Convolution bits: 140
+Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+Forward... 4 ms
+Pointwise multiply...  1 ms
+Reverse... 11 ms
+CRT... 1 ms
+-------------------------
+Current exponent: 131072 / 16777216
+Allocating... 0 ms
+Size: 3073 (approx 59204 decimals, 0 MiB)
+Transform length: 8192
+Convolution bits: 141
+Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+Forward... 7 ms
+Pointwise multiply...  3 ms
+Reverse... 22 ms
+CRT... 2 ms
+-------------------------
+Current exponent: 262144 / 16777216
+Allocating... 0 ms
+Size: 6145 (approx 118389 decimals, 0 MiB)
+Transform length: 16384
+Convolution bits: 142
+Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+Forward... 14 ms
+Pointwise multiply...  8 ms
+Reverse... 45 ms
+CRT... 2 ms
+-------------------------
+Current exponent: 524288 / 16777216
+Allocating... 1 ms
+Size: 12289 (approx 236759 decimals, 1 MiB)
+Transform length: 32768
+Convolution bits: 143
+Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+Forward... 26 ms
+Pointwise multiply...  13 ms
+Reverse... 84 ms
+CRT... 4 ms
+-------------------------
+Current exponent: 1048576 / 16777216
+Allocating... 0 ms
+Size: 24577 (approx 473499 decimals, 2 MiB)
+Transform length: 65536
+Convolution bits: 144
+Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+Forward... 55 ms
+Pointwise multiply...  26 ms
+Reverse... 178 ms
+CRT... 9 ms
+-------------------------
+Current exponent: 2097152 / 16777216
+Allocating... 1 ms
+Size: 49153 (approx 946978 decimals, 4 MiB)
+Transform length: 131072
+Convolution bits: 145
+Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+Forward... 116 ms
+Pointwise multiply...  57 ms
+Reverse... 384 ms
+CRT... 18 ms
+-------------------------
+Current exponent: 4194304 / 16777216
+Allocating... 3 ms
+Size: 98305 (approx 1893936 decimals, 8 MiB)
+Transform length: 262144
+Convolution bits: 146
+Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+Forward... 240 ms
+Pointwise multiply...  107 ms
+Reverse... 844 ms
+CRT... 36 ms
+-------------------------
+Current exponent: 8388608 / 16777216
+Allocating... 4 ms
+Size: 196609 (approx 3787853 decimals, 16 MiB)
+Transform length: 524288
+Convolution bits: 147
+Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+Forward... 590 ms
+Pointwise multiply...  206 ms
+Reverse... 1895 ms
+CRT... 65 ms
+-------------------------
+Current exponent: 16777216 / 16777216
+Allocating... 8 ms
+Size: 393217 (approx 7575687 decimals, 32 MiB)
+Transform length: 1048576
+Convolution bits: 148
+Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+Forward... 1895 ms
+Pointwise multiply...  415 ms
+Reverse... 4529 ms
+CRT... 130 ms
+Evaluation took:
+  12.081 seconds of real time
+  12.097421 seconds of total run time (12.034019 user, 0.063402 system)
+  [ Run times consist of 0.053 seconds GC time, and 12.045 seconds non-GC time. ]
+  100.13% CPU
+  35,096,528,343 processor cycles
+  11,813,149,088 bytes consed
+  
+DISK &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+Created file of 8 bytes: /media/bigbux/HYPER/hypergeo-r3CFE906BFF50F3EA-t359856
+Created file of 8 bytes: /media/bigbux/HYPER/hypergeo-r3E379EDFC4726689-t359857
+-------------------------
+Current exponent: 2 / 16777216
+Created file of 8 bytes: /media/bigbux/HYPER/hypergeo-r22A59DC1D6C5BB63-t359857
+Created file of 8 bytes: /media/bigbux/HYPER/hypergeo-r15640CBD48B05B-t359857
+Created file of 8 bytes: /media/bigbux/HYPER/hypergeo-r3CA665FBDC6327AF-t359857
+Created file of 8 bytes: /media/bigbux/HYPER/hypergeo-r2A66869F3FFF96B5-t359857
+Created file of 8 bytes: /media/bigbux/HYPER/hypergeo-r2EC978B72FF4D36E-t359857
+Created file of 8 bytes: /media/bigbux/HYPER/hypergeo-r3C53A0809488FD26-t359857
+   Size: 2 (approx 39 decimals, 0 MiB)
+   Transform length: 2
+   Convolution bits: 129
+   Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+   Convolving...fpb fpb fpb  0 ms
+CRT... 0 ms
+Mult time (len 1): 0 ms
+-------------------------
+Current exponent: 4 / 16777216
+Created file of 8 bytes: /media/bigbux/HYPER/hypergeo-r2C8A35FADEE61505-t359857
+Created file of 8 bytes: /media/bigbux/HYPER/hypergeo-r3423EFACC7668790-t359857
+Created file of 8 bytes: /media/bigbux/HYPER/hypergeo-r3C027A2F841A0CC5-t359857
+Created file of 8 bytes: /media/bigbux/HYPER/hypergeo-r1E88ED265F66E9F8-t359858
+Created file of 8 bytes: /media/bigbux/HYPER/hypergeo-r2EC30AA2AD2B35AF-t359858
+Created file of 8 bytes: /media/bigbux/HYPER/hypergeo-rA913E47A00665C4-t359858
+   Size: 2 (approx 39 decimals, 0 MiB)
+   Transform length: 2
+   Convolution bits: 129
+   Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+   Convolving...fpb fpb fpb  0 ms
+CRT... 0 ms
+Mult time (len 1): 0 ms
+-------------------------
+Current exponent: 8 / 16777216
+Created file of 8 bytes: /media/bigbux/HYPER/hypergeo-r3E2F14EEFE47BD94-t359858
+Created file of 8 bytes: /media/bigbux/HYPER/hypergeo-r3C668A9CDDD6283F-t359858
+Created file of 8 bytes: /media/bigbux/HYPER/hypergeo-r30DB45748F6BAA84-t359858
+Created file of 8 bytes: /media/bigbux/HYPER/hypergeo-r21DD31EC97D655CA-t359858
+Created file of 8 bytes: /media/bigbux/HYPER/hypergeo-r210EC8A8F6F7FBDC-t359858
+Created file of 8 bytes: /media/bigbux/HYPER/hypergeo-r3BF70EB059DA419-t359859
+   Size: 2 (approx 39 decimals, 0 MiB)
+   Transform length: 2
+   Convolution bits: 129
+   Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+   Convolving...fpb fpb fpb  0 ms
+CRT... 0 ms
+Mult time (len 1): 0 ms
+-------------------------
+Current exponent: 16 / 16777216
+Created file of 8 bytes: /media/bigbux/HYPER/hypergeo-r35F9382B87BD67D5-t359859
+Created file of 8 bytes: /media/bigbux/HYPER/hypergeo-r3F2E7410F3F018B-t359859
+Created file of 8 bytes: /media/bigbux/HYPER/hypergeo-r12FB052707F756CE-t359859
+Created file of 8 bytes: /media/bigbux/HYPER/hypergeo-r25CEA854E784BD18-t359859
+Created file of 8 bytes: /media/bigbux/HYPER/hypergeo-r26195ABF05A82A4A-t359859
+Created file of 8 bytes: /media/bigbux/HYPER/hypergeo-r17E42FC8EEB590C5-t359859
+   Size: 2 (approx 39 decimals, 0 MiB)
+   Transform length: 2
+   Convolution bits: 129
+   Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+   Convolving...fpb fpb fpb  1 ms
+CRT... 0 ms
+Mult time (len 1): 1 ms
+-------------------------
+Current exponent: 32 / 16777216
+Created file of 8 bytes: /media/bigbux/HYPER/hypergeo-rC74866B6D9B8B82-t359860
+Created file of 8 bytes: /media/bigbux/HYPER/hypergeo-r6E9FDC5C4171B04-t359860
+Created file of 8 bytes: /media/bigbux/HYPER/hypergeo-r629EC0BC10E0E52-t359860
+Created file of 8 bytes: /media/bigbux/HYPER/hypergeo-r9771AD36A586D57-t359860
+Created file of 8 bytes: /media/bigbux/HYPER/hypergeo-r12A2ECA281FAA683-t359860
+Created file of 8 bytes: /media/bigbux/HYPER/hypergeo-r56C3357CE5AE1A9-t359860
+   Size: 2 (approx 39 decimals, 0 MiB)
+   Transform length: 2
+   Convolution bits: 129
+   Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+   Convolving...fpb fpb fpb  0 ms
+CRT... 0 ms
+Mult time (len 2): 0 ms
+-------------------------
+Current exponent: 64 / 16777216
+Created file of 16 bytes: /media/bigbux/HYPER/hypergeo-r1C71FF429DA0CFA9-t359860
+Created file of 16 bytes: /media/bigbux/HYPER/hypergeo-r355EF6E7BCC93593-t359861
+Created file of 16 bytes: /media/bigbux/HYPER/hypergeo-r2DCCADEA900F6ADE-t359861
+Created file of 16 bytes: /media/bigbux/HYPER/hypergeo-r3430BD8E5450A4A7-t359861
+Created file of 16 bytes: /media/bigbux/HYPER/hypergeo-r2633848A2D7D7403-t359861
+Created file of 16 bytes: /media/bigbux/HYPER/hypergeo-r28B948C60C1F4D47-t359861
+   Size: 4 (approx 77 decimals, 0 MiB)
+   Transform length: 4
+   Convolution bits: 130
+   Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+   Convolving...fpb fpb fpb  0 ms
+CRT... 0 ms
+Mult time (len 4): 0 ms
+-------------------------
+Current exponent: 128 / 16777216
+Created file of 32 bytes: /media/bigbux/HYPER/hypergeo-r3134C999FCB646F4-t359861
+Created file of 32 bytes: /media/bigbux/HYPER/hypergeo-r36D3EE44DA2E77CA-t359861
+Created file of 32 bytes: /media/bigbux/HYPER/hypergeo-r3E8A960FA823C260-t359862
+Created file of 32 bytes: /media/bigbux/HYPER/hypergeo-r3ED503166BC62B97-t359862
+Created file of 32 bytes: /media/bigbux/HYPER/hypergeo-r3E22DC423407E626-t359862
+Created file of 32 bytes: /media/bigbux/HYPER/hypergeo-r235CD85A5CC4ECD2-t359862
+   Size: 8 (approx 154 decimals, 0 MiB)
+   Transform length: 8
+   Convolution bits: 131
+   Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+   Convolving...fpb fpb fpb  1 ms
+CRT... 0 ms
+Mult time (len 7): 1 ms
+-------------------------
+Current exponent: 256 / 16777216
+Created file of 56 bytes: /media/bigbux/HYPER/hypergeo-r38DF6DA1CD81C9FF-t359863
+Created file of 56 bytes: /media/bigbux/HYPER/hypergeo-r3C629E076AB70DE0-t359863
+Created file of 56 bytes: /media/bigbux/HYPER/hypergeo-r767A15FA6B84040-t359863
+Created file of 56 bytes: /media/bigbux/HYPER/hypergeo-r325D170F69D76DBD-t359864
+Created file of 56 bytes: /media/bigbux/HYPER/hypergeo-r2AEB8835A3F6DCC1-t359864
+Created file of 56 bytes: /media/bigbux/HYPER/hypergeo-r1C6662FE6A26E6E2-t359864
+   Size: 14 (approx 270 decimals, 0 MiB)
+   Transform length: 16
+   Convolution bits: 132
+   Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+   Convolving...fpb fpb fpb  1 ms
+CRT... 0 ms
+Mult time (len 13): 1 ms
+-------------------------
+Current exponent: 512 / 16777216
+Created file of 104 bytes: /media/bigbux/HYPER/hypergeo-r1D831FF69F9C8D23-t359865
+Created file of 104 bytes: /media/bigbux/HYPER/hypergeo-r2207BF4D42800C73-t359865
+Created file of 104 bytes: /media/bigbux/HYPER/hypergeo-r3558E9BADF7E78F7-t359866
+Created file of 104 bytes: /media/bigbux/HYPER/hypergeo-r1F595344C1AE1A0D-t359866
+Created file of 104 bytes: /media/bigbux/HYPER/hypergeo-r3BD6A212A4764357-t359866
+Created file of 104 bytes: /media/bigbux/HYPER/hypergeo-r35D0B251BCAB83D4-t359866
+   Size: 26 (approx 501 decimals, 0 MiB)
+   Transform length: 32
+   Convolution bits: 133
+   Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+   Convolving...fpb fpb fpb  2 ms
+CRT... 0 ms
+Mult time (len 25): 3 ms
+-------------------------
+Current exponent: 1024 / 16777216
+Created file of 200 bytes: /media/bigbux/HYPER/hypergeo-r32D614D12FFDE564-t359869
+Created file of 200 bytes: /media/bigbux/HYPER/hypergeo-r33B31D39F700D8AC-t359869
+Created file of 200 bytes: /media/bigbux/HYPER/hypergeo-r9A8C9551900EBE0-t359869
+Created file of 200 bytes: /media/bigbux/HYPER/hypergeo-r39398636A2EF7F1A-t359869
+Created file of 200 bytes: /media/bigbux/HYPER/hypergeo-r166F3B551E217035-t359869
+Created file of 200 bytes: /media/bigbux/HYPER/hypergeo-r36E88452152D24DA-t359870
+   Size: 50 (approx 963 decimals, 0 MiB)
+   Transform length: 64
+   Convolution bits: 134
+   Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+   Convolving...fpb fpb fpb  3 ms
+CRT... 0 ms
+Mult time (len 49): 3 ms
+-------------------------
+Current exponent: 2048 / 16777216
+Created file of 392 bytes: /media/bigbux/HYPER/hypergeo-r3174E099BCCA8D49-t359873
+Created file of 392 bytes: /media/bigbux/HYPER/hypergeo-r28D4CD4B85AABE8-t359874
+Created file of 392 bytes: /media/bigbux/HYPER/hypergeo-rACCFAE76B0A98CC-t359874
+Created file of 392 bytes: /media/bigbux/HYPER/hypergeo-r1991F78F492407C6-t359874
+Created file of 392 bytes: /media/bigbux/HYPER/hypergeo-r3DDA6E29DE00C157-t359875
+Created file of 392 bytes: /media/bigbux/HYPER/hypergeo-rB008ECEB3ACC045-t359875
+   Size: 98 (approx 1888 decimals, 0 MiB)
+   Transform length: 128
+   Convolution bits: 135
+   Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+   Convolving...fpb fpb fpb  7 ms
+CRT... 1 ms
+Mult time (len 97): 8 ms
+-------------------------
+Current exponent: 4096 / 16777216
+Created file of 776 bytes: /media/bigbux/HYPER/hypergeo-r12C81965DBA0E18F-t359883
+Created file of 776 bytes: /media/bigbux/HYPER/hypergeo-r2E03A29107F2D690-t359883
+Created file of 776 bytes: /media/bigbux/HYPER/hypergeo-r9CA6550ED87E6BE-t359884
+Created file of 776 bytes: /media/bigbux/HYPER/hypergeo-rA1093F8D3424FAB-t359885
+Created file of 776 bytes: /media/bigbux/HYPER/hypergeo-r23D5F0F58EF2143D-t359886
+Created file of 776 bytes: /media/bigbux/HYPER/hypergeo-r1674DF518BBF9CA5-t359887
+   Size: 194 (approx 3738 decimals, 0 MiB)
+   Transform length: 256
+   Convolution bits: 136
+   Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+   Convolving...fpb fpb fpb  14 ms
+CRT... 1 ms
+Mult time (len 193): 16 ms
+-------------------------
+Current exponent: 8192 / 16777216
+Created file of 1544 bytes: /media/bigbux/HYPER/hypergeo-r156F89D051BF5D67-t359903
+Created file of 1544 bytes: /media/bigbux/HYPER/hypergeo-r2F78EB8C3ECA2C8A-t359904
+Created file of 1544 bytes: /media/bigbux/HYPER/hypergeo-rC16E3C9B9161DBC-t359905
+Created file of 1544 bytes: /media/bigbux/HYPER/hypergeo-r1D7441625C56323C-t359906
+Created file of 1544 bytes: /media/bigbux/HYPER/hypergeo-r3B1FD0E9F03D8968-t359907
+Created file of 1544 bytes: /media/bigbux/HYPER/hypergeo-r20CC0A904A36D5C2-t359908
+   Size: 386 (approx 7437 decimals, 0 MiB)
+   Transform length: 512
+   Convolution bits: 137
+   Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+   Convolving...fpb fpb fpb  24 ms
+CRT... 3 ms
+Mult time (len 385): 28 ms
+-------------------------
+Current exponent: 16384 / 16777216
+Created file of 3080 bytes: /media/bigbux/HYPER/hypergeo-r17193C1D536D86B-t359937
+Created file of 3080 bytes: /media/bigbux/HYPER/hypergeo-r2A8E995CD98C41C2-t359940
+Created file of 3080 bytes: /media/bigbux/HYPER/hypergeo-rF6C7B8EE08D9D94-t359943
+Created file of 3080 bytes: /media/bigbux/HYPER/hypergeo-r2122B47B3D95778-t359945
+Created file of 3080 bytes: /media/bigbux/HYPER/hypergeo-r9CE32DDA323CCED-t359947
+Created file of 3080 bytes: /media/bigbux/HYPER/hypergeo-r293477B060C5D50D-t359949
+   Size: 770 (approx 14835 decimals, 0 MiB)
+   Transform length: 1024
+   Convolution bits: 138
+   Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+   Convolving...fpb fpb fpb  52 ms
+CRT... 8 ms
+Mult time (len 769): 61 ms
+-------------------------
+Current exponent: 32768 / 16777216
+Created file of 6152 bytes: /media/bigbux/HYPER/hypergeo-r16608F59D0C4B768-t360012
+Created file of 6152 bytes: /media/bigbux/HYPER/hypergeo-r1ED01EE1E70662BB-t360017
+Created file of 6152 bytes: /media/bigbux/HYPER/hypergeo-r167DEF7DC721FEB0-t360022
+Created file of 6152 bytes: /media/bigbux/HYPER/hypergeo-r199BFD4C0A42BD13-t360026
+Created file of 6152 bytes: /media/bigbux/HYPER/hypergeo-rA0EC8363C9493C8-t360030
+Created file of 6152 bytes: /media/bigbux/HYPER/hypergeo-r23A5E2F463DE0CB1-t360034
+   Size: 1538 (approx 29631 decimals, 0 MiB)
+   Transform length: 2048
+   Convolution bits: 139
+   Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+   Convolving...fpb fpb fpb  104 ms
+CRT... 14 ms
+Mult time (len 1537): 123 ms
+-------------------------
+Current exponent: 65536 / 16777216
+Created file of 12296 bytes: /media/bigbux/HYPER/hypergeo-r21FC2A79826F84FE-t360161
+Created file of 12296 bytes: /media/bigbux/HYPER/hypergeo-r12FC29E2C0C2A74D-t360170
+Created file of 12296 bytes: /media/bigbux/HYPER/hypergeo-r262A79D2D2472FE8-t360178
+Created file of 12296 bytes: /media/bigbux/HYPER/hypergeo-r3F673C51109CA335-t360185
+Created file of 12296 bytes: /media/bigbux/HYPER/hypergeo-r3599003CD9C3C2E8-t360193
+Created file of 12296 bytes: /media/bigbux/HYPER/hypergeo-r2A6B1A55C08E3EBA-t360201
+   Size: 3074 (approx 59223 decimals, 0 MiB)
+   Transform length: 4096
+   Convolution bits: 140
+   Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+   Convolving...fpb fpb fpb  214 ms
+CRT... 28 ms
+Mult time (len 3073): 244 ms
+-------------------------
+Current exponent: 131072 / 16777216
+Created file of 24584 bytes: /media/bigbux/HYPER/hypergeo-r3FB97B9E681A6823-t360453
+Created file of 24584 bytes: /media/bigbux/HYPER/hypergeo-rBE2A8193868E060-t360471
+Created file of 24584 bytes: /media/bigbux/HYPER/hypergeo-r23258A6F72B4C004-t360487
+Created file of 24584 bytes: /media/bigbux/HYPER/hypergeo-r263E0C624E02ECFF-t360503
+Created file of 24584 bytes: /media/bigbux/HYPER/hypergeo-r1B785DC0EAD2EA66-t360518
+Created file of 24584 bytes: /media/bigbux/HYPER/hypergeo-r363DDBAA5A69CFC4-t360536
+   Size: 6146 (approx 118408 decimals, 0 MiB)
+   Transform length: 8192
+   Convolution bits: 141
+   Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+   Convolving...fpb fpb fpb  430 ms
+CRT... 55 ms
+Mult time (len 6145): 490 ms
+-------------------------
+Current exponent: 262144 / 16777216
+Created file of 49160 bytes: /media/bigbux/HYPER/hypergeo-r1C2332492EE5B879-t361043
+Created file of 49160 bytes: /media/bigbux/HYPER/hypergeo-r1F7AC72BFAFA0741-t361076
+Created file of 49160 bytes: /media/bigbux/HYPER/hypergeo-r47EA2EC99D42B28-t361110
+Created file of 49160 bytes: /media/bigbux/HYPER/hypergeo-r256E7A9F04C2DFF3-t361143
+Created file of 49160 bytes: /media/bigbux/HYPER/hypergeo-r16B478A17547F703-t361177
+Created file of 49160 bytes: /media/bigbux/HYPER/hypergeo-r37DA385F062C5073-t361209
+   Size: 12290 (approx 236778 decimals, 0 MiB)
+   Transform length: 16384
+   Convolution bits: 142
+   Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+   Convolving...fpb fpb fpb  883 ms
+CRT... 104 ms
+Mult time (len 12289): 996 ms
+-------------------------
+Current exponent: 524288 / 16777216
+Created file of 98312 bytes: /media/bigbux/HYPER/hypergeo-r35345AD14B8B99FD-t362237
+Created file of 98312 bytes: /media/bigbux/HYPER/hypergeo-rCED94C452463F5E-t362301
+Created file of 98312 bytes: /media/bigbux/HYPER/hypergeo-r14BE9B5DD4BAB3BC-t362364
+Created file of 98312 bytes: /media/bigbux/HYPER/hypergeo-r37244EF0F732BF88-t362428
+Created file of 98312 bytes: /media/bigbux/HYPER/hypergeo-r122D772893C57061-t362493
+Created file of 98312 bytes: /media/bigbux/HYPER/hypergeo-r3C6C31EF89817B14-t362556
+   Size: 24578 (approx 473518 decimals, 0 MiB)
+   Transform length: 32768
+   Convolution bits: 143
+   Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+   Convolving...fpb fpb fpb  1788 ms
+CRT... 203 ms
+Mult time (len 24577): 2008 ms
+-------------------------
+Current exponent: 1048576 / 16777216
+Created file of 196616 bytes: /media/bigbux/HYPER/hypergeo-r2AF01351B7C096CB-t364629
+Created file of 196616 bytes: /media/bigbux/HYPER/hypergeo-r3DD45AE505B89815-t364757
+Created file of 196616 bytes: /media/bigbux/HYPER/hypergeo-r2684C410AD2D8930-t364884
+Created file of 196616 bytes: /media/bigbux/HYPER/hypergeo-r2284DC88835E7EC-t365012
+Created file of 196616 bytes: /media/bigbux/HYPER/hypergeo-rA81EFE50C6C9320-t365139
+Created file of 196616 bytes: /media/bigbux/HYPER/hypergeo-r6AEF41F511C28AC-t365266
+   Size: 49154 (approx 946997 decimals, 0 MiB)
+   Transform length: 65536
+   Convolution bits: 144
+   Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+   Convolving...fpb fpb fpb  3686 ms
+CRT... 409 ms
+Mult time (len 49153): 4129 ms
+-------------------------
+Current exponent: 2097152 / 16777216
+Created file of 393224 bytes: /media/bigbux/HYPER/hypergeo-r272C19A672FC4FB2-t369523
+Created file of 393224 bytes: /media/bigbux/HYPER/hypergeo-r329C7441DB92B133-t369780
+Created file of 393224 bytes: /media/bigbux/HYPER/hypergeo-r941AE40E303593F-t370037
+Created file of 393224 bytes: /media/bigbux/HYPER/hypergeo-r14DCB863E6CE9115-t370295
+Created file of 393224 bytes: /media/bigbux/HYPER/hypergeo-r20501581F0FFD738-t370553
+Created file of 393224 bytes: /media/bigbux/HYPER/hypergeo-r2FFD6B215E548166-t370811
+   Size: 98306 (approx 1893956 decimals, 1 MiB)
+   Transform length: 131072
+   Convolution bits: 145
+   Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+   Convolving...fpb fpb fpb  7576 ms
+CRT... 810 ms
+Mult time (len 98305): 8450 ms
+-------------------------
+Current exponent: 4194304 / 16777216
+Created file of 786440 bytes: /media/bigbux/HYPER/hypergeo-r3C7EF96A000FBA25-t379517
+Created file of 786440 bytes: /media/bigbux/HYPER/hypergeo-r277DCA2698BD0EE-t380030
+Created file of 786440 bytes: /media/bigbux/HYPER/hypergeo-r2D7972D605B5E1F-t380544
+Created file of 786440 bytes: /media/bigbux/HYPER/hypergeo-r35AF8F5CAB27DAF3-t381055
+Created file of 786440 bytes: /media/bigbux/HYPER/hypergeo-r16BF4811140DB7F9-t381565
+Created file of 786440 bytes: /media/bigbux/HYPER/hypergeo-r20C58CBFC4662BD5-t382077
+   Size: 196610 (approx 3787872 decimals, 2 MiB)
+   Transform length: 262144
+   Convolution bits: 146
+   Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+   Convolving...fpb fpb fpb  15656 ms
+CRT... 1614 ms
+Mult time (len 196609): 17400 ms
+-------------------------
+Current exponent: 8388608 / 16777216
+Created file of 1572872 bytes: /media/bigbux/HYPER/hypergeo-r3428D5DF5A5C33B4-t399988
+Created file of 1572872 bytes: /media/bigbux/HYPER/hypergeo-r346CB62290CB35C6-t401015
+Created file of 1572872 bytes: /media/bigbux/HYPER/hypergeo-rFB20325CCCF3848-t402040
+Created file of 1572872 bytes: /media/bigbux/HYPER/hypergeo-rDF1D58BDF1A7377-t403064
+Created file of 1572872 bytes: /media/bigbux/HYPER/hypergeo-r3732C64A3EEE516F-t404088
+Created file of 1572872 bytes: /media/bigbux/HYPER/hypergeo-rC737FF96155B95F-t405116
+   Size: 393218 (approx 7575706 decimals, 3 MiB)
+   Transform length: 524288
+   Convolution bits: 147
+   Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+   Convolving...fpb fpb fpb  32668 ms
+CRT... 3229 ms
+Mult time (len 393217): 36152 ms
+-------------------------
+Current exponent: 16777216 / 16777216
+Created file of 3145736 bytes: /media/bigbux/HYPER/hypergeo-r29C1FBF15D7E30AE-t442293
+Created file of 3145736 bytes: /media/bigbux/HYPER/hypergeo-rB516BFEAA7C001-t444336
+Created file of 3145736 bytes: /media/bigbux/HYPER/hypergeo-rB0EAEB087E2C19E-t446375
+Created file of 3145736 bytes: /media/bigbux/HYPER/hypergeo-r16D7625AD33361DA-t448416
+Created file of 3145736 bytes: /media/bigbux/HYPER/hypergeo-r2286AE1331DEB981-t450449
+Created file of 3145736 bytes: /media/bigbux/HYPER/hypergeo-r3FA052071B1FB2B3-t452489
+   Size: 786434 (approx 15151374 decimals, 6 MiB)
+   Transform length: 1048576
+   Convolution bits: 148
+   Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+   Convolving...fpb fpb fpb  67170 ms
+CRT... 6476 ms
+Mult time (len 786433): 74156 ms
+Evaluation took:
+  168.832 seconds of real time
+  168.813674 seconds of total run time (111.633299 user, 57.180375 system)
+  [ Run times consist of 0.239 seconds GC time, and 168.575 seconds non-GC time. ]
+  99.99% CPU
+  490,171,864,432 processor cycles
+  50,979,043,472 bytes consed
+  
+T

@@ -110,7 +110,7 @@
       (dotimes (r rows)
         (read-row! r)
         (ntt-forward row-work scheme mod-num)
-        (bit-reversed-permute! col-work)
+        (bit-reversed-permute! row-work)
         (write-row! r)))))
 
 (defun disk-reverse-mfa (fx scheme mod-num)
@@ -146,7 +146,7 @@
       ;; Apply a length C xform to each row
       (dotimes (r rows)
         (read-row! r)
-        (bit-reversed-permute! col-work)
+        (bit-reversed-permute! row-work)
         (ntt-reverse row-work scheme mod-num)
         (write-row! r))
       ;; Multiply twiddle factors

@@ -44,3 +44,29 @@
       (mpz-*/fft x y))
      (t
       (mpz-*/ntt x y)))))
+
+(defun f-expt (a n one multiply)
+  "Exponentiate A (any object) to the power of N (a non-negative integer), where ONE is multiplicative identity and MULTIPLY is the binary multiplication function."
+  (check-type n (integer 0))
+  (cond
+    ((zerop n) one)
+    ((= 1 n)   a)
+    (t
+     (let ((k (integer-length n))
+           (x a))
+       (loop :for bit :from (- k 2) :downto 0
+             :do (progn
+                   (when *verbose*
+                     (format t "~&-------------------------~%")
+                     (format t "~&Current exponent: ~D / ~D~%"
+                             (ldb (byte (- k bit) bit) n)
+                             n))
+                   (setf x (funcall multiply x x))
+                   (when  (logbitp bit n)
+                     (setf x (funcall multiply x a))))
+             :finally (return x))))))
+
+(defun mpz-expt (a n)
+  "Raise an MPZ A to the power of a non-negative integer N."
+  (f-expt a n (integer-mpz 1) #'mpz-*))
+

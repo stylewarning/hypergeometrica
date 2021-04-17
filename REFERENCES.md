@@ -103,7 +103,7 @@ shared. Too bad; the world is better when math software is open.
 
 ## Out-of-Core FFTs
 
-- [Fast Fourier Transforms---For Fun and Profit](http://cis.rit.edu/class/simg716/FFT_Fun_Profit.pdf): The OG paper about it.
+- [Fast Fourier Transforms---For Fun and Profit](http://www.cis.rit.edu/class/simg716/FFT_Fun_Profit.pdf): The OG paper about it.
 
 - [Determining an Out-of-Core FFT Decomposition Strategy](https://pdfs.semanticscholar.org/30e3/07cc26b038b654122426133d6d545d2cc7e7.pdf) by Thomas Cormen: Has info about Swarztrauber's method and out-of-core FFTs.
 

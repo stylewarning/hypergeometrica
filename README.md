@@ -18,7 +18,7 @@ Hypergeometrica is a Lisp library for performing extremely fast, extremely high-
 
 - Fast in-core multiplication using a variety of algorithms, from schoolbook to floating-point FFTs.
 
-- Fast in-core multiplication for extremely huge numbers using exact convolutions via number-theotric transforms. This is enabled by extremely fast 64-bit modular arithmetic.
+- Fast in-core multiplication for extremely huge numbers using exact convolutions via number-theoretic transforms. This is enabled by extremely fast 64-bit modular arithmetic.
 
 - Fast out-of-core multiplication using derivatives of the original Cooley-Tukey algorithm.
 

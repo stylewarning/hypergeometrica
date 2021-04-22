@@ -11,7 +11,10 @@
                #:lparallel
                #:napa-fft3
                #:trivial-garbage
-               #:uiop)
+               #:uiop
+
+               #:cffi
+               #:mmap)
   :in-order-to ((asdf:test-op (asdf:test-op #:hypergeometrica/tests)))
   :around-compile (lambda (compile)
                     (let (#+sbcl (sb-ext:*derive-function-types* t))
@@ -20,11 +23,15 @@
   :serial t
   :components ((:file "package")
                (:file "config")
+               (:file "mmap")
                (:file "math-utilities")
                (:file "sbcl-intrinsics"         :if-feature :sbcl)
                (:file "sbcl-intrinsics-x86-64"  :if-feature (:and :sbcl :x86-64))
                (:file "sbcl-intrinsics-ppc64el" :if-feature (:and :sbcl :ppc64 :little-endian))
                (:file "digit")
+               (:file "vec")
+               (:file "ram-vec")
+               (:file "disk-vec")
                (:file "modular-arithmetic")
                (:file "storage")
                (:file "mpz")

@@ -10,44 +10,45 @@
 (defun add-big-digit (big-digit storage i)
   "Add the BIG-DIGIT (an UNSIGNED-BYTE) to the STORAGE (a RAW-STORAGE) beginning at the Ith digit."
   (declare (type unsigned-byte big-digit)
-           (type raw-storage storage)
+           (type storage storage)
            (type alexandria:array-index i)
            (optimize speed))
-  (cond
-    ((zerop big-digit) storage)
-    ((>= i (length storage)) (error "Trying to add ~D at index ~D. ~
-                                     This is unexpected and indicates ~
-                                     a grave inconsistency."
-                                    big-digit i))
-    ((typep big-digit 'fixnum)
-     (multiple-value-bind (x carry) (add64 big-digit (aref storage i))
-       (declare (type bit carry))
-       (setf (aref storage i) x)
-       (add-big-digit carry storage (1+ i))))
-    ;; Specially written to not cons.
-    #+sbcl
-    (t (dotimes (j (sb-bignum:%bignum-length big-digit) storage)
-         (let* ((offset (+ i j))
-                (si (aref storage offset))
-                (bi (sb-bignum:%bignum-ref big-digit j)))
-           (declare (type alexandria:array-index offset)
-                    (type (unsigned-byte 64) si bi))
-           (multiple-value-bind (x carry) (add64 si bi)
-             (setf (aref storage offset) x)
-             (add-big-digit carry storage (1+ offset))))))
-    ;; Otherwise, we gotta cons...
-    #-sbcl
-    (t (let ((si (aref storage i))
-             (digit-lo64 (ldb (byte $digit-bits 0) big-digit)))
-         (declare (type (unsigned-byte 64) si digit-lo64))
-         (multiple-value-bind (x carry) (add64 si digit-lo64)
-           (declare (type bit carry))
-           (setf (aref storage i) x)
-           (let ((quo (ash big-digit #.(- $digit-bits))))
-             ;; Do QUO + CARRY in two separate steps to avoid a bignum
-             ;; addition on the Lisp side.
-             (add-big-digit quo storage (1+ i))
-             (add-big-digit carry storage (1+ i))))))))
+  (with-vec (storage storage_)
+    (cond
+      ((zerop big-digit) storage)
+      ((>= i (vec-digit-length storage)) (error "Trying to add ~D at index ~D. ~
+                                                 This is unexpected and indicates ~
+                                                 a grave inconsistency."
+                                                big-digit i))
+      ((typep big-digit 'fixnum)
+       (multiple-value-bind (x carry) (add64 big-digit (storage_ i))
+         (declare (type bit carry))
+         (setf (storage_ i) x)
+         (add-big-digit carry storage (1+ i))))
+      ;; Specially written to not cons.
+      #+sbcl
+      (t (dotimes (j (sb-bignum:%bignum-length big-digit) storage)
+           (let* ((offset (+ i j))
+                  (si (storage_ offset))
+                  (bi (sb-bignum:%bignum-ref big-digit j)))
+             (declare (type alexandria:array-index offset)
+                      (type (unsigned-byte 64) si bi))
+             (multiple-value-bind (x carry) (add64 si bi)
+               (setf (storage_ offset) x)
+               (add-big-digit carry storage (1+ offset))))))
+      ;; Otherwise, we gotta cons...
+      #-sbcl
+      (t (let ((si (storage_ i))
+               (digit-lo64 (ldb (byte $digit-bits 0) big-digit)))
+           (declare (type (unsigned-byte 64) si digit-lo64))
+           (multiple-value-bind (x carry) (add64 si digit-lo64)
+             (declare (type bit carry))
+             (setf (storage_ i) x)
+             (let ((quo (ash big-digit #.(- $digit-bits))))
+               ;; Do QUO + CARRY in two separate steps to avoid a bignum
+               ;; addition on the Lisp side.
+               (add-big-digit quo storage (1+ i))
+               (add-big-digit carry storage (1+ i)))))))))
 
 (defun iterate (f x n)
   (assert (not (minusp n)))
@@ -85,16 +86,17 @@
      ,@body))
 
 (defun multiply-pointwise! (a b length scheme i)
-  (declare (type raw-storage a b)
+  (declare (type storage a b)
            (type alexandria:array-length length)
            (type alexandria:array-index i)
            (type modular-scheme scheme)
            (optimize speed (safety 0) (debug 0) (space 0) (compilation-speed 0)))
-  (let ((m (aref (scheme-moduli scheme) i))
-        (m~ (aref (scheme-inverses scheme) i)))
-    (#+hypergeometrica-parallel lparallel:pdotimes
-     #-hypergeometrica-parallel dotimes (i length)
-      (setf (aref a i) (m*/fast (aref a i) (aref b i) m m~)))))
+  (with-vecs (a a_ b b_)
+    (let ((m (aref (scheme-moduli scheme) i))
+          (m~ (aref (scheme-inverses scheme) i)))
+      (#+hypergeometrica-parallel lparallel:pdotimes
+       #-hypergeometrica-parallel dotimes (i length)
+       (setf (a_ i) (m*/fast (a_ i) (b_ i) m m~))))))
 
 (defun mpz-square (x)
   (let* ((size (mpz-size x))
@@ -102,7 +104,6 @@
          (bound-bits (integer-length (* length (expt (1- $base) 2))))
          (num-moduli (num-moduli-needed-for-bits **scheme** bound-bits))
          (ntts (make-ntt-work x length (scheme-moduli **scheme**)))
-         (raw-ntts (mapcar #'raw-storage-of-storage ntts))
          ;; TODO don't allocate
          (result (make-storage length))
          (report-time (let ((start-time (get-internal-real-time)))
@@ -124,7 +125,7 @@
       (format t "Forward..."))
     (with-parallel-work ()
       (loop :for i :below num-moduli
-            :for a :in raw-ntts
+            :for a :in ntts
             :do (with-task (a i)
                   (ntt-forward a **scheme** i))))
     (funcall report-time)
@@ -135,11 +136,12 @@
     (loop :for i :below num-moduli
           :for m := (aref (scheme-moduli **scheme**) i)
           :for mi := (aref (scheme-inverses **scheme**) i)
-          :for a :in raw-ntts
-          :do (#+hypergeometrica-parallel lparallel:pdotimes
-               #-hypergeometrica-parallel dotimes (i length)
-                (let ((ai (aref a i)))
-                  (setf (aref a i) (m*/fast ai ai m mi)))))
+          :for a :in ntts
+          :do (with-vec (a a_)
+                (#+hypergeometrica-parallel lparallel:pdotimes
+                 #-hypergeometrica-parallel dotimes (i length)
+                 (let ((ai (a_ i)))
+                   (setf (a_ i) (m*/fast ai ai m mi))))))
     (funcall report-time)
 
     ;; Inverse transform
@@ -147,7 +149,7 @@
       (format t "Reverse..."))
     (with-parallel-work ()
       (loop :for i :below num-moduli
-            :for a :in raw-ntts
+            :for a :in ntts
             :do (with-task (a i)
                   (ntt-reverse a **scheme** i))))
     (funcall report-time)
@@ -159,13 +161,13 @@
            (composite   (reduce #'* moduli))
            (complements (map 'list (lambda (m) (/ composite m)) moduli))
            (inverses    (map 'list #'inv-mod complements moduli))
-           (factors     (map 'list #'* complements inverses))
-           (raw-result  (raw-storage-of-storage result)))
+           (factors     (map 'list #'* complements inverses)))
       (dotimes (i length)
-        (loop :for a :in raw-ntts
+        (loop :for a :in ntts
               :for f :in factors
-              :sum (* f (aref a i)) :into result-digit
-              :finally (add-big-digit (mod result-digit composite) raw-result i)))
+              ;; TODO: optimize
+              :sum (* f (vec-ref a i)) :into result-digit
+              :finally (add-big-digit (mod result-digit composite) result i)))
       (funcall report-time))
     (make-mpz 1 result)))
 
@@ -175,9 +177,7 @@
          (bound-bits (integer-length (* length (expt (1- $base) 2))))
          (num-moduli (num-moduli-needed-for-bits **scheme** bound-bits))
          (ntts-x (make-ntt-work x length (scheme-moduli **scheme**)))
-         (raw-ntts-x (mapcar #'raw-storage-of-storage ntts-x))
          (ntts-y (make-ntt-work y length (scheme-moduli **scheme**)))
-         (raw-ntts-y (mapcar #'raw-storage-of-storage ntts-y))
          ;; By the time we write to RESULT, NTTS-Y will be done.
          ;;
          ;; However (!), we will need to remember to clear it.
@@ -200,38 +200,38 @@
 
       (format t "Forward..."))
     (with-parallel-work ()
-     (loop :for i :below num-moduli
-           :for ax :in raw-ntts-x
-           :for ay :in raw-ntts-y
-           :do (with-task (i ax)
-                 (ntt-forward ax **scheme** i))
-           :do (with-task (i ay)
-                 (ntt-forward ay **scheme** i))))
+      (loop :for i :below num-moduli
+            :for ax :in ntts-x
+            :for ay :in ntts-y
+            :do (with-task (i ax)
+                  (ntt-forward ax **scheme** i))
+            :do (with-task (i ay)
+                  (ntt-forward ay **scheme** i))))
     (funcall report-time)
 
     ;; Pointwise multiply. The NTT work for X is mutated.
     (when *verbose*
       (format t "Pointwise multiply..."))
     (with-parallel-work ()
-     (loop :for i :below num-moduli
-           :for ax :in raw-ntts-x
-           :for ay :in raw-ntts-y
-           :do (with-task (i ax ay)
-                 (multiply-pointwise! ax ay length **scheme** i))))
+      (loop :for i :below num-moduli
+            :for ax :in ntts-x
+            :for ay :in ntts-y
+            :do (with-task (i ax ay)
+                  (multiply-pointwise! ax ay length **scheme** i))))
     (funcall report-time)
 
     ;; Tell the garbage collector we don't need no vectors anymore.
     (setf ntts-y nil)
-    (fill (raw-storage-of-storage result) 0)
+    (vec-fill result 0)
 
     ;; Inverse transform
     (when *verbose*
       (format t "Reverse..."))
     (with-parallel-work ()
-     (loop :for i :below num-moduli
-           :for ax :in raw-ntts-x
-           :do (with-task (i ax)
-                 (ntt-reverse ax **scheme** i))))
+      (loop :for i :below num-moduli
+            :for ax :in ntts-x
+            :do (with-task (i ax)
+                  (ntt-reverse ax **scheme** i))))
     (funcall report-time)
 
     ;; Unpack the result.
@@ -243,13 +243,13 @@
            (composite   (reduce #'* moduli))
            (complements (map 'list (lambda (m) (/ composite m)) moduli))
            (inverses    (map 'list #'inv-mod complements moduli))
-           (factors     (map 'list #'* complements inverses))
-           (raw-result  (raw-storage-of-storage result)))
+           (factors     (map 'list #'* complements inverses)))
       (dotimes (i length)
-        (loop :for a :in raw-ntts-x
+        (loop :for a :in ntts-x
               :for f :in factors
-              :sum (* f (aref a i)) :into result-digit
-              :finally (add-big-digit (mod result-digit composite) raw-result i)))
+              ;; TODO: optimize
+              :sum (* f (vec-ref a i)) :into result-digit
+              :finally (add-big-digit (mod result-digit composite) result i)))
       (funcall report-time))
     (make-mpz (* (sign x) (sign y)) result)))
 

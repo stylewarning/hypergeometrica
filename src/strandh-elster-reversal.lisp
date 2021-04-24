@@ -194,3 +194,13 @@ Symmetric A and B are not included, and are not needed for most bit-reversal app
     (assert (zerop (logand length (1- length))))
     (do-non-symmetric-bit-reversals (a b bits x)
       (rotatef (aref x a) (aref x b)))))
+
+(defun bit-reversed-permute-vec! (x)
+  "Permute the simple vector X of length 2^N in bit reversed order."
+  (let* ((length (vec-digit-length x))
+         (bits (integer-length (max 0 (1- length)))))
+    ;; Check that this is a power of two.
+    (assert (zerop (logand length (1- length))))
+    (with-vec (x x_)
+      (do-non-symmetric-bit-reversals (a b bits x)
+        (rotatef (x_ a) (x_ b))))))

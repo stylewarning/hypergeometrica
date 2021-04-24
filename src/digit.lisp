@@ -17,6 +17,10 @@
   "A digit in an MPZ."
   `(unsigned-byte ,$digit-bits))
 
+(declaim (inline bytes-for-digits))
+(defun bytes-for-digits (num-digits)
+  (ceiling (* $digit-bits num-digits) 8))
+
 (defmacro define-fx-op (op-name (base-op &rest args))
   `(progn
      (declaim (inline ,op-name))

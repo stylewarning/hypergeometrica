@@ -10,7 +10,7 @@
 (defun make-storage (n)
   (check-type n alexandria:array-length)
   (cond
-    ((<= 0 n (floor *maximum-vector-size* $digit-bits))
+    ((<= 0 n (floor (* 8 *maximum-vector-size*) $digit-bits))
      (make-ram-vec n))
     (t
      (make-disk-vec n))))

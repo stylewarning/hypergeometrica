@@ -67,14 +67,20 @@
       (error "MALLOC failed"))
     pointer))
 
-(defun resize-alloc (pointer num-bytes)
-  "Re-allocate POINTER with NUM-BYTES bytes. Return two values:"
+(defun resize-alloc (pointer old-size-bytes new-size-bytes)
+  "Re-allocate POINTER with NUM-BYTES bytes."
   #+hypergeometrica-safe
-  (check-type num-bytes alexandria:array-length)
-  (let ((new-pointer (realloc pointer num-bytes)))
-    (when (cffi:null-pointer-p new-pointer)
-       (error "REALLOC failed"))
-    new-pointer))
+  (check-type old-size-bytes alexandria:array-length)
+  #+hypergeometrica-safe
+  (check-type new-size-bytes alexandria:array-length)
+  (let ((new-pointer (realloc pointer new-size-bytes)))
+    (cond
+      ((cffi:null-pointer-p new-pointer)
+       (setf new-pointer (uninitialized-alloc new-size-bytes))
+       (memcpy new-pointer pointer (min old-size-bytes new-size-bytes))
+       new-pointer)
+      (t
+       new-pointer))))
 
 (defun make-ram-vec (n)
   (check-type n alexandria:array-length)
@@ -86,8 +92,7 @@
                                       :length n
                                       :finalizer-cons finalizer-cons)))
     (when *auto-free-vecs*
-      (tg:finalize vec (lambda () (unless (cffi:null-pointer-p (car finalizer-cons))
-                                    (free (car finalizer-cons))))))
+      (tg:finalize vec (lambda () (free (car finalizer-cons)))))
     vec))
 
 (defmethod copy-vec ((vec ram-vec))
@@ -97,26 +102,36 @@
          (copy (make-instance 'ram-vec :allocated-size bytes
                                        :base-pointer pointer
                                        :length (vec-digit-length vec)
-                                       :finalizer-cons finalizer-cons
-                                       )))
+                                       :finalizer-cons finalizer-cons)))
     (memcpy pointer (ram-vec.base-pointer vec) bytes)
     (when *auto-free-vecs*
-      (tg:finalize copy (lambda () (unless (cffi:null-pointer-p (car finalizer-cons))
-                                    (free (car finalizer-cons))))))
+      (tg:finalize copy (lambda () (free (car finalizer-cons)))))
     copy))
 
 (defmethod resize-vec-by ((vec ram-vec) n-digits)
-  (let* ((new-length (+ n-digits (vec-digit-length vec)))
-         (new-allocated-size (bytes-for-digits new-length)))
-    #+hypergeometrica-safe
-    (check-type new-length unsigned-byte)
-    (let* ((old-pointer (ram-vec.base-pointer vec))
-           (new-pointer (realloc old-pointer new-allocated-size)))
-      (setf (slot-value vec 'length)         new-length
-            (slot-value vec 'allocated-size) new-allocated-size)
-      (unless (cffi:pointer-eq old-pointer new-pointer)
-        (setf (slot-value vec 'base-pointer)   new-pointer
-              (slot-value vec 'finalizer-cons) (cons new-pointer nil)))
+  (unless (zerop n-digits)
+    (let* ((old-length (vec-digit-length vec))
+           (new-length (+ n-digits old-length))
+           (new-allocated-size (bytes-for-digits new-length)))
+      #+hypergeometrica-safe
+      (check-type new-length unsigned-byte)
+      (let* ((old-pointer (ram-vec.base-pointer vec))
+             (new-pointer (resize-alloc old-pointer
+                                        (ram-vec.allocated-size vec)
+                                        new-allocated-size)))
+        (setf (slot-value vec 'length)         new-length
+              (slot-value vec 'allocated-size) new-allocated-size)
+        (unless (cffi:pointer-eq old-pointer new-pointer)
+          (setf (slot-value vec 'base-pointer) new-pointer)
+          (rplaca (ram-vec.finalizer-cons vec) new-pointer)))
+      ;; Fill with zeros
+      ;;
+      ;; TODO: use memset?
+      (when (plusp n-digits)
+        (with-vec (vec vec_)
+          (loop :for i :from old-length :below new-length
+                :do (setf (vec_ i) 0))))
+      ;; Return nothing
       nil)))
 
 (defmethod free-vec ((vec ram-vec))
@@ -124,7 +139,8 @@
     (free (ram-vec.base-pointer vec))
     (setf (slot-value vec 'base-pointer) (cffi:null-pointer)
           (slot-value vec 'allocated-size) 0
-          (slot-value vec 'length) 0
-          (slot-value vec 'finalizer-cons) (cons (cffi:null-pointer) nil)))
+          (slot-value vec 'length) 0)
+    (rplaca (ram-vec.finalizer-cons vec) (cffi:null-pointer))
+    (tg:cancel-finalization vec))
   nil)
 

@@ -195,18 +195,17 @@ If MPZ is equal to 0, then this is 0."
     (let ((carry 0))
       (declare (type digit carry))
       (dotimes (i size-b)
-        (let ((ai (a_ i))
-              (bi (b_ i)))
-          ;; AI + BI + CARRY
-          (multiple-value-bind (sum c) (add64 ai bi)
-            (multiple-value-setq (sum carry) (add64 sum carry))
-            (incf carry c)
+        ;; AI + BI + CARRY
+        (multiple-value-bind (sum c) (add64 (a_ i) (b_ i))
+          ;; XXX: Using MULTIPLE-VALUE-SETQ is buggy here in SBCL
+          ;; 2.1.3.
+          (multiple-value-bind (sum new-carry) (add64 sum carry)
+            (setf carry (+ new-carry c))
             (setf (r_ i) sum))))
       (do-range (i size-b size-a)
-        (let ((ai (a_ i)))
-          (multiple-value-bind (sum new-carry) (add64 ai carry)
-            (setf carry new-carry
-                  (r_ i) sum))))
+        (multiple-value-bind (sum new-carry) (add64 (a_ i) carry)
+          (setf carry new-carry
+                (r_ i) sum)))
       ;; Account for the carry.
       (unless (zerop carry)
         ;; Do we have enough storage? If not, make some.
@@ -233,7 +232,7 @@ If MPZ is equal to 0, then this is 0."
            (type alexandria:array-length size-a size-b))
   ;; a > b > 0
   (assert (>= size-a size-b))
-  
+
   (let* ((r (make-storage size-a))
          (carry 1))
     (declare (type bit carry))
@@ -248,8 +247,11 @@ If MPZ is equal to 0, then this is 0."
                (setf (r_ i) neg-bi
                      carry        1))
               (t
-               (multiple-value-setq (sum carry) (add64 sum neg-bi))
-               (setf (r_ i) sum))))))
+               ;; XXX: Using MULTIPLE-VALUE-SETQ is buggy here in SBCL
+               ;; 2.1.3.
+               (multiple-value-bind (sum new-carry) (add64 sum neg-bi)
+                 (setf carry new-carry)
+                 (setf (r_ i) sum)))))))
       (do-range (i size-b size-a)
         (let ((ai (a_ i)))
           (multiple-value-bind (sum c) (add64 ai carry)
@@ -258,8 +260,11 @@ If MPZ is equal to 0, then this is 0."
                (setf (r_ i) $max-digit
                      carry        1))
               (t
-               (multiple-value-setq (sum carry) (add64 sum $max-digit))
-               (setf (r_ i) sum)))))))
+               ;; XXX: Using MULTIPLE-VALUE-SETQ is buggy here in SBCL
+               ;; 2.1.3.
+               (multiple-value-bind (sum new-carry) (add64 sum $max-digit)
+                 (setf carry new-carry)
+                 (setf (r_ i) sum))))))))
     #+hypergeometrica-safe
     (assert (= 1 carry))
     r))

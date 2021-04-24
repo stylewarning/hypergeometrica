@@ -76,12 +76,8 @@
   "How many digits does the MPZ have?
 
 If MPZ is equal to 0, then this is 0."
-  (declare (optimize speed (safety 0) (debug 0)))
-  (with-vec (mpz mpz_)
-    (loop :for i :from (1- (vec-digit-length mpz)) :downto 0
-          :unless (zerop (mpz_ i))
-            :do (return (1+ i))
-          :finally (return 0))))
+  (declare #.*optimize-dangerously-fast*)
+  (vec-digit-length* (storage mpz)))
 
 (defun mpz-uses-minimal-storage-p (mpz)
   (= (vec-digit-length mpz) (mpz-size mpz)))

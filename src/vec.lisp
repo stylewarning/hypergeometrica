@@ -62,10 +62,14 @@
     (alexandria:once-only (vec)
       `(let ((,pointer (vec-digit-pointer ,vec)))
          (labels ((,accessor (,i)
+                    #+(and hypergeometrica-paranoid sbcl)
+                    (declare (sb-ext:muffle-conditions sb-ext:compiler-note))
                     #+hypergeometrica-paranoid
                     (assert (<= 0 ,i (vec-digit-length ,vec)))
                     (read-digit-pointer ,pointer ,i))
                   ((setf ,accessor) (,new-digit ,i)
+                    #+(and hypergeometrica-paranoid sbcl)
+                    (declare (sb-ext:muffle-conditions sb-ext:compiler-note))
                     #+hypergeometrica-paranoid
                     (assert (<= 0 ,i (vec-digit-length ,vec)))
                     (write-digit-pointer ,pointer ,i ,new-digit)))
@@ -141,3 +145,16 @@
        (memcpy (cffi:inc-pointer (vec-digit-pointer dst) (bytes-for-digits start1))
                (vec-digit-pointer src)
                (bytes-for-digits written-length))))))
+
+(declaim (ftype (function (t) alexandria:array-length) vec-digit-length*))
+(defun vec-digit-length* (vec)
+  "What is the value of N such that all elements following the first N elements are zero?
+
+This function is like VEC-DIGIT-LENGTH except it ignores trailing zeros.
+
+For (1 0 2 0 0), N would be 3."
+  (with-vec (vec vec_)
+    (loop :for i :from (1- (vec-digit-length vec)) :downto 0
+          :unless (zerop (vec_ i))
+            :do (return (1+ i))
+          :finally (return 0))))

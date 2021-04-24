@@ -13,6 +13,8 @@
     ((<= 0 n (floor (* 8 *maximum-vector-size*) $digit-bits))
      (make-ram-vec n))
     (t
+     (when *verbose*
+       (format t "~&Making DISK-VEC of ~D digit~:P~%" n))
      (make-disk-vec n))))
 
 (deftype sign ()
@@ -82,12 +84,21 @@ If MPZ is equal to 0, then this is 0."
 (defun mpz-uses-minimal-storage-p (mpz)
   (= (vec-digit-length mpz) (mpz-size mpz)))
 
+(defun optimize-mpz (mpz)
+  (declare (type mpz mpz))
+  (optimize-storage (storage mpz))
+  mpz)
+
+(defun optimize-storage (vec)
+  (declare (type storage vec))
+  (let ((size (vec-digit-length* vec))
+        (length (vec-digit-length vec)))
+    (resize-vec-by vec (- size length))
+    vec))
+
 (defun mpz-set-zero! (mpz)
   (setf (sign mpz) 1)
-  ;; TODO: make efficient by resizing
-  (with-vec (mpz mpz_)
-    (dotimes (i (vec-digit-length mpz))
-      (setf (mpz_ i) 0)))
+  (resize-vec-by (storage mpz) (- (vec-digit-length mpz)))
   nil)
 
 (defun mpz-integer-length (mpz)
@@ -271,13 +282,14 @@ If MPZ is equal to 0, then this is 0."
     ((mpz-= a b)
      (integer-mpz 0))
     ((mpz-> a b)
-     ;; TODO: optimize storage
-     (make-mpz 1 (%subtract-storages/unsafe (storage a) (mpz-size a)
-                                            (storage b) (mpz-size b))))
+     (make-mpz 1 (optimize-storage
+                  (%subtract-storages/unsafe (storage a) (mpz-size a)
+                                             (storage b) (mpz-size b)))))
     (t
-     ;; TODO: optimize storage
-     (make-mpz -1 (%subtract-storages/unsafe (storage b) (mpz-size b)
-                                             (storage a) (mpz-size a))))))
+
+     (make-mpz -1 (optimize-storage
+                   (%subtract-storages/unsafe (storage b) (mpz-size b)
+                                              (storage a) (mpz-size a)))))))
 
 (defun mpz-+ (a b)
   (declare (type mpz a b))
@@ -320,10 +332,11 @@ If MPZ is equal to 0, then this is 0."
            (multiple-value-bind (lo hi) (mul128 d (mpz_ i))
              (multiple-value-bind (lo sub-carry) (add64 lo carry)
                (setf (mpz_ i) lo)
-               (setf carry (fx+ hi sub-carry)))))
-         (when (plusp carry)
-           (when (mpz-uses-minimal-storage-p mpz)
-             (resize-vec-by (storage mpz) 1))
+               (setf carry (fx+ hi sub-carry))))))
+       (when (plusp carry)
+         (when (mpz-uses-minimal-storage-p mpz)
+           (resize-vec-by (storage mpz) 1))
+         (with-vec (mpz mpz_)
            (setf (mpz_ size) carry)))
        nil))))
 

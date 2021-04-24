@@ -17,6 +17,8 @@
 
 ;;; Enable assembly intrinsics.
 
+;; XXX FIXME: this doesn't actually affect anything because intrinsics
+;; are loaded regardless in the ASD file.
 #+(and sbcl (or x86-64))
 (push :hypergeometrica-intrinsics *features*)
 
@@ -43,10 +45,13 @@
 ;; (push :hypergeometrica-floating-point *features*)
 
 
+;;; Optimization qualities
 
-(defparameter *optimize-dangerously-fast* '(optimize speed (safety 0) (space 0) (space 0) (compilation-speed 0)))
+;; It is useful to change these when debugging.
 
 (defparameter *optimize-extremely-safely* '(optimize (speed 0) safety debug (space 0) (compilation-speed 0)))
+
+(defparameter *optimize-dangerously-fast* '(optimize speed (safety 0) (space 0) (space 0) (compilation-speed 0)))
 
 
 ;;; Storage constants
@@ -55,7 +60,7 @@
   "The maximum size of a file in octets.")
 
 (defvar *maximum-vector-size* (expt 1024 3)
-  "The maximum size of a vector in memory in octets.")
+  "The maximum size of a vector that can be stored in memory in octets.")
 
 (defvar *default-file-directory* (uiop:ensure-directory-pathname "/tmp/"))
 

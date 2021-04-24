@@ -43,6 +43,8 @@
   (funcall (disk-vec-finalizer vec))
   nil)
 
+;;; TODO: implement remainder of protocol
+
 (defun make-disk-vec (n)
   (let ((filename (generate-work-filename)))
     (write-zeros-to-file filename n)
@@ -51,5 +53,4 @@
                                         :length n)))
       (when *auto-free-vecs*
         (tg:finalize vec (disk-vec-finalizer vec)))
-      vec))
-  )
+      vec)))

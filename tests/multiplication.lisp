@@ -17,7 +17,14 @@
                   (is (= (mod (* a b) m)
                          (h::m*/fast a b m mi)))))))))
 
-;;;;;;;;;;;;;;;; Testing Barebones NTT Multiplication ;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;; Testing Bare-Bones NTT Multiplication ;;;;;;;;;;;;;;;;
+
+(defun vector->storage (vector)
+  (let* ((n (length vector))
+         (vec (h::make-storage n)))
+    (h::with-vec (vec vec_)
+      (dotimes (i n vec)
+        (setf (vec_ i) (aref vector i))))))
 
 (defun digit-count (n)
   "How many decimal digits does it take to write N?"
@@ -61,8 +68,8 @@
   (let* ((a-count (digit-count a))
          (b-count (digit-count b))
          (length (h::least-power-of-two->= (+ 1 a-count b-count)))
-         (a-digits (digits a :size length))
-         (b-digits (digits b :size length))
+         (a-digits (vector->storage (digits a :size length)))
+         (b-digits (vector->storage (digits b :size length)))
          (m (aref (h::scheme-moduli h::**scheme**) 0))
          (scheme (h::make-modular-scheme (list m))))
     (when h::*verbose*
@@ -78,7 +85,9 @@
       (format t "NTT(A): ~A~%" a-digits)
       (format t "NTT(B): ~A~%" b-digits))
 
-    (setf a-digits (map-into a-digits (lambda (a b) (h::m* a b m)) a-digits b-digits))
+    (h::with-vecs (a-digits a_ b-digits b_)
+      (dotimes (i length)
+        (setf (a_ i) (h::m* (a_ i) (b_ i) m))))
 
     (when h::*verbose*
       (format t "C = NTT(A)*NTT(B) mod ~D = ~A~%" m a-digits))
@@ -88,7 +97,7 @@
     (when h::*verbose*
       (format t "NTT^-1(C): ~A~%" a-digits))
 
-    (undigits a-digits)))
+    (undigits (h::vec->vector a-digits))))
 
 (defun simplistic-fft-multiply (a b)
   "Multiply two non-negative integers A and B using FFTs."

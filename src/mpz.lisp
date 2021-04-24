@@ -4,6 +4,17 @@
 
 (in-package #:hypergeometrica)
 
+(deftype storage ()
+  `(or ram-vec disk-vec))
+
+(defun make-storage (n)
+  (check-type n alexandria:array-length)
+  (cond
+    ((<= 0 n (floor *maximum-vector-size* $digit-bits))
+     (make-ram-vec n))
+    (t
+     (make-disk-vec n))))
+
 (deftype sign ()
   "The sign of an integer."
   '(member 1 -1))
@@ -16,39 +27,47 @@
   (storage (make-storage 0) :type storage :read-only t))
 #+sbcl (declaim (sb-ext:freeze-type mpz))
 
-(declaim (ftype (function (mpz) raw-storage) raw-storage))
-(defun raw-storage (mpz)
-  (raw-storage-of-storage (storage mpz)))
+(defmethod vec-digit-length ((mpz mpz))
+  (vec-digit-length (storage mpz)))
+
+(defmethod vec-digit-pointer ((mpz mpz))
+  (vec-digit-pointer (storage mpz)))
 
 ;;; Conversion functions
 
 (defun mpz-integer (mpz)
   (declare (type mpz mpz))
-  (* (sign mpz)
-     (loop :for digit :across (storage mpz)
-           :for b := 1 :then (* b $base)
-           :sum (* digit b))))
+  (with-vec (mpz mpz_)
+    (* (sign mpz)
+       (loop :for i :below (vec-digit-length mpz)
+             :for digit := (mpz_ i)
+             :for b := 1 :then (* b $base)
+             :sum (* digit b)))))
 
 (defun integer-mpz (n)
   (declare (type integer n))
   (cond
     ((zerop n)
      (make-mpz 1 (make-storage 1)))
-    ((= 1 n)
-     (make-mpz 1 (let ((s (make-storage 1)))
-                   (setf (aref s 0) 1)
+    ((= 1 (abs n))
+     (make-mpz n (let ((s (make-storage 1)))
+                   (with-vec (s s_)
+                     (setf (s_ 0) 1))
                    s)))
     (t
-     (let ((sign (if (minusp n) -1 1)))
+     (let ((sign (signum n)))
        (setf n (abs n))
        (loop :until (zerop n)
              :collect (multiple-value-bind (quo rem) (floor n $base)
                         (setf n quo)
                         rem)
                :into digits
-             :finally (return (let ((storage (make-storage (length digits))))
-                                (replace storage digits)
-                                (make-mpz sign storage))))))))
+             :finally (return
+                        (let ((len (length digits))
+                              (vec (make-storage (length digits))))
+                          (with-vec (vec vec_)
+                            (dotimes (i len (make-mpz sign vec))
+                              (setf (vec_ i) (pop digits)))))))))))
 
 ;;; Size, Length, etc.
 
@@ -58,22 +77,21 @@
 
 If MPZ is equal to 0, then this is 0."
   (declare (optimize speed (safety 0) (debug 0)))
-  (loop :with raw := (raw-storage mpz)
-        :for i :from (1- (length raw)) :downto 0
-        :unless (zerop (aref raw i))
-          :do (return (1+ i))
-        :finally (return 0)))
+  (with-vec (mpz mpz_)
+    (loop :for i :from (1- (vec-digit-length mpz)) :downto 0
+          :unless (zerop (mpz_ i))
+            :do (return (1+ i))
+          :finally (return 0))))
 
 (defun mpz-uses-minimal-storage-p (mpz)
-  (= (length (storage mpz)) (mpz-size mpz)))
-
-(defmethod optimize-storage ((mpz mpz))
-  (resize-storage (storage mpz) (mpz-size mpz))
-  mpz)
+  (= (vec-digit-length mpz) (mpz-size mpz)))
 
 (defun mpz-set-zero! (mpz)
   (setf (sign mpz) 1)
-  (resize-storage (storage mpz) 0)
+  ;; TODO: make efficient by resizing
+  (with-vec (mpz mpz_)
+    (dotimes (i (vec-digit-length mpz))
+      (setf (mpz_ i) 0)))
   nil)
 
 (defun mpz-integer-length (mpz)
@@ -81,9 +99,10 @@ If MPZ is equal to 0, then this is 0."
   (let ((size (mpz-size mpz)))
     (if (zerop size)
         0
-        (+ (* $digit-bits (1- size))
-           (integer-length (aref (storage mpz) (1- size)))
-           (/ (1- (sign mpz)) 2)))))
+        (with-vec (mpz mpz_)
+          (+ (* $digit-bits (1- size))
+             (integer-length (mpz_ (1- size)))
+             (/ (1- (sign mpz)) 2))))))
 
 (defmethod print-object ((mpz mpz) stream)
   (print-unreadable-object (mpz stream :type t :identity t)
@@ -95,7 +114,10 @@ If MPZ is equal to 0, then this is 0."
 ;;; Comparison functions
 
 (defun mpz-zerop (mpz)
-  (every #'zerop (raw-storage mpz)))
+  (do-digits (i digit mpz t)
+    (declare (ignore i))
+    (unless (zerop digit)
+      (return-from mpz-zerop nil))))
 
 (defun mpz-plusp (mpz)
   (and (= 1 (sign mpz))
@@ -116,9 +138,10 @@ If MPZ is equal to 0, then this is 0."
   nil)
 
 (defun mpz-= (a b)
-  (and (= (sign a) (sign b))
-       (= (mpz-size a) (mpz-size b))
-       (every #'= (storage a) (storage b))))
+  (with-vecs (a a_ b b_)
+    (and (= (sign a) (sign b))
+         (= (mpz-size a) (mpz-size b))
+         (vec= (storage a) (storage b)))))
 
 (defun mpz-/= (a b)
   (not (mpz-= a b)))
@@ -129,13 +152,14 @@ If MPZ is equal to 0, then this is 0."
         (size-b (mpz-size b)))
     (if (/= size-a size-b)
         (> size-a size-b)
-        (loop :for i :from (1- size-a) :downto 0
-              :for ai := (aref (storage a) i)
-              :for bi := (aref (storage b) i)
-              :do (cond
-                    ((> ai bi) (return t))
-                    ((< ai bi) (return nil)))
-              :finally (return nil)))))
+        (with-vecs (a a_ b b_)
+          (loop :for i :from (1- size-a) :downto 0
+                :for ai := (a_ i)
+                :for bi := (b_ i)
+                :do (cond
+                      ((> ai bi) (return t))
+                      ((< ai bi) (return nil)))
+                :finally (return nil))))))
 
 (defun mpz-> (a b)
   (cond
@@ -160,38 +184,36 @@ If MPZ is equal to 0, then this is 0."
   (not (mpz-> a b)))
 
 (defun %add-storages/unsafe (r a size-a b size-b)
-  (declare (type storage r)
-           (type raw-storage a b)
+  (declare (type storage r a b)
            (type alexandria:array-length size-a size-b))
   #+hypergeometrica-safe
   (assert (>= size-a size-b))
   #+hypergeometrica-safe
-  (assert (>= (length r) size-a))
+  (assert (>= (vec-digit-length r) size-a))
   ;; size-a >= size-b
-  (let* ((raw   (raw-storage-of-storage r))
-         (carry 0))
-    (declare (type digit carry))
-    (dotimes (i size-b)
-      (let ((ai (aref a i))
-            (bi (aref b i)))
-        ;; AI + BI + CARRY
-        (multiple-value-bind (sum c) (add64 ai bi)
-          (multiple-value-setq (sum carry) (add64 sum carry))
-          (incf carry c)
-          (setf (aref raw i) sum))))
-    (do-range (i size-b size-a)
-      (let ((ai (aref a i)))
-        (multiple-value-bind (sum new-carry) (add64 ai carry)
-          (setf carry new-carry
-                (aref raw i) sum))))
-    ;; Account for the carry.
-    (unless (zerop carry)
-      ;; Do we have enough storage? If not, make some.
-      (unless (< size-a (length r))
-        (resize-storage-by r 1))
-      (setf (aref raw size-a) carry))
-    ;; Return the storage
-    r))
+  (with-vecs (a a_ b b_ r r_)
+    (let ((carry 0))
+      (declare (type digit carry))
+      (dotimes (i size-b)
+        (let ((ai (a_ i))
+              (bi (b_ i)))
+          ;; AI + BI + CARRY
+          (multiple-value-bind (sum c) (add64 ai bi)
+            (multiple-value-setq (sum carry) (add64 sum carry))
+            (incf carry c)
+            (setf (r_ i) sum))))
+      (do-range (i size-b size-a)
+        (let ((ai (a_ i)))
+          (multiple-value-bind (sum new-carry) (add64 ai carry)
+            (setf carry new-carry
+                  (r_ i) sum))))
+      ;; Account for the carry.
+      (unless (zerop carry)
+        ;; Do we have enough storage? If not, make some.
+        (assert (< size-a (vec-digit-length r)))
+        (setf (r_ size-a) carry))
+      ;; Return the storage
+      r)))
 
 (defun %mpz-+ (a b)
   (assert (= 1 (sign a) (sign b)))
@@ -200,43 +222,44 @@ If MPZ is equal to 0, then this is 0."
          (r      (make-storage (1+ (max size-a size-b)))))
     (if (>= size-a size-b)
         (make-mpz 1 (%add-storages/unsafe r
-                                          (raw-storage a) size-a
-                                          (raw-storage b) size-b))
+                                          (storage a) size-a
+                                          (storage b) size-b))
         (make-mpz 1 (%add-storages/unsafe r
-                                          (raw-storage b) size-b
-                                          (raw-storage a) size-a)))))
+                                          (storage b) size-b
+                                          (storage a) size-a)))))
 
 (defun %subtract-storages/unsafe (a size-a b size-b)
-  (declare (type raw-storage a b)
+  (declare (type storage a b)
            (type alexandria:array-length size-a size-b))
   ;; a > b > 0
   (assert (>= size-a size-b))
+  
   (let* ((r (make-storage size-a))
-         (raw (raw-storage-of-storage r))
          (carry 1))
     (declare (type bit carry))
-    (dotimes (i size-b)
-      (let ((ai (aref a i))
-            (neg-bi (complement-digit (aref b i))))
-        ;; AI + CARRY - BI
-        (multiple-value-bind (sum c) (add64 ai carry)
-          (cond
-            ((= 1 c)
-             (setf (aref raw i) neg-bi
-                   carry        1))
-            (t
-             (multiple-value-setq (sum carry) (add64 sum neg-bi))
-             (setf (aref raw i) sum))))))
-    (do-range (i size-b size-a)
-      (let ((ai (aref a i)))
-        (multiple-value-bind (sum c) (add64 ai carry)
-          (cond
-            ((= 1 c)
-             (setf (aref raw i) $max-digit
-                   carry        1))
-            (t
-             (multiple-value-setq (sum carry) (add64 sum $max-digit))
-             (setf (aref raw i) sum))))))
+    (with-vecs (a a_ b b_ r r_)
+      (dotimes (i size-b)
+        (let ((ai (a_ i))
+              (neg-bi (complement-digit (b_ i))))
+          ;; AI + CARRY - BI
+          (multiple-value-bind (sum c) (add64 ai carry)
+            (cond
+              ((= 1 c)
+               (setf (r_ i) neg-bi
+                     carry        1))
+              (t
+               (multiple-value-setq (sum carry) (add64 sum neg-bi))
+               (setf (r_ i) sum))))))
+      (do-range (i size-b size-a)
+        (let ((ai (a_ i)))
+          (multiple-value-bind (sum c) (add64 ai carry)
+            (cond
+              ((= 1 c)
+               (setf (r_ i) $max-digit
+                     carry        1))
+              (t
+               (multiple-value-setq (sum carry) (add64 sum $max-digit))
+               (setf (r_ i) sum)))))))
     #+hypergeometrica-safe
     (assert (= 1 carry))
     r))
@@ -247,15 +270,16 @@ If MPZ is equal to 0, then this is 0."
     ((mpz-= a b)
      (integer-mpz 0))
     ((mpz-> a b)
-     (optimize-storage
-      (make-mpz 1 (%subtract-storages/unsafe (raw-storage a) (mpz-size a)
-                                             (raw-storage b) (mpz-size b)))))
+     ;; TODO: optimize storage
+     (make-mpz 1 (%subtract-storages/unsafe (storage a) (mpz-size a)
+                                            (storage b) (mpz-size b))))
     (t
-     (optimize-storage
-      (make-mpz -1 (%subtract-storages/unsafe (raw-storage b) (mpz-size b)
-                                              (raw-storage a) (mpz-size a)))))))
+     ;; TODO: optimize storage
+     (make-mpz -1 (%subtract-storages/unsafe (storage b) (mpz-size b)
+                                             (storage a) (mpz-size a))))))
 
 (defun mpz-+ (a b)
+  (declare (type mpz a b))
   (cond
     ((mpz-zerop a) b)
     ((mpz-zerop b) a)
@@ -278,11 +302,10 @@ If MPZ is equal to 0, then this is 0."
            (type mpz mpz))
   (cond
     ((zerop d)
-     (setf (sign mpz) 1)
-     (resize-storage (storage mpz) 0)
+     (mpz-set-zero! mpz)
      nil)
     ((= 1 d)
-     ;; Do absolutely nothin!
+     ;; Do absolutely nothin'!
      nil)
     (t
      (let ((d    (abs d))
@@ -291,17 +314,16 @@ If MPZ is equal to 0, then this is 0."
        (declare (type (unsigned-byte 64) d)
                 (type alexandria:array-length size)
                 (type (unsigned-byte 64) carry))
-       (let ((raw (raw-storage mpz)))
-         (declare (type raw-storage raw))
+       (with-vec (mpz mpz_)
          (dotimes (i size)
-           (multiple-value-bind (lo hi) (mul128 d (aref raw i))
+           (multiple-value-bind (lo hi) (mul128 d (mpz_ i))
              (multiple-value-bind (lo sub-carry) (add64 lo carry)
-               (setf (aref raw i) lo)
-               (setf carry (fx+ hi sub-carry))))))
-       (when (plusp carry)
-         (when (mpz-uses-minimal-storage-p mpz)
-           (resize-storage-by (storage mpz) 1))
-         (setf (aref (raw-storage mpz) size) carry))
+               (setf (mpz_ i) lo)
+               (setf carry (fx+ hi sub-carry)))))
+         (when (plusp carry)
+           (when (mpz-uses-minimal-storage-p mpz)
+             (resize-vec-by (storage mpz) 1))
+           (setf (mpz_ size) carry)))
        nil))))
 
 (defun mpz-multiply-by-s64! (d mpz)
@@ -317,26 +339,27 @@ If MPZ is equal to 0, then this is 0."
   (assert (>= a-size b-size))
   (let* ((length (+ 1 a-size b-size))
          (r (make-storage length)))
-    (let ((temp (make-mpz 1 (make-storage length))))
-      (dotimes (i b-size r)
-        (let ((bi (aref b i)))
-          (unless (zerop bi)
-            ;; We re-use TEMP. Clear dirty info. (XXX: We could
-            ;; probably optimize START and END.)
-            ;;
-            ;; TEMP := 0
-            (fill (raw-storage temp) 0)
-            ;; :START1 i should be interpreted as a left shift of A by I
-            ;; digits.
-            ;;
-            ;; TEMP := A * 2^(64 * I).
-            (replace (raw-storage temp) a :start1 i)
-            ;; TEMP := B[i] * TEMP
-            (mpz-multiply-by-digit! bi temp)
-            ;; R := R + TEMP
-            (%add-storages/unsafe r
-                                  (raw-storage-of-storage r) length
-                                  (raw-storage temp)         length)))))))
+    (with-vecs (a a_ b b_ r r_)
+      (let ((temp (make-mpz 1 (make-storage length))))
+        (dotimes (i b-size r)
+          (let ((bi (b_ i)))
+            (unless (zerop bi)
+              ;; We re-use TEMP. Clear dirty info. (XXX: We could
+              ;; probably optimize START and END.)
+              ;;
+              ;; TEMP := 0
+              (vec-fill temp 0)
+              ;; :START1 i should be interpreted as a left shift of A by I
+              ;; digits.
+              ;;
+              ;; TEMP := A * 2^(64 * I).
+              (vec-replace/unsafe temp a :start1 i)
+              ;; TEMP := B[i] * TEMP
+              (mpz-multiply-by-digit! bi temp)
+              ;; R := R + TEMP
+              (%add-storages/unsafe r
+                                    r              length
+                                    (storage temp) length))))))))
 
 ;;;
 
@@ -345,7 +368,8 @@ If MPZ is equal to 0, then this is 0."
     (format stream "(~D) ~:[-1~;+1~] *"
             (mpz-size mpz)
             (= 1 (sign mpz)))
-    (dotimes (i (mpz-size mpz))
-      (format stream " ~16,'0X" (aref (storage mpz) i)))
+    (do-digits (i digit mpz)
+      (declare (ignore i))
+      (format stream " ~16,'0X" digit))
     (terpri stream)
     (format stream "~D" (mpz-integer mpz))))

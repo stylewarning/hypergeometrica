@@ -51,7 +51,7 @@
 
 ;;; Storage constants
 
-(defvar *maximum-file-size* (* 16 (expt 1024 3))
+(defvar *maximum-file-size* (* 16 (expt 1024 3)) ; XXX: needed?
   "The maximum size of a file in octets.")
 
 (defvar *maximum-vector-size* (expt 1024 3)

@@ -18,8 +18,14 @@
 (defgeneric copy-vec (vec)
   (:documentation "Produce a copy of VEC."))
 
+(defgeneric resize-vec-by (vec n-digits)
+  (:documentation "Change the capacity of VEC by N-DIGITS digits."))
+
 (defgeneric free-vec (vec)
   (:documentation "Free all memory associated with VEC."))
+
+(defgeneric vec-ref (vec i)
+  (:documentation "Reference the Ith element of a vector VEC. It is advised to use WITH-VEC when possible instead of this."))
 
 (defparameter *auto-free-vecs* t
   "Automatically free VECs during garbage collection?")
@@ -56,12 +62,20 @@
     (alexandria:once-only (vec)
       `(let ((,pointer (vec-digit-pointer ,vec)))
          (labels ((,accessor (,i)
+                    #+hypergeometrica-paranoid
+                    (assert (<= 0 ,i (vec-digit-length ,vec)))
                     (read-digit-pointer ,pointer ,i))
                   ((setf ,accessor) (,new-digit ,i)
+                    #+hypergeometrica-paranoid
+                    (assert (<= 0 ,i (vec-digit-length ,vec)))
                     (write-digit-pointer ,pointer ,i ,new-digit)))
            (declare (inline ,accessor (setf ,accessor))
                     (ignorable #',accessor #'(setf ,accessor)))
            ,@body)))))
+
+(defmethod vec-ref (vec i)
+  (with-vec (vec vec_)
+    (vec_ i)))
 
 (defmacro with-vecs (vec-accessors &body body)
   (cond
@@ -89,6 +103,41 @@
     (alexandria:once-only (vec)
       `(with-vec (,vec ,accessor)
          (dotimes (,i (vec-digit-length ,vec) ,result)
-           (let* ((,i ,i)
-                  (,digit (,accessor ,i)))
+           (let* ((,digit (,accessor ,i))
+                  (,i ,i))
              ,@body))))))
+
+(defun vec= (a b)
+  (let ((a-length (vec-digit-length a))
+        (b-length (vec-digit-length b)))
+    (and (= a-length b-length)
+         (with-vecs (a a_ b b_)
+           (loop :for i :below a-length
+                 :always (= (a_ i) (b_ i)))))))
+
+(defun vec-fill (vec digit)
+  (with-vec (vec vec_)
+    (dotimes (i (vec-digit-length vec))
+      (setf (vec_ i) digit))))
+
+(defun vec-every (fun vec)
+  (with-vec (vec vec_)
+    (loop :for i :below (vec-digit-length vec)
+          :always (funcall fun (vec_ i)))))
+
+(defun vec-into (vec fun)
+  (with-vec (vec vec_)
+    (dotimes (i (vec-digit-length vec) vec)
+      (setf (vec_ i) (funcall fun)))))
+
+(defun vec-replace/unsafe (dst src &key (start1 0))
+  (let ((written-length
+          (min (- (vec-digit-length dst) start1)
+               (vec-digit-length src))))
+    (cond
+      ((minusp written-length)
+       (warn "Attempting VEC-REPLACE/UNSAFE with OOB offset"))
+      (t
+       (memcpy (cffi:inc-pointer (vec-digit-pointer dst) (bytes-for-digits start1))
+               (vec-digit-pointer src)
+               (bytes-for-digits written-length))))))

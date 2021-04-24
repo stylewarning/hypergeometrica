@@ -91,6 +91,7 @@ This is just the conjugate-transpose of the NTT matrix, scaled by N."
 ;;; Tests start HERE!
 (defun test-inversion/matrix (v m w)
   "Tests inversion property of matrix method."
+  (declare (type vector v))
   (let* ((N (length v))
          (eye (matmul
                (ntt-reverse-matrix N m w)
@@ -105,14 +106,16 @@ This is just the conjugate-transpose of the NTT matrix, scaled by N."
 
 (defun test-inversion/direct (v m w)
   "Tests inversion property of the direct NTTs."
+  (declare (type vector v))
   (is (equalp v
               (ntt-reverse-direct (ntt-forward-direct v m w)
                                   m w))))
 
 (defun test-inversion/ntt (v scheme i)
   "Tests inversion property of the fast NTTs."
-  (is (equalp v
-              (h::ntt-reverse (h::ntt-forward (copy-seq v) scheme i) scheme i))))
+  (declare (type h::storage v))
+  (is (h::vec= v
+               (h::ntt-reverse (h::ntt-forward (h::copy-vec v) scheme i) scheme i))))
 
 
 (deftest test-inversion-properties ()
@@ -122,9 +125,9 @@ This is just the conjugate-transpose of the NTT matrix, scaled by N."
       (let* ((v (h::make-storage N))
              (scheme (h::make-modular-scheme (list m)))
              (w (aref (h::scheme-primitive-roots scheme) (h::lg N) 0 0 0)))
-        (map-into v (lambda () (random m)))
-        (test-inversion/matrix v m w)
-        (test-inversion/direct v m w)
+        (h::vec-into v (lambda () (random m)))
+        (test-inversion/matrix (h::vec->vector v) m w)
+        (test-inversion/direct (h::vec->vector v) m w)
         (test-inversion/ntt v scheme 0)))))
 
 (deftest test-ntt-from-various-definitions ()
@@ -134,16 +137,19 @@ This is just the conjugate-transpose of the NTT matrix, scaled by N."
       (let* ((v (h::make-storage N))
              (scheme (h::make-modular-scheme (list m)))
              (w (aref (h::scheme-primitive-roots scheme) (h::lg N) 0 0 0)))
-        (map-into v (lambda () (random m)))
-        (let ((a (matvecmul (ntt-forward-matrix N m w) v m))
-              (b (ntt-forward-direct v m w))
-              (c (h::ntt-forward (copy-seq v) scheme 0)))
-          (h::bit-reversed-permute! c)
-          (is (equalp a b)))
-        (let ((a (matvecmul (ntt-reverse-matrix N m w) v m))
-              (b (ntt-reverse-direct v m w))
-              (c (let ((v (copy-seq v)))
-                   (h::bit-reversed-permute! v)
-                   (h::ntt-reverse v scheme 0))))
+        (h::vec-into v (lambda () (random m)))
+        (let* ((v-vector (h::vec->vector v))
+               (a (matvecmul (ntt-forward-matrix N m w) v-vector m))
+               (b (ntt-forward-direct v-vector m w))
+               (c (h::ntt-forward (h::copy-vec v) scheme 0)))
+          (h::bit-reversed-permute-vec! c)
           (is (equalp a b))
-          (is (equalp b c)))))))
+          (is (equalp b (h::vec->vector c))))
+        (let* ((v-vector (h::vec->vector v))
+               (a (matvecmul (ntt-reverse-matrix N m w) v-vector m))
+               (b (ntt-reverse-direct v-vector m w))
+               (c (let ((v (h::copy-vec v)))
+                    (h::bit-reversed-permute-vec! v)
+                    (h::ntt-reverse v scheme 0))))
+          (is (equalp a b))
+          (is (equalp b (h::vec->vector c))))))))

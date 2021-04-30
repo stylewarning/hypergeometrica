@@ -29,6 +29,10 @@
         :for j := (expt 2 i)
         :do (is (= i (h::next-power-of-two j))))
 
+  (loop :for i :from 2 :to 25
+        :for j := (+ 3 (expt 2 i))
+        :do (is (= (+ 1 i) (h::next-power-of-two j))))
+
   (is (h::coprimep 2 3))
   (is (h::coprimep 4 9))
   (is (not (h::coprimep 4 20)))

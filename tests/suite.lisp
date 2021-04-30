@@ -102,6 +102,22 @@
   (%test-m* 10000 1000000000)
   (%test-m* 10000 1000000000000))
 
+(defun %test-m+ (n low)
+  (flet ((r (&optional (high h::$base))
+           (+ low (random (- high low)))))
+    (loop :repeat n
+          :for m := (r h::$max-modulus)
+          :for a := (r m)
+          :for b := (r m)
+          :for x := (h::m+ a b m)
+          :for y := (mod (+ a b) m)
+          :do (is (= x y)))))
+
+(deftest test-m+ ()
+  ;; TODO test all mod functions
+  (%test-m+ 10000 0)
+  (%test-m+ 10000 1000))
+
 (deftest test-garner ()
   (loop :repeat 50000 :do
     (let* ((moduli #(2 3 5 7 11 13 17 19 23 29 31))

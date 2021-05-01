@@ -50,4 +50,11 @@
   :pathname "tests/"
   :serial t
   :components ((:file "package")
-               (:file "suite")))
+               (:file "suite")
+               (:file "arithmetic")
+               (:file "moduli")
+               (:file "mpz")
+               (:file "multiplication")
+               (:file "ntt")
+               (:file "primes")
+               (:file "sundries")))

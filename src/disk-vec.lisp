@@ -22,11 +22,12 @@
 
 (defclass disk-vec ()
   ((mmap-data :initarg :mmap-data
-              :reader disk-vec.mmap-data)
+              :accessor disk-vec.mmap-data)
    (filename :initarg :filename
              :reader disk-vec.filename)
    (length   :initarg :length
-             :reader vec-digit-length)))
+             :reader vec-digit-length
+             :writer disk-vec.set-length)))
 
 (defmethod vec-digit-pointer ((vec disk-vec))
   (mmap-data-pointer (disk-vec.mmap-data vec)))
@@ -43,14 +44,45 @@
   (funcall (disk-vec-finalizer vec))
   nil)
 
-;;; TODO: implement remainder of protocol
+(defmethod copy-vec ((vec disk-vec))
+  (let* ((n (vec-digit-length vec))
+         (new-vec (make-disk-vec n)))
+    (with-vecs (vec vec_ new-vec new-vec_)
+      (dotimes (i n new-vec)
+        (setf (vec_ i) (new-vec_ i))))))
+
+;;; VEC-REF implemented by default
+
+(defmethod resize-vec-by ((vec disk-vec) n)
+  (let* ((old-length (vec-digit-length vec))
+         (new-length (+ n old-length))
+         (new-size-bytes (bytes-for-digits new-length)))
+    (cond
+      ((minusp new-length)
+       (error "can't resize to a negative size..."))
+      ((zerop n)
+       vec)
+      (t
+       (tg:cancel-finalization vec)
+       (munmap (disk-vec.mmap-data vec))
+       ;; TRUNCATE will write 0 to extra bytes.
+       (sb-posix:truncate (disk-vec.filename vec) new-size-bytes)
+       (setf (disk-vec.mmap-data vec) (mmap (disk-vec.filename vec) new-size-bytes))
+       (disk-vec.set-length new-length vec)
+       (when *auto-free-vecs*
+        (tg:finalize vec (disk-vec-finalizer vec)))
+       vec))))
 
 (defun make-disk-vec (n)
   (let ((filename (generate-work-filename)))
     (write-zeros-to-file filename n)
-    (let ((vec (make-instance 'disk-vec :mmap-data (mmap filename (ceiling (* n $digit-bits) 8))
-                                        :filename filename
-                                        :length n)))
+    (make-disk-vec-from-file n filename)))
+
+(defun make-disk-vec-from-file (n filename)
+  (let ((vec (make-instance 'disk-vec
+               :mmap-data (mmap filename (bytes-for-digits n))
+               :filename filename
+               :length n)))
       (when *auto-free-vecs*
         (tg:finalize vec (disk-vec-finalizer vec)))
-      vec)))
+      vec))

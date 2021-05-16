@@ -5,12 +5,14 @@ Hypergeometrica aims to democratize the calculation of pi to trillions of digits
 Please watch this [introductory video](https://www.youtube.com/watch?v=XanjZw5hPvE).
 
 ```
-CL-USER> (asdf:load-package :hypergeometrica)
+CL-USER> (asdf:load-system :hypergeometrica)
 CL-USER> (in-package :hypergeometrica)
 #<PACKAGE "HYPERGEOMETRICA">
 HYPERGEOMETRICA> (partial-digits (binary-split (make-e-series) 0 100) 50)
 271828182845904523536028747135266249775724709369996
 ```
+
+**Unfortunately**, Hypergeometrica cannot yet calculate pi in a competent way. It is missing some key routines, such as high-precision division and square roots.
 
 ## What is it?
 
@@ -50,9 +52,11 @@ An implementation of disk-backed bigints exists, but it's not vetted and I'm not
 
 There's also a broken implementation of out-of-core multiplication called the "matrix Fourier algorithm" following Arndt. Some corner case isn't working, and I'm not even sure this is the best way to do out-of-core multiplication.
 
+
 ## Can I contribute?
 
 Please, yes. Even if it's just telling me to document something. File an issue!
+
 
 ## I know a lot about {I/O, disks, computer arithmetic, assembly, SBCL, ...} but I'm not really interested in rolling up my sleeves for this project.
 

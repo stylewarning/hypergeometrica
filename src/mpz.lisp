@@ -29,10 +29,10 @@
   (storage (make-storage 0) :type storage :read-only t))
 #+sbcl (declaim (sb-ext:freeze-type mpz))
 
-(defmethod vec-digit-length ((mpz mpz))
+(defmethod vec-digit-length ((mpz mpz)) ; Convenient hack
   (vec-digit-length (storage mpz)))
 
-(defmethod vec-digit-pointer ((mpz mpz))
+(defmethod vec-digit-pointer ((mpz mpz)) ; Convenient hack
   (vec-digit-pointer (storage mpz)))
 
 ;;; Conversion functions

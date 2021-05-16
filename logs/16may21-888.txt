@@ -1,0 +1,413 @@
+HYPERGEOMETRICA> (test-it 8)
+RAM &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+-------------------------
+Current exponent: 2 / 16777216 (  0.00%)
+-------------------------
+Current exponent: 4 / 16777216 (  0.00%)
+-------------------------
+Current exponent: 8 / 16777216 (  0.00%)
+-------------------------
+Current exponent: 16 / 16777216 (  0.00%)
+-------------------------
+Current exponent: 32 / 16777216 (  0.00%)
+-------------------------
+Current exponent: 64 / 16777216 (  0.00%)
+-------------------------
+Current exponent: 128 / 16777216 (  0.00%)
+-------------------------
+Current exponent: 256 / 16777216 (  0.00%)
+-------------------------
+Current exponent: 512 / 16777216 (  0.00%)
+-------------------------
+Current exponent: 1024 / 16777216 (  0.01%)
+-------------------------
+Current exponent: 2048 / 16777216 (  0.01%)
+-------------------------
+Current exponent: 4096 / 16777216 (  0.02%)
+-------------------------
+Current exponent: 8192 / 16777216 (  0.05%)
+Allocating... 0 ms
+Size: 193 (approx 3718 decimals, 0 MiB)
+Transform length: 512
+Convolution bits: 137
+Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+Forward... 4 ms
+Pointwise multiply...  0 ms
+Reverse... 0 ms
+CRT... 0 ms
+-------------------------
+Current exponent: 16384 / 16777216 (  0.10%)
+Allocating... 0 ms
+Size: 385 (approx 7417 decimals, 0 MiB)
+Transform length: 1024
+Convolution bits: 138
+Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+Forward... 0 ms
+Pointwise multiply...  0 ms
+Reverse... 8 ms
+CRT... 0 ms
+-------------------------
+Current exponent: 32768 / 16777216 (  0.20%)
+Allocating... 0 ms
+Size: 769 (approx 14815 decimals, 0 MiB)
+Transform length: 2048
+Convolution bits: 139
+Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+Forward... 4 ms
+Pointwise multiply...  4 ms
+Reverse... 8 ms
+CRT... 0 ms
+-------------------------
+Current exponent: 65536 / 16777216 (  0.39%)
+Allocating... 0 ms
+Size: 1537 (approx 29612 decimals, 0 MiB)
+Transform length: 4096
+Convolution bits: 140
+Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+Forward... 8 ms
+Pointwise multiply...  0 ms
+Reverse... 16 ms
+CRT... 4 ms
+-------------------------
+Current exponent: 131072 / 16777216 (  0.78%)
+Allocating... 0 ms
+Size: 3073 (approx 59204 decimals, 0 MiB)
+Transform length: 8192
+Convolution bits: 141
+Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+Forward... 16 ms
+Pointwise multiply...  4 ms
+Reverse... 32 ms
+CRT... 0 ms
+-------------------------
+Current exponent: 262144 / 16777216 (  1.56%)
+Allocating... 0 ms
+Size: 6145 (approx 118389 decimals, 0 MiB)
+Transform length: 16384
+Convolution bits: 142
+Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+Forward... 28 ms
+Pointwise multiply...  8 ms
+Reverse... 64 ms
+CRT... 8 ms
+-------------------------
+Current exponent: 524288 / 16777216 (  3.13%)
+Allocating... 4 ms
+Size: 12289 (approx 236759 decimals, 1 MiB)
+Transform length: 32768
+Convolution bits: 143
+Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+Forward... 60 ms
+Pointwise multiply...  12 ms
+Reverse... 132 ms
+CRT... 8 ms
+-------------------------
+Current exponent: 1048576 / 16777216 (  6.25%)
+Allocating... 4 ms
+Size: 24577 (approx 473499 decimals, 2 MiB)
+Transform length: 65536
+Convolution bits: 144
+Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+Forward... 128 ms
+Pointwise multiply...  32 ms
+Reverse... 272 ms
+CRT... 16 ms
+-------------------------
+Current exponent: 2097152 / 16777216 ( 12.50%)
+Allocating... 4 ms
+Size: 49153 (approx 946978 decimals, 4 MiB)
+Transform length: 131072
+Convolution bits: 145
+Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+Forward... 272 ms
+Pointwise multiply...  64 ms
+Reverse... 580 ms
+CRT... 32 ms
+-------------------------
+Current exponent: 4194304 / 16777216 ( 25.00%)
+Allocating... 8 ms
+Size: 98305 (approx 1893936 decimals, 8 MiB)
+Transform length: 262144
+Convolution bits: 146
+Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+Forward... 560 ms
+Pointwise multiply...  120 ms
+Reverse... 1256 ms
+CRT... 60 ms
+-------------------------
+Current exponent: 8388608 / 16777216 ( 50.00%)
+Allocating... 16 ms
+Size: 196609 (approx 3787853 decimals, 16 MiB)
+Transform length: 524288
+Convolution bits: 147
+Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+Forward... 1324 ms
+Pointwise multiply...  228 ms
+Reverse... 2744 ms
+CRT... 128 ms
+-------------------------
+Current exponent: 16777216 / 16777216 (100.00%)
+Allocating... 36 ms
+Size: 393217 (approx 7575687 decimals, 32 MiB)
+Transform length: 1048576
+Convolution bits: 148
+Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+Forward... 3412 ms
+Pointwise multiply...  472 ms
+Reverse... 6040 ms
+CRT... 244 ms
+Evaluation took:
+  18.520 seconds of real time
+  18.531351 seconds of total run time (18.466911 user, 0.064440 system)
+  [ Run times consist of 0.060 seconds GC time, and 18.472 seconds non-GC time. ]
+  100.06% CPU
+  53,781,976,261 processor cycles
+  11,709,146,672 bytes consed
+  
+DISK &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+Making DISK-VEC of 1 digit
+Making DISK-VEC of 1 digit
+-------------------------
+Current exponent: 2 / 16777216 (  0.00%)
+Making DISK-VEC of 3 digits
+-------------------------
+Current exponent: 4 / 16777216 (  0.00%)
+Making DISK-VEC of 3 digits
+-------------------------
+Current exponent: 8 / 16777216 (  0.00%)
+Making DISK-VEC of 3 digits
+-------------------------
+Current exponent: 16 / 16777216 (  0.00%)
+Making DISK-VEC of 3 digits
+-------------------------
+Current exponent: 32 / 16777216 (  0.00%)
+Making DISK-VEC of 3 digits
+-------------------------
+Current exponent: 64 / 16777216 (  0.00%)
+Making DISK-VEC of 5 digits
+Making DISK-VEC of 5 digits
+-------------------------
+Current exponent: 128 / 16777216 (  0.00%)
+Making DISK-VEC of 9 digits
+Making DISK-VEC of 9 digits
+-------------------------
+Current exponent: 256 / 16777216 (  0.00%)
+Making DISK-VEC of 15 digits
+Making DISK-VEC of 15 digits
+-------------------------
+Current exponent: 512 / 16777216 (  0.00%)
+Making DISK-VEC of 27 digits
+Making DISK-VEC of 27 digits
+-------------------------
+Current exponent: 1024 / 16777216 (  0.01%)
+Making DISK-VEC of 51 digits
+Making DISK-VEC of 51 digits
+-------------------------
+Current exponent: 2048 / 16777216 (  0.01%)
+Making DISK-VEC of 99 digits
+Making DISK-VEC of 99 digits
+-------------------------
+Current exponent: 4096 / 16777216 (  0.02%)
+Making DISK-VEC of 195 digits
+Making DISK-VEC of 195 digits
+-------------------------
+Current exponent: 8192 / 16777216 (  0.05%)
+Allocating...
+Making DISK-VEC of 512 digits
+Making DISK-VEC of 512 digits
+Making DISK-VEC of 512 digits
+ 0 ms
+Making DISK-VEC of 512 digits
+Size: 193 (approx 3718 decimals, 0 MiB)
+Transform length: 512
+Convolution bits: 137
+Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+Forward... 0 ms
+Pointwise multiply...  0 ms
+Reverse... 0 ms
+CRT... 0 ms
+-------------------------
+Current exponent: 16384 / 16777216 (  0.10%)
+Allocating...
+Making DISK-VEC of 1024 digits
+Making DISK-VEC of 1024 digits
+Making DISK-VEC of 1024 digits
+ 0 ms
+Making DISK-VEC of 1024 digits
+Size: 385 (approx 7417 decimals, 0 MiB)
+Transform length: 1024
+Convolution bits: 138
+Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+Forward... 4 ms
+Pointwise multiply...  0 ms
+Reverse... 4 ms
+CRT... 0 ms
+-------------------------
+Current exponent: 32768 / 16777216 (  0.20%)
+Allocating...
+Making DISK-VEC of 2048 digits
+Making DISK-VEC of 2048 digits
+Making DISK-VEC of 2048 digits
+ 0 ms
+Making DISK-VEC of 2048 digits
+Size: 769 (approx 14815 decimals, 0 MiB)
+Transform length: 2048
+Convolution bits: 139
+Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+Forward... 4 ms
+Pointwise multiply...  0 ms
+Reverse... 8 ms
+CRT... 0 ms
+-------------------------
+Current exponent: 65536 / 16777216 (  0.39%)
+Allocating...
+Making DISK-VEC of 4096 digits
+Making DISK-VEC of 4096 digits
+Making DISK-VEC of 4096 digits
+ 4 ms
+Making DISK-VEC of 4096 digits
+Size: 1537 (approx 29612 decimals, 0 MiB)
+Transform length: 4096
+Convolution bits: 140
+Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+Forward... 8 ms
+Pointwise multiply...  4 ms
+Reverse... 12 ms
+CRT... 4 ms
+-------------------------
+Current exponent: 131072 / 16777216 (  0.78%)
+Allocating...
+Making DISK-VEC of 8192 digits
+Making DISK-VEC of 8192 digits
+Making DISK-VEC of 8192 digits
+ 0 ms
+Making DISK-VEC of 8192 digits
+Size: 3073 (approx 59204 decimals, 0 MiB)
+Transform length: 8192
+Convolution bits: 141
+Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+Forward... 16 ms
+Pointwise multiply...  4 ms
+Reverse... 32 ms
+CRT... 4 ms
+-------------------------
+Current exponent: 262144 / 16777216 (  1.56%)
+Allocating...
+Making DISK-VEC of 16384 digits
+Making DISK-VEC of 16384 digits
+Making DISK-VEC of 16384 digits
+ 4 ms
+Making DISK-VEC of 16384 digits
+Size: 6145 (approx 118389 decimals, 0 MiB)
+Transform length: 16384
+Convolution bits: 142
+Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+Forward... 28 ms
+Pointwise multiply...  8 ms
+Reverse... 60 ms
+CRT... 8 ms
+-------------------------
+Current exponent: 524288 / 16777216 (  3.13%)
+Allocating...
+Making DISK-VEC of 32768 digits
+Making DISK-VEC of 32768 digits
+Making DISK-VEC of 32768 digits
+ 4 ms
+Making DISK-VEC of 32768 digits
+Size: 12289 (approx 236759 decimals, 1 MiB)
+Transform length: 32768
+Convolution bits: 143
+Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+Forward... 60 ms
+Pointwise multiply...  20 ms
+Reverse... 124 ms
+CRT... 8 ms
+-------------------------
+Current exponent: 1048576 / 16777216 (  6.25%)
+Allocating...
+Making DISK-VEC of 65536 digits
+Making DISK-VEC of 65536 digits
+Making DISK-VEC of 65536 digits
+ 8 ms
+Making DISK-VEC of 65536 digits
+Size: 24577 (approx 473499 decimals, 2 MiB)
+Transform length: 65536
+Convolution bits: 144
+Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+Forward... 120 ms
+Pointwise multiply...  28 ms
+Reverse... 256 ms
+CRT... 16 ms
+-------------------------
+Current exponent: 2097152 / 16777216 ( 12.50%)
+Allocating...
+Making DISK-VEC of 131072 digits
+Making DISK-VEC of 131072 digits
+Making DISK-VEC of 131072 digits
+ 12 ms
+Making DISK-VEC of 131072 digits
+Size: 49153 (approx 946978 decimals, 4 MiB)
+Transform length: 131072
+Convolution bits: 145
+Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+Forward... 256 ms
+Pointwise multiply...  56 ms
+Reverse... 560 ms
+CRT... 28 ms
+-------------------------
+Current exponent: 4194304 / 16777216 ( 25.00%)
+Allocating...
+Making DISK-VEC of 262144 digits
+Making DISK-VEC of 262144 digits
+Making DISK-VEC of 262144 digits
+ 24 ms
+Making DISK-VEC of 262144 digits
+Size: 98305 (approx 1893936 decimals, 8 MiB)
+Transform length: 262144
+Convolution bits: 146
+Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+Forward... 532 ms
+Pointwise multiply...  116 ms
+Reverse... 1220 ms
+CRT... 60 ms
+-------------------------
+Current exponent: 8388608 / 16777216 ( 50.00%)
+Allocating...
+Making DISK-VEC of 524288 digits
+Making DISK-VEC of 524288 digits
+Making DISK-VEC of 524288 digits
+ 44 ms
+Making DISK-VEC of 524288 digits
+Size: 196609 (approx 3787853 decimals, 16 MiB)
+Transform length: 524288
+Convolution bits: 147
+Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+Forward... 1260 ms
+Pointwise multiply...  224 ms
+Reverse... 2656 ms
+CRT... 132 ms
+-------------------------
+Current exponent: 16777216 / 16777216 (100.00%)
+Allocating...
+Making DISK-VEC of 1048576 digits
+Making DISK-VEC of 1048576 digits
+Making DISK-VEC of 1048576 digits
+ 88 ms
+Making DISK-VEC of 1048576 digits
+Size: 393217 (approx 7575687 decimals, 32 MiB)
+Transform length: 1048576
+Convolution bits: 148
+Moduli: #x6280000000000001, #x5700000000000001, #x4180000000000001
+Forward... 3052 ms
+Pointwise multiply...  452 ms
+Reverse... 5788 ms
+CRT... 256 ms
+Evaluation took:
+  17.736 seconds of real time
+  17.751366 seconds of total run time (17.687267 user, 0.064099 system)
+  [ Run times consist of 0.066 seconds GC time, and 17.686 seconds non-GC time. ]
+  100.08% CPU
+  51,501,873,921 processor cycles
+  11,709,638,976 bytes consed
+  
+T

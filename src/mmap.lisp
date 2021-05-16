@@ -40,3 +40,27 @@
     (setf (mmap-data-unmapped data) t)
     (remhash data *mmaps*)
     nil))
+
+(defun madvise-normal (data)
+  (check-type data mmap-data)
+  #+linux
+  (mmap:madvise (mmap-data-pointer data)
+                (mmap-data-size data)
+                ':madv-normal)
+  nil)
+
+(defun madvise-random (data)
+  (check-type data mmap-data)
+  #+linux
+  (mmap:madvise (mmap-data-pointer data)
+                (mmap-data-size data)
+                ':madv-random)
+  nil)
+
+(defun madvise-sequential (data)
+  (check-type data mmap-data)
+  #+linux
+  (mmap:madvise (mmap-data-pointer data)
+                (mmap-data-size data)
+                ':madv-sequential)
+  nil)

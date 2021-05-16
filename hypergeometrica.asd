@@ -23,6 +23,7 @@
   :serial t
   :components ((:file "package")
                (:file "config")
+               (:file "mmap-patches" :if-feature :linux)
                (:file "mmap")
                (:file "math-utilities")
                (:file "sbcl-intrinsics"         :if-feature :sbcl)

@@ -148,6 +148,10 @@ Each of the function a, b, p, and q are integer-valued.
                :p #'one
                :q (lambda (n) (integer-mpz (if (zerop n) 1 n)))))
 
+(defun compute-e (prec)
+  (let ((num-terms (+ 5 prec)))               ; way over-estimate
+    (partial-digits (binary-split (make-e-series) 0 num-terms) prec)))
+
 ;;; Ramanujan's Series for pi
 
 (defconstant +rama-decimals-per-term+ (log 96059301 10d0))
@@ -169,20 +173,19 @@ Each of the function a, b, p, and q are integer-valued.
                1
                (* (expt n 3)
                   #.(/ (expt +rama-c+ 4) 8)))))
-    (make-series :a #'a
+    (make-series :a (alexandria:compose #'integer-mpz #'a)
                  :b #'one
-                 :p #'p
-                 :q #'q)))
+                 :p (alexandria:compose #'integer-mpz #'p)
+                 :q (alexandria:compose #'integer-mpz #'q))))
 
-#+ig
 (defun compute-pi/ramanujan (prec)
   (let* ((num-terms (floor (+ 2 (/ prec +rama-decimals-per-term+))))
          (sqrt2 (isqrt (* 2 (expt 100 prec))))
          (num (* 2 2))
          (den (* (expt 99 2) sqrt2))
          (comp (binary-split (make-ramanujan-series) 0 num-terms)))
-    (values (floor (* den (partial-denominator comp))
-                   (* num (partial-numerator comp))))))
+    (values (floor (* den (mpz-integer (partial-denominator comp)))
+                   (* num (mpz-integer (partial-numerator comp)))))))
 
 ;;; Chudnovsky's Series for pi
 
@@ -210,14 +213,13 @@ Each of the function a, b, p, and q are integer-valued.
                  :p (alexandria:compose #'integer-mpz #'p)
                  :q (alexandria:compose #'integer-mpz #'q))))
 
-#+ig
 (defun compute-pi/chudnovsky (prec)
   (let* ((num-terms (floor (+ 2 (/ prec +chud-decimals-per-term+))))
          ;; √640320 = 8√10005
          (sqrt-c    (* 8 (isqrt (* 10005 (expt 100 prec)))))
          (comp      (binary-split (make-chudnovsky-series) 0 num-terms)))
-    (values (floor (* sqrt-c (partial-denominator comp) #.(/ +chud-c+ 12))
-                   (partial-numerator comp)))))
+    (values (floor (* sqrt-c (mpz-integer (partial-denominator comp)) #.(/ +chud-c+ 12))
+                   (mpz-integer (partial-numerator comp))))))
 
 
 ;;; Catalan's Constant G

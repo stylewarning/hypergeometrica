@@ -8,11 +8,16 @@ Please watch this [introductory video](https://www.youtube.com/watch?v=XanjZw5hP
 CL-USER> (asdf:load-system :hypergeometrica)
 CL-USER> (in-package :hypergeometrica)
 #<PACKAGE "HYPERGEOMETRICA">
-HYPERGEOMETRICA> (partial-digits (binary-split (make-e-series) 0 100) 50)
-271828182845904523536028747135266249775724709369996
+HYPERGEOMETRICA> (compute-pi/ramanujan 100)
+31415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679
+HYPERGEOMETRICA> (compute-pi/chudnovsky 100)
+31415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679
+HYPERGEOMETRICA> (compute-e 100)
+27182818284590452353602874713526624977572470936999595749669676277240766303535475945713821785251664274
 ```
 
-**Unfortunately**, Hypergeometrica cannot yet calculate pi in a competent way. It is missing some key routines, such as high-precision division and square roots.
+**Unfortunately**, Hypergeometrica cannot yet calculate pi in a *competent* way. What you see above does actually compute pi, but is taking a few very inefficient shortcuts. In order to be efficient, Hypergeometrica needs some additional key routines, such as high-precision division and square roots.
+
 
 ## What is it?
 

@@ -44,6 +44,14 @@
               ;; TODO: test SUB128
               )))
 
+(deftest test-clz-ctz ()
+  (is (= h::$digit-bits (h::ctz 0)))
+  (is (= h::$digit-bits (h::clz 0)))
+  (loop :for i :from 0 :below h::$digit-bits
+        :for x := (ash 1 i)
+        :do (is (= i (h::ctz x)))
+            (is (= (- h::$digit-bits i 1) (h::clz x)))))
+
 (defun %test-m* (n low)
   (flet ((r (&optional (high h::$base))
            (+ low (random (- high low)))))

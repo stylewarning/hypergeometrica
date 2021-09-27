@@ -21,11 +21,19 @@
 (defgeneric resize-vec-by (vec n-digits)
   (:documentation "Change the capacity of VEC by N-DIGITS digits."))
 
+(defgeneric resize-vec-to (vec n-digits)
+  (:documentation "Change the capacity of VEC to have a capacity of N-DIGITS.")
+  (:method (vec n-digits)
+    (resize-vec-by vec (- n-digits (vec-digit-length vec)))))
+
 (defgeneric free-vec (vec)
   (:documentation "Free all memory associated with VEC."))
 
 (defgeneric vec-ref (vec i)
   (:documentation "Reference the Ith element of a vector VEC. It is advised to use WITH-VEC when possible instead of this."))
+
+(defgeneric (setf vec-ref) (new-value vec i)
+  (:documentation "Set the Ith element of a vector VEC to NEW-VALUE. It is advised to use WITH-VEC when possible instead of this."))
 
 (defparameter *auto-free-vecs* t
   "Automatically free VECs during garbage collection?")
@@ -80,6 +88,10 @@
 (defmethod vec-ref (vec i)
   (with-vec (vec vec_)
     (vec_ i)))
+
+(defmethod (setf vec-ref) (new-value vec i)
+  (with-vec (vec vec_)
+    (setf (vec_ i) new-value)))
 
 (defmacro with-vecs (vec-accessors &body body)
   (cond

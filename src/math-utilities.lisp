@@ -4,12 +4,6 @@
 
 (in-package #:hypergeometrica)
 
-(defmacro do-range ((var from to &optional result) &body body)
-  (alexandria:once-only (from to)
-    `(do ((,var ,from (1+ ,var)))
-         ((= ,var ,to) ,result)
-       ,@body)))
-
 (defun power-of-two-p (n)
   "Is N a power-of-two?"
   (and (plusp n)
@@ -36,7 +30,9 @@
   (expt 2 n))
 
 (defun count-trailing-zeroes (n)
-  "Count the number of trailing zeros in the binary representation of the positive integer N."
+  "Count the number of trailing zeros in the binary representation of the positive integer N.
+
+See CTZ for DIGITs."
   (assert (plusp n))
   (loop :for z :from 0
         :for x := n :then (ash x -1)

@@ -130,3 +130,17 @@ for A >= B.
 (defun complement-digit (n)
   (declare (type digit n))
   (logxor n $digit-ones))
+
+(declaim (inline clz))
+(defun clz (n)
+  "Count Leading Zeros in a digit N."
+  (declare (type digit n))
+  (- $digit-bits (integer-length n)))
+
+(declaim (inline ctz))
+(defun ctz (n)
+  "Count Trailing Zeros in a digit N."
+  (declare (type digit n))
+  (if (zerop n)
+      $digit-bits
+      (1- (integer-length (logand n (- n))))))

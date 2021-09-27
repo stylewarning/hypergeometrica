@@ -144,3 +144,12 @@
     (tg:cancel-finalization vec))
   nil)
 
+(defun sequence->ram-vec (seq)
+  (let* ((n (length seq))
+         (vec (make-ram-vec n)))
+    (with-vec (vec vec_)
+      (let ((i -1))
+        (map nil (lambda (x)
+                   (setf (vec_ (incf i)) x))
+             seq)
+        vec))))

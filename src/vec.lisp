@@ -119,10 +119,10 @@
            (loop :for i :below a-length
                  :always (= (a_ i) (b_ i)))))))
 
-(defun vec-fill (vec digit)
+(defun vec-fill (vec digit &key (start 0))
   (with-vec (vec vec_)
-    (dotimes (i (vec-digit-length vec))
-      (setf (vec_ i) digit))))
+    (loop :for i :from start :below (vec-digit-length vec)
+          :do (setf (vec_ i) digit))))
 
 (defun vec-every (fun vec)
   (with-vec (vec vec_)
@@ -145,6 +145,38 @@
        (memcpy (cffi:inc-pointer (vec-digit-pointer dst) (bytes-for-digits start1))
                (vec-digit-pointer src)
                (bytes-for-digits written-length))))))
+
+(defun vec-leading-zeros (vec)
+  "How many leading zeros does VEC have? (In ideal circumstances, there are zero leading zeros.)"
+  (do-digits (i digit vec (vec-digit-length vec))
+    (unless (zerop digit)
+      (return-from vec-leading-zeros i))))
+
+(defun vec-trailing-zeros (vec)
+  "How many trailing zeros does VEC have? (In ideal circumstances, there are zero trailing zeros.)
+
+See also: VEC-DIGIT-LENGTH*
+"
+  (with-vec (vec vec_)
+    (loop :with n := (vec-digit-length vec)
+          :for i :from (1- n) :downto 0
+          :for count :from 0
+          :for vi := (vec_ i)
+          :while (zerop vi)
+          :finally (return count))))
+
+(defun left-displace-vec (vec k)
+  "Displace the elements of VEC to the left (toward negative indexes) by K spots."
+  (let ((n (vec-digit-length vec)))
+    (cond
+      ((>= k n)
+       (vec-fill vec 0 :start 0))
+      (t
+       (with-vec (vec vec_)
+         (dotimes (i (- n k))
+           (setf (vec_ i) (vec_ (+ i k)))))
+       (vec-fill vec 0 :start (- n k))))
+    vec))
 
 (declaim (ftype (function (t) alexandria:array-length) vec-digit-length*))
 (defun vec-digit-length* (vec)

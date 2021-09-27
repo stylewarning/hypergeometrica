@@ -28,6 +28,7 @@
     (unless (<= size (mmap-data-size data))
       (munmap data)
       (error "bad mmap"))
+    (madvise-random data)               ; We'll try this out...
     (setf (gethash data *mmaps*) (get-universal-time))
     (values data path)))
 

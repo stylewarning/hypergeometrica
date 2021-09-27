@@ -25,6 +25,7 @@
 (deftest test-mpz-mult-simple ()
   (let* ((k (expt 2 128))
          (n (h::integer-mpz k)))
+    (is (= k (h::mpz-integer n)))       ; Sanity check
     (is (= (h::mpz-integer (h::mpz-* n n))
            (* k k)))))
 

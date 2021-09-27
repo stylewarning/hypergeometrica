@@ -32,7 +32,7 @@
     (zeroize carry)
     (move sum x)
     (inst add sum y)
-    (inst set carry :c)))
+    (inst set :c carry)))
 
 (define-vop (hypergeometrica::mul128)
   (:translate hypergeometrica::mul128)

@@ -19,7 +19,7 @@
 
 ;; XXX FIXME: this doesn't actually affect anything because intrinsics
 ;; are loaded regardless in the ASD file.
-#+(and #:nil sbcl (or x86-64))
+#+(and sbcl (or x86-64))
 (push :hypergeometrica-intrinsics *features*)
 
 

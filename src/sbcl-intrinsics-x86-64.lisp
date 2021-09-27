@@ -6,8 +6,8 @@
 
 (in-package #:sb-vm)
 
-(define-vop (hypergeometrica::ub64/2)
-  (:translate hypergeometrica::ub64/2)
+(define-vop (hypergeometrica::%%ub64/2)
+  (:translate hypergeometrica::%%ub64/2)
   (:policy :fast-safe)
   (:args (x :scs (unsigned-reg) :target r))
   (:arg-types unsigned-num)
@@ -17,8 +17,8 @@
     (move r x)
     (inst sar r 1)))
 
-(define-vop (hypergeometrica::add64)
-  (:translate hypergeometrica::add64)
+(define-vop (hypergeometrica::%%add64)
+  (:translate hypergeometrica::%%add64)
   (:policy :fast-safe)
   (:args (x :scs (unsigned-reg) :target sum)
          (y :scs (unsigned-reg unsigned-stack) :to :save))
@@ -34,8 +34,8 @@
     (inst add sum y)
     (inst set :c carry)))
 
-(define-vop (hypergeometrica::mul128)
-  (:translate hypergeometrica::mul128)
+(define-vop (hypergeometrica::%%mul128)
+  (:translate hypergeometrica::%%mul128)
   (:policy :fast-safe)
   (:args (x :scs (unsigned-reg) :target rax)
          (y :scs (unsigned-reg unsigned-stack)))
@@ -58,8 +58,8 @@
     (move r-hi rdx)))
 
 ;;; XXX: This won't properly detect overflow.
-(define-vop (hypergeometrica::div128)
-  (:translate hypergeometrica::div128)
+(define-vop (hypergeometrica::%%div128)
+  (:translate hypergeometrica::%%div128)
   (:policy :fast-safe)
   (:args (dividend-lo :scs (unsigned-reg) :target rax)
          (dividend-hi :scs (unsigned-reg) :target rdx)
@@ -84,8 +84,8 @@
     (move quotient rax)
     (move remainder rdx)))
 
-(define-vop (hypergeometrica::add128)
-  (:translate hypergeometrica::add128)
+(define-vop (hypergeometrica::%%add128)
+  (:translate hypergeometrica::%%add128)
   (:policy :fast-safe)
   (:args (a-lo :scs (unsigned-reg) :target c-lo)
          (a-hi :scs (unsigned-reg) :target c-hi)
@@ -105,8 +105,8 @@
     (inst add c-lo b-lo)
     (inst adc c-hi b-hi)))
 
-(define-vop (hypergeometrica::sub128)
-  (:translate hypergeometrica::sub128)
+(define-vop (hypergeometrica::%%sub128)
+  (:translate hypergeometrica::%%sub128)
   (:policy :fast-safe)
   (:args (a-lo :scs (unsigned-reg) :target c-lo)
          (a-hi :scs (unsigned-reg) :target c-hi)

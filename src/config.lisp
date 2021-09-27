@@ -17,8 +17,8 @@
 
 ;;; Enable assembly intrinsics.
 
-;; XXX FIXME: this doesn't actually affect anything because intrinsics
-;; are loaded regardless in the ASD file.
+;; N.B.: Intrinsic functions are still compiled, even if they're not
+;; used by Hypergeometrica.
 #+(and sbcl (or x86-64))
 (push :hypergeometrica-intrinsics *features*)
 

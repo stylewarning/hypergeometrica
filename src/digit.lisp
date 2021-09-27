@@ -37,12 +37,26 @@
 (define-fx-op fx* (* a b))
 (define-fx-op fx/ (floor a b))
 
+#+hypergeometrica-intrinsics
+(macrolet ((define-intrinsic (name args)
+             `(defun ,name ,args
+                (,name ,@args))))
+  (define-intrinsic %%ub64/2 (x))
+  (define-intrinsic %%add64  (x y))
+  (define-intrinsic %%add128 (alo ahi blo bhi))
+  (define-intrinsic %%sub128 (alo ahi blo bhi))
+  (define-intrinsic %%mul128 (x y))
+  (define-intrinsic %%div128 (dividend-lo dividend-hi divisor)))
+
+#+hypergeometrica-intrinsics
+(declaim (inline ub64/2 add64 add128 sub128 mul128 div128))
+
 (declaim (ftype (function ((unsigned-byte 64))
                           (values (unsigned-byte 64) &optional))
                 ub64/2))
 (defun ub64/2 (x)
   #+hypergeometrica-intrinsics
-  (ub64/2 x)
+  (%%ub64/2 x)
   #-hypergeometrica-intrinsics
   (ash x -1))
 
@@ -52,7 +66,7 @@
                 add64))
 (defun add64 (x y)
   #+hypergeometrica-intrinsics
-  (add64 x y)
+  (%%add64 x y)
   #-hypergeometrica-intrinsics
   (let ((s (+ x y)))
     (values (ldb (byte 64 0) s)
@@ -63,7 +77,7 @@
                 mul128))
 (defun mul128 (x y)
   #+hypergeometrica-intrinsics
-  (mul128 x y)
+  (%%mul128 x y)
   #-hypergeometrica-intrinsics
   (let ((r (* x y)))
     (values (ldb (byte 64 0) r)
@@ -74,7 +88,7 @@
                 div128))
 (defun div128 (dividend-lo dividend-hi divisor)
   #+hypergeometrica-intrinsics
-  (div128 dividend-lo dividend-hi divisor)
+  (%%div128 dividend-lo dividend-hi divisor)
   #-hypergeometrica-intrinsics
   (truncate (dpb dividend-hi (byte 64 64) dividend-lo) divisor))
 
@@ -87,7 +101,7 @@
     (alo + ahi*2^64) + (blo + bhi*2^64)
 "
   #+hypergeometrica-intrinsics
-  (add128 alo ahi blo bhi)
+  (%%add128 alo ahi blo bhi)
   #-hypergeometrica-intrinsics
   (let ((sum (+ alo blo (* (expt 2 64) (+ ahi bhi)))))
     (values (ldb (byte 64 0) sum)
@@ -101,10 +115,12 @@
 for A >= B.
 "
   #+hypergeometrica-intrinsics
-  (sub128 alo ahi blo bhi)
+  (%%sub128 alo ahi blo bhi)
   #-hypergeometrica-intrinsics
   (let ((sum (+ (- alo blo) (* (expt 2 64) (- ahi bhi)))))
-    (assert (not (minusp sum)))
+    ;; FIXME Issue #22
+    ;;
+    ;; (assert (not (minusp sum)))
     (values (ldb (byte 64 0) sum)
             (ldb (byte 64 64) sum))))
 

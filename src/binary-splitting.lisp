@@ -1,6 +1,6 @@
 ;;;; binary-splitting.lisp
 ;;;;
-;;;; Copyright (c) 2012-2019 Robert Smith
+;;;; Copyright (c) 2012-2019, 2022 Robert Smith
 
 ;;; Canonical reference: https://www.ginac.de/CLN/binsplit.pdf
 
@@ -11,7 +11,10 @@
 (defun one (n)
   (declare (type integer n)
            (ignore n))
-  (integer-mpz 1))
+  (integer-mpz 1 'mpz/ram))
+
+(defun int (n)
+  (integer-mpz n 'mpz/ram))
 
 (defstruct (series (:predicate series?))
   "A representation of the series
@@ -66,10 +69,10 @@ Each of the function a, b, p, and q are integer-valued.
   "A partial sum of a series for LOWER <= k < UPPER."
   (lower nil :type fixnum :read-only t)
   (upper nil :type fixnum :read-only t)
-  (p nil :type mpz :read-only t)
-  (q nil :type mpz :read-only t)
-  (b nil :type mpz :read-only t)
-  (r nil :type mpz :read-only t))
+  (p nil :type mpz/ram :read-only t)
+  (q nil :type mpz/ram :read-only t)
+  (b nil :type mpz/ram :read-only t)
+  (r nil :type mpz/ram :read-only t))
 
 (defmethod print-object ((obj partial) stream)
   (print-unreadable-object (obj stream :type t :identity nil)
@@ -121,6 +124,8 @@ Each of the function a, b, p, and q are integer-valued.
            (type fixnum lower upper))
   (assert (> upper lower))
   (let ((delta (- upper lower)))
+    (when (> delta 1000)
+      (format t "~&;;; binary split [~D, ~D)~%" lower upper))
     (cond
       ((= 1 delta) (binary-split-base-case=1 series lower upper))
       (t (let* ((m     (floor (+ lower upper) 2))
@@ -139,14 +144,14 @@ Each of the function a, b, p, and q are integer-valued.
         (den (denominator x)))
     (make-series :a #'one
                  :b #'one
-                 :p (lambda (n) (integer-mpz (if (zerop n) 1 num)))
-                 :q (lambda (n) (integer-mpz (if (zerop n) 1 (* n den)))))))
+                 :p (lambda (n) (int (if (zerop n) 1 num)))
+                 :q (lambda (n) (int (if (zerop n) 1 (* n den)))))))
 
 (defun make-e-series ()
   (make-series :a #'one
                :b #'one
                :p #'one
-               :q (lambda (n) (integer-mpz (if (zerop n) 1 n)))))
+               :q (lambda (n) (int (if (zerop n) 1 n)))))
 
 (defun compute-e (prec)
   (let ((num-terms (+ 5 prec)))               ; way over-estimate
@@ -173,10 +178,10 @@ Each of the function a, b, p, and q are integer-valued.
                1
                (* (expt n 3)
                   #.(/ (expt +rama-c+ 4) 8)))))
-    (make-series :a (alexandria:compose #'integer-mpz #'a)
+    (make-series :a (alexandria:compose #'int #'a)
                  :b #'one
-                 :p (alexandria:compose #'integer-mpz #'p)
-                 :q (alexandria:compose #'integer-mpz #'q))))
+                 :p (alexandria:compose #'int #'p)
+                 :q (alexandria:compose #'int #'q))))
 
 (defun compute-pi/ramanujan (prec)
   (let* ((num-terms (floor (+ 2 (/ prec +rama-decimals-per-term+))))
@@ -208,10 +213,10 @@ Each of the function a, b, p, and q are integer-valued.
                1
                (* (expt n 3)
                   #.(/ (expt +chud-c+ 3) 24)))))
-    (make-series :a (alexandria:compose #'integer-mpz #'a)
+    (make-series :a (alexandria:compose #'int #'a)
                  :b #'one
-                 :p (alexandria:compose #'integer-mpz #'p)
-                 :q (alexandria:compose #'integer-mpz #'q))))
+                 :p (alexandria:compose #'int #'p)
+                 :q (alexandria:compose #'int #'q))))
 
 (defun compute-pi/chudnovsky (prec)
   (let* ((num-terms (floor (+ 2 (/ prec +chud-decimals-per-term+))))

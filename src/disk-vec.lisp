@@ -75,6 +75,7 @@
 
 (defun make-disk-vec (n)
   (let ((filename (generate-work-filename)))
+    (dbg ";;; writing disk vec ~A" filename)
     (write-zeros-to-file filename n)
     (make-disk-vec-from-file n filename)))
 

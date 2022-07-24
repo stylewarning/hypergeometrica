@@ -5,14 +5,17 @@
 (in-package #:hypergeometrica)
 
 (defvar *verbose* nil)
+(defvar *hypergeometrica-log-stream*)
 
 ;;; Enable parallelism in some routines. This could make it harder to
 ;;; debug or profile.
 
-;;(push :hypergeometrica-parallel *features*)
+;;; (push :hypergeometrica-parallel *features*)
 
-#+lparallel
-(setf lparallel:*kernel* (lparallel:make-kernel 8 :name "Hypergeometrica"))
+#+ (and hypergeometrica-parallel lparallel)
+(unless (and (boundp 'lparallel:*kernel*)
+             (not (null lparallel:*kernel*)))
+  (setf lparallel:*kernel* (lparallel:make-kernel 8 :name "Hypergeometrica")))
 
 
 ;;; Enable assembly intrinsics.
@@ -59,7 +62,7 @@
 (defvar *maximum-file-size* (* 16 (expt 1024 3)) ; XXX: needed?
   "The maximum size of a file in octets.")
 
-(defvar *maximum-vector-size* (expt 1024 3)
+(defvar *maximum-vector-size* (* 8 (expt 1024 2))
   "The maximum size of a vector that can be stored in memory in octets.")
 
 (defvar *default-file-directory* (uiop:ensure-directory-pathname "/tmp/"))

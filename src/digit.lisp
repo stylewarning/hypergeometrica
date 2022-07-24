@@ -17,6 +17,10 @@
   "A digit in an MPZ."
   `(unsigned-byte ,$digit-bits))
 
+(deftype sign ()
+  "The sign of an MPZ."
+  '(member 1 -1))
+
 (declaim (inline bytes-for-digits))
 (defun bytes-for-digits (num-digits)
   (ceiling (* $digit-bits num-digits) 8))

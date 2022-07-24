@@ -22,7 +22,7 @@
         (setf (a_ i) (mod (vec_ i) modulus))))))
 
 (defun make-ntt-work (mpz length moduli)
-  (declare (type mpz mpz)
+  (declare (type mpz/ram mpz)
            (type alexandria:array-length length)
            (type (simple-array digit (*)) moduli))
   (when *verbose*

@@ -169,7 +169,7 @@
               :sum (* f (vec-ref a i)) :into result-digit
               :finally (add-big-digit (mod result-digit composite) result i)))
       (funcall report-time))
-    (make-mpz 1 result)))
+    (make-instance 'mpz/ram :sign 1 :storage result)))
 
 (defun mpz-*/ntt (x y)
   (let* ((size (+ (mpz-size x) (mpz-size y)))
@@ -251,7 +251,7 @@
               :sum (* f (vec-ref a i)) :into result-digit
               :finally (add-big-digit (mod result-digit composite) result i)))
       (funcall report-time))
-    (make-mpz (* (sign x) (sign y)) result)))
+    (make-instance 'mpz/ram :sign (* (sign x) (sign y)) :storage result)))
 
 
 

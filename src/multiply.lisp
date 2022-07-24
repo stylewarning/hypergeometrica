@@ -9,7 +9,7 @@
 (defparameter *ntt-multiply-threshold* 100
   "Up to how many digits can the smaller number of a multiplication have before NTT multiplication is used?")
 
-(defun mpz-* (x y)
+(defmethod mpz-* ((x mpz/ram) (y mpz/ram))
   (optimize-mpz x)
   (optimize-mpz y)
   (when (< (mpz-size x) (mpz-size y))
@@ -19,7 +19,7 @@
   (optimize-mpz
    (cond
      ((mpz-zerop y)
-      (integer-mpz 0))
+      (integer-mpz 0 'mpz/ram))
      ((= 1 (mpz-size y))
       (let ((d (vec-ref (storage y) 0)))
         (cond
@@ -28,16 +28,18 @@
                (mpz-negate x)
                x))
           (t
-           (let ((r (make-mpz (* (sign x) (sign y))
-                              (make-storage (+ 2 (mpz-size x))))))
+           (let ((r (make-instance 'mpz/ram
+                      :sign (* (sign x) (sign y))
+                      :storage (make-storage (+ 2 (mpz-size x))))))
              (vec-replace/unsafe (storage r) (storage x))
              (mpz-multiply-by-digit! d r)
              r)))))
      ((<= (mpz-size y) *ntt-multiply-threshold*)
-      (make-mpz (* (sign x) (sign y))
-                (%multiply-storage/schoolboy
-                 (storage x) (mpz-size x)
-                 (storage y) (mpz-size y))))
+      (make-instance 'mpz/ram
+        :sign (* (sign x) (sign y))
+        :storage (%multiply-storage/schoolboy
+                  (storage x) (mpz-size x)
+                  (storage y) (mpz-size y))))
      ((eq x y)
       (mpz-square x))
      #+hypergeometrica-floating-point
@@ -74,4 +76,4 @@
 
 (defun mpz-expt (a n)
   "Raise an MPZ A to the power of a non-negative integer N."
-  (f-expt a n (integer-mpz 1) #'mpz-*))
+  (f-expt a n (integer-mpz 1 (class-name (class-of a))) #'mpz-*))

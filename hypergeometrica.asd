@@ -23,6 +23,7 @@
   :serial t
   :components ((:file "package")
                (:file "config")
+               (:file "logging")
                (:file "mmap-patches" :if-feature :linux)
                (:file "mmap")
                (:file "math-utilities")
@@ -34,7 +35,8 @@
                (:file "ram-vec")
                (:file "disk-vec")
                (:file "modular-arithmetic")
-               (:file "mpz")
+               (:file "mpz-protocol")
+               (:file "mpz-ram")
                (:file "moduli")
                (:file "strandh-elster-reversal")
                (:file "number-theoretic-transform")

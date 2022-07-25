@@ -124,8 +124,6 @@ Each of the function a, b, p, and q are integer-valued.
            (type fixnum lower upper))
   (assert (> upper lower))
   (let ((delta (- upper lower)))
-    (when (> delta 1000)
-      (format t "~&;;; binary split [~D, ~D)~%" lower upper))
     (cond
       ((= 1 delta) (binary-split-base-case=1 series lower upper))
       (t (let* ((m     (floor (+ lower upper) 2))
@@ -195,6 +193,7 @@ Each of the function a, b, p, and q are integer-valued.
 ;;; Chudnovsky's Series for pi
 
 (defconstant +chud-decimals-per-term+ (log 151931373056000 10d0))
+(defconstant +chud-bits-per-term+ (log 151931373056000 2d0))
 (defconstant +chud-a+ 13591409)
 (defconstant +chud-b+ 545140134)
 (defconstant +chud-c+ 640320)
@@ -225,6 +224,48 @@ Each of the function a, b, p, and q are integer-valued.
          (comp      (binary-split (make-chudnovsky-series) 0 num-terms)))
     (values (floor (* sqrt-c (mpz-integer (partial-denominator comp)) #.(/ +chud-c+ 12))
                    (mpz-integer (partial-numerator comp))))))
+
+(defun dd (mpd)
+  (format t "~A~%" (sb-mpfr:coerce (mpd-rational mpd) 'sb-mpfr:mpfr-float))
+  mpd)
+
+(defun mpd-pi (prec-bits)
+  (let* ((num-terms (floor (+ 2 (/ prec-bits +chud-bits-per-term+))))
+         (start (get-internal-real-time))
+         ;; intermediate steps:
+         comp sqrt recip final)
+    (flet ((tim (s)
+             (format t "~A: ~A s~%" s (round (- (get-internal-real-time) start)
+                                             internal-time-units-per-second))
+             (setf start (get-internal-real-time))
+             (finish-output)))
+      (format t "~2&terms = ~A~%" num-terms)
+      (setf comp (binary-split (make-chudnovsky-series) 0 num-terms))
+      (tim "split")
+      (setf sqrt (mpd-sqrt (integer-mpd 10005) prec-bits))
+      (tim "sqrt")
+      (setf recip (mpd-reciprocal (mpz-mpd (partial-numerator comp))  prec-bits))
+      (tim "recip")
+      (setf final (mpz-mpd (mpz-* (integer-mpz (/ (* 8 +chud-c+) 12) 'mpz/ram)
+                                  (partial-denominator comp))))
+      (setf final (mpd-* final sqrt))
+      (setf final (mpd-* final recip))
+      (mpd-truncate! final prec-bits)
+      (tim "final"))
+    final))
+
+(defun test-pi (n)
+  (loop :for k :below n
+        :for bits := (expt 10 k)
+        :for x := (mpd-pi bits)
+        :do (sb-mpfr:set-precision (+ bits 8))
+            (let ((r (mpd-mpfr x))
+                  (true (sb-mpfr:const-pi)))
+              (format t "~2&~D bits [~D digits] : ~A~%" bits (round (* bits (log 2.0d0 10.0d0))) 'r)
+              
+              (let ((diff (sb-mpfr:sub true r)))
+                (sb-mpfr:set-precision 64)
+                (format t "==> error = ~A~%" (round (sb-mpfr:coerce (sb-mpfr:log2 diff) 'rational)))))))
 
 
 ;;; Catalan's Constant G

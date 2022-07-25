@@ -14,7 +14,10 @@
                #:uiop
 
                #:cffi
-               #:mmap)
+               #:mmap
+
+               #:sb-mpfr                ; for testing
+               )
   :in-order-to ((asdf:test-op (asdf:test-op #:hypergeometrica/tests)))
   :around-compile (lambda (compile)
                     (let (#+sbcl (sb-ext:*derive-function-types* t))
@@ -44,6 +47,7 @@
                ;; (:file "fft-multiply")
                ;; (:file "disk")
                (:file "multiply")
+               (:file "mpd")
                (:file "binary-splitting")))
 
 (asdf:defsystem #:hypergeometrica/tests

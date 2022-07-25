@@ -5,7 +5,7 @@
 (in-package #:hypergeometrica)
 
 (defvar *verbose* nil)
-(defvar *hypergeometrica-log-stream*)
+(defvar *hypergeometrica-log-stream* *standard-output*)
 
 ;;; Enable parallelism in some routines. This could make it harder to
 ;;; debug or profile.

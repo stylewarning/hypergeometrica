@@ -335,7 +335,8 @@
     (t
      (let ((d    (abs d))
            (size (mpz-size mpz))
-           (carry 0))
+           (carry 0)
+           (optimized-storage? (mpz-uses-minimal-storage-p mpz)))
        (declare (type (unsigned-byte 64) d)
                 (type alexandria:array-length size)
                 (type (unsigned-byte 64) carry))
@@ -346,7 +347,7 @@
                (setf (mpz_ i) lo)
                (setf carry (fx+ hi sub-carry))))))
        (when (plusp carry)
-         (when (mpz-uses-minimal-storage-p mpz)
+         (when optimized-storage?
            (resize-vec-by (storage mpz) 1))
          (with-vec (mpz mpz_)
            (setf (mpz_ size) carry)))

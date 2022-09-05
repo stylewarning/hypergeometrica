@@ -88,6 +88,7 @@ Each of the function a, b, p, and q are integer-valued.
   (declare (type partial x))
   (mpz-* (partial-b x) (partial-q x)))
 
+;;; for debugging
 (defun partial-digits (x digits)
   (declare (type partial x))
   (values (round (* (expt 10 digits) (mpz-integer (partial-numerator x)))
@@ -231,14 +232,9 @@ Each of the function a, b, p, and q are integer-valued.
 
 (defun mpd-pi (prec-bits)
   (let* ((num-terms (floor (+ 2 (/ prec-bits +chud-bits-per-term+))))
-         (start (get-internal-real-time))
          ;; intermediate steps:
          comp sqrt recip final)
-    (flet ((tim (s)
-             (format t "~A: ~A s~%" s (round (- (get-internal-real-time) start)
-                                             internal-time-units-per-second))
-             (setf start (get-internal-real-time))
-             (finish-output)))
+    (with-stopwatch (tim :log t)
       (format t "~2&terms = ~A~%" num-terms)
       (setf comp (binary-split (make-chudnovsky-series) 0 num-terms))
       (tim "split")

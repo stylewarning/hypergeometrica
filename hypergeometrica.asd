@@ -29,6 +29,7 @@
                (:file "logging")
                (:file "mmap-patches" :if-feature :linux)
                (:file "mmap")
+               (:file "timing-utilities")
                (:file "math-utilities")
                (:file "sbcl-intrinsics"         :if-feature :sbcl)
                (:file "sbcl-intrinsics-x86-64"  :if-feature (:and :sbcl :x86-64))

@@ -91,6 +91,13 @@
     (resize-vec-by vec (- size length))
     vec))
 
+(defmethod mpz-digit ((mpz mpz/ram) n)
+  (let ((s (mpz-size mpz)))
+    (if (>= n s)
+        0
+        (with-vec (mpz mpz_)
+          (mpz_ n)))))
+
 (defmethod mpz-set-zero! ((mpz mpz/ram))
   (setf (sign mpz) 1)
   (resize-vec-by (storage mpz) (- (vec-digit-length mpz)))

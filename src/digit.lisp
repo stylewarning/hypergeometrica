@@ -13,6 +13,8 @@
 (defconstant $max-digit (1- $base))
 (defconstant $digit-ones (ldb (byte $digit-bits 0) -1))
 
+(defconstant $largest-power-of-10 (expt 10 (floor (log $base 10.0d0))))
+
 (deftype digit ()
   "A digit in an MPZ."
   `(unsigned-byte ,$digit-bits))

@@ -16,24 +16,24 @@
     (sb-c:foldable sb-c:flushable sb-c:movable)
   :overwrite-fndb-silently t)
 
+(sb-c:defknown %%add128 ((unsigned-byte 64) (unsigned-byte 64)
+                         (unsigned-byte 64) (unsigned-byte 64))
+    (values (unsigned-byte 64) (unsigned-byte 64))
+    (sb-c:foldable sb-c:flushable sb-c:movable)
+  :overwrite-fndb-silently t)
+
+(sb-c:defknown %%sub128 ((unsigned-byte 64) (unsigned-byte 64)
+                         (unsigned-byte 64) (unsigned-byte 64))
+    (values (unsigned-byte 64) (unsigned-byte 64))
+    (sb-c:foldable sb-c:flushable sb-c:movable)
+  :overwrite-fndb-silently t)
+
 (sb-c:defknown %%mul128 ((unsigned-byte 64) (unsigned-byte 64))
     (values (unsigned-byte 64) (unsigned-byte 64))
     (sb-c:foldable sb-c:flushable sb-c:movable)
   :overwrite-fndb-silently t)
 
 (sb-c:defknown %%div128 ((unsigned-byte 64) (unsigned-byte 64) (unsigned-byte 64))
-    (values (unsigned-byte 64) (unsigned-byte 64))
-    (sb-c:foldable sb-c:flushable sb-c:movable)
-  :overwrite-fndb-silently t)
-
-(sb-c:defknown %%add128 ((unsigned-byte 64) (unsigned-byte 64)
-                       (unsigned-byte 64) (unsigned-byte 64))
-    (values (unsigned-byte 64) (unsigned-byte 64))
-    (sb-c:foldable sb-c:flushable sb-c:movable)
-  :overwrite-fndb-silently t)
-
-(sb-c:defknown %%sub128 ((unsigned-byte 64) (unsigned-byte 64)
-                       (unsigned-byte 64) (unsigned-byte 64))
     (values (unsigned-byte 64) (unsigned-byte 64))
     (sb-c:foldable sb-c:flushable sb-c:movable)
   :overwrite-fndb-silently t)

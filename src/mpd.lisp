@@ -89,6 +89,22 @@
         (incf (exponent mpd) d)
         nil))))
 
+(defun mpd-integer-part (mpd)
+  (let* ((e (exponent mpd))
+         (m (mantissa mpd))
+         (m-size (mpz-size m)))
+    (cond
+      ((not (plusp (+ m-size e)))
+       (integer-mpz 0 'mpz/ram))
+      ((zerop e)
+       m)
+      ((minusp e)
+       (mpz-right-shift m (* $digit-bits (- e))))
+      (t
+       (mpz-left-shift m (* $digit-bits e))))))
+
+
+
 (defun estimate-reciprocal (a)
   (assert (not (mpz-zerop (mantissa a))))
   (let ((m (mantissa a))

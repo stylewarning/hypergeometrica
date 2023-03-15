@@ -1,6 +1,6 @@
 ;;;; binary-splitting.lisp
 ;;;;
-;;;; Copyright (c) 2012-2019, 2022 Robert Smith
+;;;; Copyright (c) 2012-2019, 2022-2023 Robert Smith
 
 ;;; Canonical reference: https://www.ginac.de/CLN/binsplit.pdf
 
@@ -257,7 +257,7 @@ Each of the function a, b, p, and q are integer-valued.
         :do (sb-mpfr:set-precision (+ bits 8))
             (let ((r (mpd-mpfr x))
                   (true (sb-mpfr:const-pi)))
-              (format t "~2&~D bits [~D digits] : ~A~%" bits (round (* bits (log 2.0d0 10.0d0))) 'r)
+              (format t "~2&~D bits [~D digits]~%" bits (round (* bits (log 2.0d0 10.0d0))))
               
               (let ((diff (sb-mpfr:sub true r)))
                 (sb-mpfr:set-precision 64)

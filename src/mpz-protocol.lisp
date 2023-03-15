@@ -24,6 +24,9 @@
 (defgeneric optimize-mpz (mpz)
   (:documentation "Optimize the storage used to represent the MPZ."))
 
+(defgeneric mpz-digit (mpz n)
+  (:documentation "Get the Nth least-significant digit from MPZ."))
+
 (defgeneric mpz-set-zero! (mpz)
   (:documentation "Mutate the MPZ so that it is equal to zero."))
 
@@ -68,6 +71,7 @@
 (defgeneric mpz-- (a b))
 (defgeneric mpz-* (a b))
 (defgeneric mpz-left-shift (a n))
+(defgeneric mpz-right-shift (a n))
 (defgeneric mpz-multiply-by-digit! (d mpz))
 (defgeneric mpz-multiply-by-s64! (d mpz))
 (defgeneric mpz-debug (mpz &optional stream))

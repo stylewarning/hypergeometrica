@@ -312,6 +312,8 @@
   (cond
     ((zerop n)
      a)
+    ((minusp n)
+     (mpz-right-shift a (- n)))
     (t
      (multiple-value-bind (quo rem)
          (floor n $digit-bits)
@@ -324,6 +326,30 @@
               (loop :for i :below size-a
                     :for j :from quo
                     :do (setf (r_ j) (a_ i))))
+            (make-instance 'mpz/ram
+              :sign (sign a)
+              :storage storage-r)))
+         (t
+          (error "not implemented")))))))
+
+(defmethod mpz-right-shift ((a mpz/ram) (n integer))
+  (cond
+    ((zerop n)
+     a)
+    ((minusp n)
+     (mpz-left-shift a (- n)))
+    (t
+     (multiple-value-bind (quo rem)
+         (floor n $digit-bits)
+       (cond
+         ((zerop rem)
+          (let* ((size-r (- (mpz-size a) quo))
+                 (storage-r (make-storage size-r)))
+            (with-vecs (a a_ storage-r r_)
+              ;; Copy the bits
+              (loop :for i :below size-r
+                    :for j :from quo
+                    :do (setf (r_ i) (a_ j))))
             (make-instance 'mpz/ram
               :sign (sign a)
               :storage storage-r)))

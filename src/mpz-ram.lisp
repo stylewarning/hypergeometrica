@@ -104,7 +104,7 @@
   nil)
 
 (defmethod mpz-bit-size ((mpz mpz/ram))
-    (let ((size (mpz-size mpz)))
+  (let ((size (mpz-size mpz)))
     (if (zerop size)
         0
         (with-vec (mpz mpz_)

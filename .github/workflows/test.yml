@@ -9,9 +9,12 @@ jobs:
 
     steps:
     - uses: actions/checkout@v1
-    - name: instal host sbcl
+    - name: update and install system dependencies
       run: |
         sudo apt-get -qq update | true
+        sudo apt-get -qq install libmpfr6 libmpfr-dev
+    - name: install host sbcl
+      run: |
         sudo apt-get -qq install sbcl
     - name: install quicklisp
       run: |

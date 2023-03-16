@@ -16,8 +16,8 @@
                #:cffi
                #:mmap
 
-               #:sb-mpfr                ; for testing
-               )
+               (:feature :sbcl #:sb-mpfr)
+               (:feature :sbcl #:sb-posix))
   :in-order-to ((asdf:test-op (asdf:test-op #:hypergeometrica/tests)))
   :around-compile (lambda (compile)
                     (let (#+sbcl (sb-ext:*derive-function-types* t))

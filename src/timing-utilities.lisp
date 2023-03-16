@@ -22,15 +22,17 @@
        (setf ,place ,delta)
        ,result)))
 
-(defmacro with-stopwatch ((k &key (log '*verbose*) (stream '*standard-output*)) &body body)
-  (alexandria:with-gensyms (start last gstream now)
+(defmacro with-stopwatch ((k &key (log '*verbose*) (stream '*standard-output*) (label "")) &body body)
+  (alexandria:with-gensyms (start last gstream now glabel)
     `(let ((,gstream ,stream)
+           (,glabel ,label)
            ,start ,last)
        (flet ((,k (message &rest args)
                 (when ,log
                   (let ((,now (get-internal-real-time)))
                     (fresh-line ,gstream)
-                    (format ,gstream "[~D Δ~D] "
+                    (format ,gstream "[~A~D Δ~D] "
+                            ,glabel
                             (delta-ms ,start ,now)
                             (delta-ms ,last ,now))
                     (apply #'format ,gstream message args)

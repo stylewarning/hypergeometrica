@@ -250,24 +250,6 @@ Each of the function a, b, p, and q are integer-valued.
       (tim "final"))
     final))
 
-(defun test-pi (n &key (from 0)
-                       (check (constantly t)))
-  (loop :for k :from from :below n
-        :for bits := (expt 10 k)
-        :for x := (mpd-pi bits)
-        :do (sb-mpfr:set-precision (+ bits 8))
-            (let ((r (mpd-mpfr x))
-                  (true (sb-mpfr:const-pi)))
-              (format t "~2&~D bits [~D digits]~%" bits (round (* bits (log 2.0d0 10.0d0))))
-
-              ;; TODO: make more efficient by comparing bits.
-              (let ((diff (sb-mpfr:sub true r)))
-                (sb-mpfr:set-precision 64)
-                (let ((err (round (sb-mpfr:coerce (sb-mpfr:log2 diff) 'rational))))
-                  (format t "==> error = ~A~%" err)
-                  (funcall check err)
-                  (finish-output))))))
-
 
 ;;; Catalan's Constant G
 ;;;

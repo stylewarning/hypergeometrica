@@ -57,7 +57,9 @@
   :license "BSD 3-clause (See LICENSE.txt)"
   :defsystem-depends-on (#:uiop)
   :depends-on (#:hypergeometrica
-               #:fiasco)
+               #:fiasco
+
+               (:feature :sbcl #:sb-mpfr))
   :perform (asdf:test-op (o s)
                          (uiop:symbol-call '#:hypergeometrica-tests
                                            '#:test-hypergeometrica))

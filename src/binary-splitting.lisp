@@ -214,16 +214,16 @@ Each of the function a, b, p, and q are integer-valued.
                (* (expt n 3)
                   #.(/ (expt +chud-c+ 3) 24)))))
     (make-series :a (alexandria:compose #'int #'a)
-                 :b #'one
+                 :b (constantly (int #.(/ (* 8 +chud-c+) 12)))
                  :p (alexandria:compose #'int #'p)
                  :q (alexandria:compose #'int #'q))))
 
 (defun compute-pi/chudnovsky (prec)
   (let* ((num-terms (floor (+ 2 (/ prec +chud-decimals-per-term+))))
          ;; √640320 = 8√10005
-         (sqrt-c    (* 8 (isqrt (* 10005 (expt 100 prec)))))
+         (sqrt-c    (isqrt (* 10005 (expt 100 prec))))
          (comp      (binary-split (make-chudnovsky-series) 0 num-terms)))
-    (values (floor (* sqrt-c (mpz-integer (partial-denominator comp)) #.(/ +chud-c+ 12))
+    (values (floor (* sqrt-c (mpz-integer (partial-denominator comp)))
                    (mpz-integer (partial-numerator comp))))))
 
 (defun dd (mpd)
@@ -242,8 +242,7 @@ Each of the function a, b, p, and q are integer-valued.
       (tim "sqrt")
       (setf recip (mpd-reciprocal (mpz-mpd (partial-numerator comp))  prec-bits))
       (tim "recip")
-      (setf final (mpz-mpd (mpz-* (integer-mpz (/ (* 8 +chud-c+) 12) 'mpz/ram)
-                                  (partial-denominator comp))))
+      (setf final (mpz-mpd (partial-denominator comp)))
       (setf final (mpd-* final sqrt))
       (setf final (mpd-* final recip))
       (mpd-truncate! final prec-bits)

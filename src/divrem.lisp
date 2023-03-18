@@ -23,7 +23,11 @@
     ((mpz-= a b)
      (integer-mpz 1 'mpz/ram))
     ;; TODO: add branch for size-1 / size-1 division
+    ;;
     ;; TODO: more testing of the below algorithm...
+    ;;
+    ;; TODO: is rounding OK? what happens if a division results in
+    ;; 0.999... repeating?
     (t
      (let* ((bits-needed (+ (* 2 $digit-bits) ; slack
                             (- (mpz-bit-size a)
@@ -37,7 +41,7 @@
 
 If (Q, R) = mpz-divrem(A, B), then A = Q*B + R."
   (let ((q (mpz-div a b)))
-    ;; TODO: negative numbers
+    ;; TODO: negative numbers are OK?
     (values
      q
      (mpz-- a (mpz-* q b)))))

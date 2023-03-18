@@ -308,6 +308,14 @@
 (defmethod mpz-- ((a mpz/ram) (b mpz/ram))
   (mpz-+ a (mpz-negate b)))
 
+(defmethod mpz-1+ ((a mpz/ram))
+  ;; TODO: optimize
+  (mpz-+ a (integer-mpz 1 'mpz/ram)))
+
+(defmethod mpz-1- ((a mpz/ram))
+  ;; TODO: optimize
+  (mpz-- a (integer-mpz 1 'mpz/ram)))
+
 (defmethod mpz-left-shift ((a mpz/ram) (n integer))
   (cond
     ((zerop n)

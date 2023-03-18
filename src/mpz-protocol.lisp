@@ -68,7 +68,9 @@
   (not (mpz-> a b)))
 
 (defgeneric mpz-+ (a b))
+(defgeneric mpz-1+ (a))
 (defgeneric mpz-- (a b))
+(defgeneric mpz-1- (a))
 (defgeneric mpz-* (a b))
 (defgeneric mpz-left-shift (a n))
 (defgeneric mpz-right-shift (a n))

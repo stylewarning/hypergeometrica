@@ -153,7 +153,7 @@
   (with-vecs (a a_ b b_)
     (and (= (sign a) (sign b))
          (= (mpz-size a) (mpz-size b))
-         (vec= (storage a) (storage b)))))
+         (%vec=-upto-unsafe (storage a) (storage b) (mpz-size a)))))
 
 (defun %mpz/ram-> (a b)
   (assert (= 1 (sign a) (sign b)))

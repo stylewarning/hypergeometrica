@@ -5,7 +5,7 @@
 (in-package #:hypergeometrica-tests)
 
 (deftest test-write-number-randomly ()
-  (loop :repeat 100
+  (loop :repeat 150
         :for base := (+ 2 (random 98))
         :for expt := (+ 100 (random 100))
         :for hype-result := (h::mpz-expt (h::integer-mpz base 'h::mpz/ram) expt)

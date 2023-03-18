@@ -1,6 +1,6 @@
 ;;;; hypergeometrica.asd
 ;;;;
-;;;; Copyright (c) 2019 Robert Smith
+;;;; Copyright (c) 2019-2023 Robert Smith
 
 (asdf:defsystem #:hypergeometrica
   :description "Calculate lots of digits of things."
@@ -50,6 +50,7 @@
                (:file "multiply")
                (:file "mpd")
                (:file "divrem")
+               (:file "mpz-string")
                (:file "binary-splitting")))
 
 (asdf:defsystem #:hypergeometrica/tests
@@ -77,4 +78,5 @@
                (:file "primes")
                (:file "sundries")
                (:file "divrem")
+               (:file "write-number")
                (:file "pi")))

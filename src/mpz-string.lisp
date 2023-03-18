@@ -44,6 +44,8 @@
 (defun %write-big-number (x stream)
   ;;(format t "~& x = ~D~%" (mpz-integer x))
   (cond
+    ((mpz-zerop x)
+     (write-char #\0 stream))
     ((and (= 1 (mpz-size x))
           (< (mpz-digit x 0) $largest-power-of-10))
      (write-number (mpz-digit x 0) stream))
@@ -61,6 +63,8 @@
            (write-string r stream)))))))
 
 (defun biggest-power-of-10<= (x)
+  #+hypergeometrica-safe
+  (assert (not (mpz-zerop x)))
   (let* ((bits (mpz-bit-size x))
          ;; This division is possibly an *OVER* estimate.
          (est (floor (/ (max 0 (1- bits)) (log 10.0d0 2.0d0))))

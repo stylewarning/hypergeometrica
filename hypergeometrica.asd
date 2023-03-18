@@ -49,6 +49,7 @@
                ;; (:file "disk")
                (:file "multiply")
                (:file "mpd")
+               (:file "divrem")
                (:file "binary-splitting")))
 
 (asdf:defsystem #:hypergeometrica/tests
@@ -75,4 +76,5 @@
                (:file "ntt")
                (:file "primes")
                (:file "sundries")
+               (:file "divrem")
                (:file "pi")))

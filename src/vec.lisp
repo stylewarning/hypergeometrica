@@ -111,13 +111,21 @@
                   (,i ,i))
              ,@body))))))
 
+(defun %vec=-upto-unsafe (a b n)
+  #+hypergeometrica-paranoid
+  (let ((a-length (vec-digit-length a))
+        (b-length (vec-digit-length b)))
+    (assert (<= n a-length))
+    (assert (<= n b-length)))
+  (with-vecs (a a_ b b_)
+    (loop :for i :below n
+          :always (= (a_ i) (b_ i)))))
+
 (defun vec= (a b)
   (let ((a-length (vec-digit-length a))
         (b-length (vec-digit-length b)))
     (and (= a-length b-length)
-         (with-vecs (a a_ b b_)
-           (loop :for i :below a-length
-                 :always (= (a_ i) (b_ i)))))))
+         (%vec=-upto-unsafe a b a-length))))
 
 (defun vec-fill (vec digit &key (start 0))
   (with-vec (vec vec_)

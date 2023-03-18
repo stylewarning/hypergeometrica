@@ -55,7 +55,7 @@
                (:file "pi")))
 
 (asdf:defsystem #:hypergeometrica/tests
-  :description "Tests for HYPERGEOMETRICA."
+  :description "Tests and debug routines for HYPERGEOMETRICA."
   :author "Robert Smith <robert@stylewarning.com>"
   :license "BSD 3-clause (See LICENSE.txt)"
   :defsystem-depends-on (#:uiop)
@@ -69,6 +69,9 @@
   :pathname "tests/"
   :serial t
   :components ((:file "package")
+               (:module "debug"
+                :serial t
+                :components ((:file "debug-routines")))
                (:file "suite")
                (:file "arithmetic")
                (:file "moduli")

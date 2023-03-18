@@ -149,7 +149,7 @@
                    (zeros (- (mpd-oom h))))
               (assert (plusp zeros) () "Got an estimate for 1/x which got *worse*!")
               (when *verbose*
-                (format t "~&MPD-RECIPROCAL: ~D : h (~D) = ~A~%"
+                (format t "~&MPD-RECIPROCAL: iter=~D : h (2^-~D) = ~A~%"
                         iter-number
                         zeros
                         (mpd-mpfr h)))
@@ -159,13 +159,26 @@
               ;; Truncate the mantissa so that we land on DIGITs
               ;; without wasting memory or iterations.
               (cond
+                ;; Have we exceeded the desired precision?
                 ((> zeros bits)
                  (mpd-truncate! x bits) ; TODO: round?
                  (loop-finish))
+                ;; Do we have less than 1/2 the precision left to go?
+                ;; If so, we can actually do less work by lopping off
+                ;; some precision now, since we'll double it again in
+                ;; the next iteration.
+                ;;
+                ;; TODO: Should we truncate just a little bit less so
+                ;; precision definitely goes over the expected amount?
                 ((> (* 2 zeros) bits)
                  (mpd-truncate! x (floor bits 2)))
+                ;; Truncate to the number of correct digits we've
+                ;; found so far.
                 (t
-                 (mpd-truncate! x zeros))))
+                 ;; Don't truncate to anything less than $DIGIT-BITS
+                 ;; zeros. We don't actually save anything, for one,
+                 ;; and for two, it can lead to infinite recursion.
+                 (mpd-truncate! x (max $digit-bits zeros)))))
         :finally (return x)))
 
 

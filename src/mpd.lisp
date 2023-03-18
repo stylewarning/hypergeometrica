@@ -9,7 +9,7 @@
              :accessor mantissa)
    (exponent :initarg :exponent
              :accessor exponent))
-  (:documentation "The number MANTISSA * $BASE^EXPONENT"))
+  (:documentation "The number MANTISSA * $BASE^EXPONENT. There are no assumptions about the sizes or lengths of these quantities."))
 
 (defun mpz-mpd (mpz)
   (make-instance 'mpd
@@ -58,12 +58,16 @@
   (mpz-multiply-by-digit! (/ $base 2) (mantissa a))
   (decf (exponent a)))
 
-(defun mpd-* (a b)
-  (make-instance 'mpd
-    :mantissa (mpz-* (mantissa a)
-                     (mantissa b))
-    :exponent (+ (exponent a)
-                 (exponent b))))
+(defun mpd-* (a b &key digits)
+  ;; TODO: make efficient.
+  (let ((ab (make-instance 'mpd
+              :mantissa (mpz-* (mantissa a)
+                               (mantissa b))
+              :exponent (+ (exponent a)
+                           (exponent b)))))
+    (when digits
+      (mpd-truncate! ab digits))
+    ab))
 
 (defun mpd-+ (a b)
   (let ((a (mantissa a))

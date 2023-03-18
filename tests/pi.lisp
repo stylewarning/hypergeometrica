@@ -21,19 +21,28 @@
                (tim "hypergeometrica -> mpfr")
 
                (format t "~&Calculating MPFR pi:~%")
-               (setf true-pi (sb-mpfr:const-pi))
+               ;; Recall that we calculate pi/10.
+               (setf true-pi (sb-mpfr:div (sb-mpfr:const-pi) 10))
 
                (format t "~&Calculated ~D bits [~D digits]~%" bits (round (* bits (log 2.0d0 10.0d0))))
 
                ;; TODO: make more efficient by comparing bits.
-               (let ((diff (sb-mpfr:sub true-pi r-pi)))
-                 (sb-mpfr:set-precision 64)
-                 (let ((err (round (sb-mpfr:coerce (sb-mpfr:log2 diff) 'rational))))
-                   (format t "==> error = ~A~2%" err)
-                   (funcall check err)
-                   (finish-output)))))))
+               (let* ((diff (sb-mpfr:abs (sb-mpfr:sub true-pi r-pi)))
+                      (err (cond
+                             ;; If it's a perfect match, we still say
+                             ;; we have an error of 2^(-bits).
+                             ((sb-mpfr:zerop diff) (- bits))
+                             ;; Or it's not a perfect match...
+                             (t
+                              (sb-mpfr:set-precision 64)
+                              (round (sb-mpfr:coerce (sb-mpfr:log2 diff) 'rational))))))
+                 (funcall check err bits)
+                 (finish-output))))))
 
 (deftest test-pi ()
   (%test-pi 5 :from 1
-              :check (lambda (n)
-                       (is (zerop n)))))
+              :check (lambda (err-bits desired-bits)
+                       ;; ERR-BITS means the error was 2^(ERR-BITS),
+                       ;; so it will be negative in "good" cases.
+                       (is (and (minusp err-bits)
+                                (<= desired-bits (abs err-bits)))))))

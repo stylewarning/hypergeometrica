@@ -51,7 +51,8 @@
                (:file "mpd")
                (:file "divrem")
                (:file "mpz-string")
-               (:file "binary-splitting")))
+               (:file "binary-splitting")
+               (:file "pi")))
 
 (asdf:defsystem #:hypergeometrica/tests
   :description "Tests for HYPERGEOMETRICA."

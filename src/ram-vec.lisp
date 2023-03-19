@@ -42,7 +42,7 @@
                    :documentation "The number of digits this VEC holds.")
    (finalizer-cons :initarg :finalizer-cons
                    :reader ram-vec.finalizer-cons
-                   :documentation "A CONS whose CAR will be read in order to free the mrmory of the RAM-VEC. This needed indirection is used in case the BASE-POINTER changes."))
+                   :documentation "A CONS whose CAR will be read in order to free the memory of the RAM-VEC. This needed indirection is used in case the BASE-POINTER changes."))
   (:documentation "Digits allocated in RAM."))
 
 (defmethod print-object ((vec ram-vec) stream)
@@ -83,6 +83,7 @@
        new-pointer))))
 
 (defun make-ram-vec (n)
+  "Make a new RAM-VEC of N digits, initialized to zero."
   (check-type n alexandria:array-length)
   (let* ((num-bytes (bytes-for-digits n))
          (pointer (alloc num-bytes))
@@ -145,6 +146,7 @@
   nil)
 
 (defun sequence->ram-vec (seq)
+  "Convert a sequence of digits SEQ to a RAM-VEC."
   (let* ((n (length seq))
          (vec (make-ram-vec n)))
     (with-vec (vec vec_)

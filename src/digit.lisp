@@ -4,27 +4,40 @@
 
 (in-package #:hypergeometrica)
 
-(defconstant $digit-bits 64)
+;;; This file defines a DIGIT (the fundamental building block of an
+;;; arbitrary precision number) and associated operations.
 
-(defconstant $base (expt 2 $digit-bits))
+(defconstant $digit-bits 64
+  "The number of bits in a DIGIT.")
+
+(defconstant $base (expt 2 $digit-bits)
+  "The radix of all arbitrary precision arithmetic operations.")
 
 ;; These two have the same value, but are used differently. The former
 ;; is a numerical quantity. The latter is for bit twiddling.
-(defconstant $max-digit (1- $base))
-(defconstant $digit-ones (ldb (byte $digit-bits 0) -1))
+(defconstant $max-digit (1- $base)
+  "The maximum digit in radix $BASE.")
 
-(defconstant $largest-power-of-10 (expt 10 (floor (log $base 10.0d0))))
+(defconstant $digit-ones (ldb (byte $digit-bits 0) -1)
+  "A digit consisting of all binary ones.")
+
+(defconstant $largest-power-of-10-exponent (floor (log $base 10.0d0))
+  "The largest value n such that (< (expt 10 n) $max-digit).")
+
+(defconstant $largest-power-of-10 (expt 10 $largest-power-of-10-exponent)
+  "The largest power of 10 that can fit in a DIGIT. This is (expt 10 $largest-power-of-10-exponent).")
 
 (deftype digit ()
-  "A digit in an MPZ."
+  "A digit in an arbitrary precision number."
   `(unsigned-byte ,$digit-bits))
 
 (deftype sign ()
-  "The sign of an MPZ."
+  "The sign of a number."
   '(member 1 -1))
 
 (declaim (inline bytes-for-digits))
 (defun bytes-for-digits (num-digits)
+  "The number of bytes required to store NUM-DIGITS digits."
   (ceiling (* $digit-bits num-digits) 8))
 
 (defmacro define-fx-op (op-name (base-op &rest args))
@@ -134,5 +147,6 @@ for A >= B.
 
 (declaim (inline complement-digit))
 (defun complement-digit (n)
+  "Invert the bits of a digit N."
   (declare (type digit n))
   (logxor n $digit-ones))

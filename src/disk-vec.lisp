@@ -4,6 +4,8 @@
 
 (in-package #:hypergeometrica)
 
+;;; VECs that are stored to disk.
+
 (defun generate-work-filename ()
   (merge-pathnames (format nil "hypergeo-r~X-t~D"
                            (random most-positive-fixnum)

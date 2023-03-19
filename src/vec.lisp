@@ -4,6 +4,13 @@
 
 (in-package #:hypergeometrica)
 
+;;; This file defines a protocol for VECs. A VEC is a data structure
+;;; to hold digits. That's basically it. There's really no
+;;; mathematical meaning ascribed to them.
+;;;
+;;; All VECs are assumed to be able to be pointed to by a pointer of
+;;; some sort.
+
 
 ;;; VEC Protocol
 
@@ -93,7 +100,10 @@
           ,@body)))))
 
 (defun vec->vector (vec &optional (start 0) (end (vec-digit-length vec)))
-  (assert (<= 0 start end (vec-digit-length vec)))
+  "Convert a VEC to a Common Lisp VECTOR, starting from index START and bounded above by index END."
+  (assert (and (<= 0 start)
+               (< start end)
+               (<= end (vec-digit-length vec))))
   (let ((vector (make-array (- end start) :element-type 'digit
                                           :initial-element 0)))
     (with-vec (vec vec_)
@@ -122,24 +132,43 @@
           :always (= (a_ i) (b_ i)))))
 
 (defun vec= (a b)
+  "Are VECs A and B precisely the same?"
   (let ((a-length (vec-digit-length a))
         (b-length (vec-digit-length b)))
     (and (= a-length b-length)
          (%vec=-upto-unsafe a b a-length))))
 
-(defun vec-fill (vec digit &key (start 0))
-  (with-vec (vec vec_)
-    (loop :for i :from start :below (vec-digit-length vec)
-          :do (setf (vec_ i) digit))))
+(defun vec-compare (a b &key (start1 0) (start2 0) (num-elements
+                                                    (min (vec-digit-length a)
+                                                         (vec-digit-length b))))
+  "Compare exactly NUM-ELEMENTS elements from VECs A and B, with A starting at START1 and B starting at START2."
+  #+hypergeometrica-safe
+  (assert (not (or (minusp start1)
+                   (minusp start2)
+                   (minusp num-elements))))
+  #+hypergeometrica-safe
+  (assert (<= (- num-elements start1) (vec-digit-length a)))
+  #+hypergeometrica-safe
+  (assert (<= (- num-elements start2) (vec-digit-length b)))
+  (with-vecs (a a_ b b_)
+    (loop :repeat num-elements
+          :for i :from start1
+          :for j :from start2
+          :always (= (a_ i) (b_ j)))))
 
-(defun vec-every (fun vec)
+(defun vec-fill (vec digit &key (start 0) (end (vec-digit-length vec)))
   (with-vec (vec vec_)
-    (loop :for i :below (vec-digit-length vec)
+    (loop :for i :from start :below end :do
+      (setf (vec_ i) digit))))
+
+(defun vec-every (fun vec &key (start 0) (end (vec-digit-length vec)))
+  (with-vec (vec vec_)
+    (loop :for i :from start :below end
           :always (funcall fun (vec_ i)))))
 
-(defun vec-into (vec fun)
+(defun vec-into (vec fun &key (start 0) (end (vec-digit-length vec)))
   (with-vec (vec vec_)
-    (dotimes (i (vec-digit-length vec) vec)
+    (loop :for i :from start :below end :do
       (setf (vec_ i) (funcall fun)))))
 
 (defun vec-replace/unsafe (dst src &key (start1 0))

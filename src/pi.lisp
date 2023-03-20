@@ -51,20 +51,24 @@
                    (mpz-integer (partial-numerator comp))))))
 
 (defun mpd-pi (prec-bits)
-  (let* ((num-terms (floor (+ 2 (/ prec-bits +chud-bits-per-term+))))
+  (let* ((guard-bits (+ prec-bits $digit-bits))
+         (num-terms (+ 2 (floor guard-bits +chud-bits-per-term+)))
          ;; intermediate steps:
          comp sqrt recip final)
     (with-stopwatch (tim :log t)
       (format t "~2&terms = ~A~%" num-terms)
       (setf comp (binary-split (make-chudnovsky-series) 0 num-terms))
       (tim "split")
-      (setf sqrt (mpd-sqrt (integer-mpd 10005) prec-bits))
+
+      (setf sqrt (mpd-sqrt (integer-mpd 10005) guard-bits))
+      (setf final sqrt)
       (tim "sqrt")
-      (setf recip (mpd-reciprocal (mpz-mpd (partial-numerator comp))  prec-bits))
-      (tim "recip")
-      (setf final (mpz-mpd (partial-denominator comp)))
-      (setf final (mpd-* final sqrt))
+
+      (setf recip (mpd-reciprocal (mpz-mpd (partial-numerator comp)) guard-bits))
       (setf final (mpd-* final recip))
-      (mpd-truncate! final prec-bits)
+      (tim "recip")
+
+      (setf final (mpd-* final (mpz-mpd (partial-denominator comp))))
+      ;;(mpd-truncate! final :to-bits prec-bits) ; prec, not guard!
       (tim "final"))
     final))

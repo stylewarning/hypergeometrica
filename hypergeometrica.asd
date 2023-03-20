@@ -49,6 +49,8 @@
                ;; (:file "disk")
                (:file "multiply")
                (:file "mpd")
+               (:file "mpd-reciprocal")
+               (:file "mpd-sqrt")
                (:file "divrem")
                (:file "mpz-string")
                (:file "binary-splitting")

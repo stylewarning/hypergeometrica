@@ -16,3 +16,15 @@
           (h::mpz-divrem h two)
         (is (= 1 (h::mpz-integer r)))
         (setf h q)))))
+
+(deftest test-divrem-third ()
+  (let* ((three (h::integer-mpz 3 'h::mpz/ram))
+         (ten   (h::integer-mpz 10 'h::mpz/ram)))
+    (loop :for power :from 1 :to 100000 :by 10000 :do
+      (let ((ten (h::mpz-expt ten power)))
+        (multiple-value-bind (q r)
+            (h::mpz-divrem ten three)
+          (multiple-value-bind (qlisp rlisp)
+              (floor (expt 10 power) 3)
+            (is (= qlisp (h::mpz-integer q)))
+            (is (= rlisp (h::mpz-integer r)))))))))

@@ -47,7 +47,7 @@
   #+linux
   (mmap:madvise (mmap-data-pointer data)
                 (mmap-data-size data)
-                ':madv-normal)
+                ':normal)
   nil)
 
 (defun madvise-random (data)
@@ -55,7 +55,7 @@
   #+linux
   (mmap:madvise (mmap-data-pointer data)
                 (mmap-data-size data)
-                ':madv-random)
+                ':random)
   nil)
 
 (defun madvise-sequential (data)
@@ -63,5 +63,5 @@
   #+linux
   (mmap:madvise (mmap-data-pointer data)
                 (mmap-data-size data)
-                ':madv-sequential)
+                ':sequential)
   nil)

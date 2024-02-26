@@ -27,7 +27,6 @@
   :components ((:file "package")
                (:file "config")
                (:file "logging")
-               (:file "mmap-patches" :if-feature :linux)
                (:file "mmap")
                (:file "timing-utilities")
                (:file "math-utilities")

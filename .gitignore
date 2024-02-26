@@ -1,1 +1,4 @@
 *.fasl
+.DS_Store
+hypergeometrica-worker
+hypergeometrica-manager

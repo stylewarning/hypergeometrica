@@ -1,6 +1,6 @@
 ;;;; hypergeometrica.asd
 ;;;;
-;;;; Copyright (c) 2019-2023 Robert Smith
+;;;; Copyright (c) 2019-2024 Robert Smith
 
 (asdf:defsystem #:hypergeometrica
   :description "Calculate lots of digits of things."

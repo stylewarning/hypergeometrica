@@ -70,6 +70,42 @@
          (warn "Unknown worker identified as #~D" id)
          nil)))))
 
+;;; Lifelines
+
+(defun revive-lifelines (lifelines)
+  (dolist (lifeline lifelines)
+    (cond
+      ((probe-file lifeline)
+       (handler-case
+           (let ((lifeline-socket (make-instance 'sb-bsd-sockets:local-socket :type :stream)))
+             (unwind-protect
+                  (progn
+                    (sb-bsd-sockets:socket-connect lifeline-socket lifeline)
+                    (let ((stream (sb-bsd-sockets:socket-make-stream
+                                   lifeline-socket
+                                   :element-type 'character
+                                   :input t
+                                   :output t
+                                   :buffering ':line)))
+                      (let ((new-id (make-id)))
+                        (push
+                         (make-instance 'worker-status
+                                        :id new-id
+                                        :last-heartbeat (get-internal-real-time))
+                         **workers**)
+                        (format t "Reviving: lifeline ~A -> ~S~%" lifeline new-id)
+                        (write-form stream `(:revive :id ,new-id :socket ,**socket-node**))
+                        ;; TODO: bookkeeping on current computational progress
+                        )))
+               (sb-bsd-sockets:socket-close lifeline-socket)))
+         (sb-bsd-sockets:socket-error (c)
+           (declare (ignore c))
+           (warn "Error communicating with lifeline socket ~A... skipping" lifeline))))
+      (t
+       (warn "Invalid lifeline: ~A" lifeline)))))
+
+;;; Heartbeat
+
 (defun make-heartbeat-checker (&optional (timeout 10))
   (lambda ()
     (loop
@@ -147,7 +183,12 @@
     :required t
     :description "maximum number of workers"
     :long-name "max-workers"
-    :key :max-workers)))
+    :key :max-workers)
+   (clingon:make-option
+    :list
+    :description "lifelines to restart work with"
+    :long-name "lifeline"
+    :key :lifelines)))
 
 (defun cli-command ()
   (clingon:make-command
@@ -166,6 +207,7 @@
     (sb-bsd-sockets:socket-bind **socket** (namestring **socket-node**))
     (sb-bsd-sockets:socket-listen **socket** 8)
     (start-heartbeat-checker-thread)
+    (revive-lifelines (clingon:getopt cmd ':lifelines))
     (start-socket-thread)
     (format t "Started socket on: ~A~%" **socket-node**)
     (format t "Waiting for socket thread to end.~%")

@@ -10,6 +10,8 @@
 (defconstant $digit-bits 64
   "The number of bits in a DIGIT.")
 
+(defconstant $digit-bytes (ceiling $digit-bits 8))
+
 (defconstant $base (expt 2 $digit-bits)
   "The radix of all arbitrary precision arithmetic operations.")
 
@@ -150,3 +152,18 @@ for A >= B.
   "Invert the bits of a digit N."
   (declare (type digit n))
   (logxor n $digit-ones))
+
+(defpackage #:hypergeometrica/digit
+  (:use #:cl)
+  (:import-from #:hypergeometrica
+                .
+                #1=(
+                 #:digit
+                 #:$digit-bits
+                 #:$digit-bytes
+                 #:$base
+                 #:$max-digit
+                 #:$digit-ones))
+  (:export
+   .
+   #1#))

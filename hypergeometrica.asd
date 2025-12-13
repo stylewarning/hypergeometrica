@@ -2,22 +2,21 @@
 ;;;;
 ;;;; Copyright (c) 2019-2024 Robert Smith
 
-(asdf:defsystem #:hypergeometrica
+(asdf:defsystem "hypergeometrica"
   :description "Calculate lots of digits of things."
   :author "Robert Smith <robert@stylewarning.com>"
   :license "BSD 3-clause (See LICENSE.txt)"
-  :depends-on (#:alexandria
-               #:global-vars
-               #:lparallel
-               #:napa-fft3
-               #:trivial-garbage
-               #:uiop
-
-               #:cffi
-               #:mmap
-
-               (:feature :sbcl #:sb-mpfr)
-               (:feature :sbcl #:sb-posix))
+  :depends-on ("coalton"
+               "alexandria"
+               "global-vars"
+               "lparallel"
+               "napa-fft3"
+               "trivial-garbage"
+               "uiop"
+               "cffi"
+               "mmap"
+               (:feature :sbcl "sb-mpfr")
+               (:feature :sbcl "sb-posix"))
   :in-order-to ((asdf:test-op (asdf:test-op #:hypergeometrica/tests)))
   :around-compile (lambda (compile)
                     (let (#+sbcl (sb-ext:*derive-function-types* t))
@@ -33,6 +32,7 @@
                (:file "sbcl-intrinsics"         :if-feature :sbcl)
                (:file "sbcl-intrinsics-x86-64"  :if-feature (:and :sbcl :x86-64))
                (:file "sbcl-intrinsics-ppc64el" :if-feature (:and :sbcl :ppc64 :little-endian))
+               (:file "sbcl-intrinsics-arm64"   :if-feature (:and :sbcl :arm64))
                (:file "digit")
                (:file "modular-arithmetic")
                (:file "vec")
@@ -53,7 +53,8 @@
                (:file "divrem")
                (:file "mpz-string")
                (:file "binary-splitting")
-               (:file "pi")))
+               (:file "pi")
+               (:file "coalton")))
 
 (asdf:defsystem #:hypergeometrica/tests
   :description "Tests and debug routines for HYPERGEOMETRICA."

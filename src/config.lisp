@@ -22,7 +22,7 @@
 
 ;; N.B.: Intrinsic functions are still compiled, even if they're not
 ;; used by Hypergeometrica.
-#+(and #:disable sbcl (or x86-64))
+#+(and sbcl (or x86-64))
 (push :hypergeometrica-intrinsics *features*)
 
 
